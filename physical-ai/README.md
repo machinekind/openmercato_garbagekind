@@ -7,6 +7,8 @@
 
 Aktualna lista prób i artefaktów do zebrania przez zespół physical:
 [`PHYSICAL-VALIDATION-BACKLOG.md`](PHYSICAL-VALIDATION-BACKLOG.md).
+Procedura odbioru podłączonego SO-101 znajduje się w
+[`mercato/hardware/so101/README.md`](../mercato/hardware/so101/README.md).
 
 Ten katalog jest miejscem na nowy kierunek: platformę operacyjną dla flot
 robotów, których polityki sterowania uczone są metodami RL (oraz IL, offline

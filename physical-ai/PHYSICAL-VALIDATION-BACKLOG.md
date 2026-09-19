@@ -4,6 +4,10 @@ Ten dokument rozdziela fakty potwierdzone w kodzie od rzeczy, które wymagają
 realnego robota. Punktem odniesienia jest import dowodów z `mercatoXD` w
 `physical-ai/evidence/hackathon-2026-09-18-19/mercatoXD`.
 
+Dla SO-101 procedurę i generator raportu zawiera
+`mercato/hardware/so101/README.md`. Narzędzie nie włącza momentu ani nie wysyła
+pozycji zadanej; kroki ruchowe pozostają jawnie wykonywanymi próbami zespołu.
+
 ## Stan wejściowy z hackathonu
 
 - A1X komunikował się po CAN, wykonywał ruchy stawów i chwytaka; zachowano
