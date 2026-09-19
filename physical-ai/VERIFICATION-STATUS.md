@@ -13,9 +13,9 @@ sprawdzone na stanowisku.
 | Pełne sprawdzenie typów ERP | zaliczone | `4f631d4`, potwierdzone po `c0f5c29` |
 | Pełny zestaw testów ERP | 153/153 zestawy, 1354/1354 testy | `c0f5c29` |
 | Testy podpisanej telemetrii edge i retencji wideo | 45/45 testów | `c6386a8` |
-| Testy narzędzia odbioru SO-101 | 10/10 testów | `7a5b929` |
-| Testy integralności paczki dowodowej | 7/7 testów | `a23a350` |
-| Kompilacja składni narzędzia SO-101 | zaliczona | `7a5b929` |
+| Testy narzędzia odbioru SO-101 | 10/10 testów | `3749e5b` |
+| Testy integralności paczki dowodowej | 8/8 testów | `d3e0fdc` |
+| Kompilacja składni narzędzi sprzętowych | zaliczona | `d3e0fdc` |
 
 Pełny zestaw ERP zawiera testy, które celowo wywołują błędy usług i zapisują
 komunikaty `WARN` lub `ERROR`. O wyniku decyduje podsumowanie Jest; cały
@@ -35,6 +35,9 @@ zestaw zakończył się kodem `0`.
 - paczka P0 jest sprawdzana pod kątem wymaganych prób, zgodności `runRef`,
   czasu UTC, anonimizacji, retencji, zamkniętych słowników i sum wszystkich
   plików; nieudana próba pozostaje ważnym dowodem, ale nie przechodzi bramy;
+- próba człowieka w strefie musi wskazywać istniejącą interwencję ERP z
+  kategorią `person_in_safety_zone`; warstwa bezpieczeństwa zapisuje również,
+  czy jest możliwa do obejścia lub wyłączenia;
 - narzędzie odmawia finalizacji przy braku któregokolwiek wymaganego dowodu
   fizycznego i nie nadpisuje istniejącej rewizji;
 - zachowanie polityki po wygaśnięciu dzierżawy i słowniki przyczyn alarmów są
