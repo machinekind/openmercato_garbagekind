@@ -152,6 +152,32 @@ oparty wyłącznie na dokumentacji. Rewizja zawiera obliczony przez narzędzie
 skrót zamkniętego raportu oraz `runRef`; raport z innego przebiegu jest
 odrzucany.
 
+## Wartości zastępcze przed pomiarem
+
+Kroki A3 (zasięg, udźwig) i A4 (zasilanie) wymagają przyrządów. Dopóki ich nie
+ma, `measure` i `power` przyjmują `--placeholder`:
+
+```bash
+python3 mercato/hardware/so101/validate.py measure --placeholder \
+  --confirm PLACEHOLDER-NOT-MEASURED
+python3 mercato/hardware/so101/validate.py power --placeholder \
+  --confirm PLACEHOLDER-NOT-MEASURED
+```
+
+Taki wpis dostaje `status: "placeholder"` i `provenance: "synthetic"`, **nigdy
+`passed`**. `seal` i `finalize` nadal odmawiają, więc z wartości zastępczych nie
+powstanie rewizja `r2` ani `verifiedAgainstHardware: true`. Token potwierdzenia
+jest inny niż przy pomiarze, żeby jedno nie przeszło za drugie. Tryb służy
+wyłącznie przeklikaniu dalszej części łańcucha na rewizji `r1`.
+
+## Tożsamość egzemplarza
+
+`inspect` zapisuje numer seryjny przejściówki USB w `adapter` i w dowodzie A1.
+Ścieżka portu nie identyfikuje ramienia: po przepięciu `/dev/ttyACM0` to może
+być inny egzemplarz. Zmiana numeru seryjnego w obrębie jednego `runRef` ustawia
+A1 na `failed` z powodem w `problems` — wtedy trzeba zacząć nowy przebieg
+dowodowy, a nie dopisywać do poprzedniego.
+
 ## Demonstracja ruchu przez MCP
 
 Ten tryb jest **osobny od odbioru** i nie produkuje dowodów P0. `validate.py`

@@ -58,6 +58,20 @@ POLICY_ARTIFACTS = (
     ("normalizer.json", "normalizer", False),
 )
 REQUIRED_ESTOP_SCENARIOS = {"idle", "motion", "grasp"}
+# Wartosci zastepcze na czas, gdy nie ma jeszcze przyrzadow pomiarowych.
+# Nie sa pomiarem i nigdy nie dostaja statusu "passed", wiec "seal" i
+# "finalize" nadal odmawiaja: rewizja r2 nie powstanie z tych liczb.
+PLACEHOLDER_CONFIRM = "PLACEHOLDER-NOT-MEASURED"
+PLACEHOLDER_STATUS = "placeholder"
+PLACEHOLDER_FIELD = "placeholder"
+PLACEHOLDER_REACH_MM = 450.0
+PLACEHOLDER_PAYLOAD_KG = 0.25
+PLACEHOLDER_REACH_UNCERTAINTY_MM = 50.0
+PLACEHOLDER_PAYLOAD_UNCERTAINTY_KG = 0.1
+PLACEHOLDER_EXPECTED_MIN_V = 11.0
+PLACEHOLDER_EXPECTED_MAX_V = 12.6
+PLACEHOLDER_IDLE_V = 12.0
+PLACEHOLDER_LOADED_V = 11.5
 REQUIRED_LIMIT_TESTS = {"position", "speed", "command_timeout"}
 SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
@@ -202,6 +216,38 @@ def firmware_version(bus: Any, motor: str) -> str | dict[str, Any]:
     return f"{major}.{minor}"
 
 
+def adapter_identity(port: str, ports: list[dict[str, str | None]]) -> dict[str, Any]:
+    """Tozsamosc przejsciowki USB, zeby dowod wskazywal egzemplarz, nie sciezke."""
+    for entry in ports:
+        if entry.get("device") == port:
+            return {
+                "device": port,
+                "serialNumber": entry.get("serialNumber"),
+                "vid": entry.get("vid"),
+                "pid": entry.get("pid"),
+            }
+    return {"device": port, "serialNumber": None, "vid": None, "pid": None}
+
+
+def adapter_conflict(previous: dict[str, Any] | None, current: dict[str, Any]) -> str | None:
+    """Wykrywa podmiane sprzetu w obrebie jednego runRef.
+
+    Sciezka portu nie identyfikuje egzemplarza: ta sama /dev/ttyACM0 to po
+    przepieciu inne ramie. Dowod z dwoch egzemplarzy pod jednym runRef jest
+    bezwartosciowy, wiec kolizja musi byc widoczna, a nie cicho nadpisana.
+    """
+    if not previous:
+        return None
+    before = previous.get("serialNumber")
+    after = current.get("serialNumber")
+    if before and after and before != after:
+        return (
+            f"adapter serial changed within one run: {before} -> {after}; "
+            "start a new evidence run for a different unit"
+        )
+    return None
+
+
 def bus_contract_status(joints: list[dict[str, Any]]) -> tuple[str, list[str]]:
     """Kryterium A1: dokładnie sześć serw, bez duplikatu ID, z czytelnym firmware."""
     problems: list[str] = []
@@ -285,6 +331,9 @@ def command_scan(args: argparse.Namespace, report: dict[str, Any]) -> int:
 def command_inspect(args: argparse.Namespace, report: dict[str, Any]) -> int:
     bus = make_bus(args.port)
     report["port"] = args.port
+    adapter = adapter_identity(args.port, discover_ports())
+    conflict = adapter_conflict(report.get("adapter"), adapter)
+    report["adapter"] = adapter
     joints: list[dict[str, Any]] = []
     try:
         bus.connect()
@@ -311,8 +360,12 @@ def command_inspect(args: argparse.Namespace, report: dict[str, Any]) -> int:
             bus.disconnect(disable_torque=False)
 
     status, problems = bus_contract_status(joints)
+    if conflict:
+        status = "failed"
+        problems = [*problems, conflict]
     report["checks"]["busContract"] = {
         "status": status,
+        "adapter": adapter,
         "observedAt": now_iso(),
         "readOnly": True,
         "joints": joints,
@@ -384,9 +437,59 @@ def command_calibrate(args: argparse.Namespace, report: dict[str, Any]) -> int:
     return 0 if plausible and calibration_file.exists() else 1
 
 
+def placeholder_note(check: str) -> str:
+    return (
+        f"Wartosc zastepcza dla kroku {check}: nie pochodzi z pomiaru i nie zalicza "
+        "bramy. Zastapic wynikiem pomiaru przed seal/finalize."
+    )
+
+
+def require_measurement_arguments(args: argparse.Namespace, names: tuple[str, ...]) -> None:
+    missing = [name for name in names if getattr(args, name) is None]
+    if missing:
+        flags = ", ".join("--" + name.replace("_", "-") for name in missing)
+        raise ValueError(f"Missing measured values: {flags} (or use --placeholder)")
+
+
+def command_measure_placeholder(args: argparse.Namespace, report: dict[str, Any]) -> int:
+    if args.confirm != PLACEHOLDER_CONFIRM:
+        raise ValueError(f"Placeholder values require --confirm {PLACEHOLDER_CONFIRM}")
+    common = {
+        "status": PLACEHOLDER_STATUS,
+        "observedAt": now_iso(),
+        "provenance": "synthetic",
+        "instrument": PLACEHOLDER_FIELD,
+        "operator": args.operator or PLACEHOLDER_FIELD,
+        "method": PLACEHOLDER_FIELD,
+        "notes": args.notes,
+    }
+    report["checks"]["reach"] = {
+        **common,
+        "valueMm": args.reach_mm if args.reach_mm is not None else PLACEHOLDER_REACH_MM,
+        "uncertaintyMm": PLACEHOLDER_REACH_UNCERTAINTY_MM,
+        "note": placeholder_note("reach"),
+    }
+    report["checks"]["payload"] = {
+        **common,
+        "valueKg": args.payload_kg if args.payload_kg is not None else PLACEHOLDER_PAYLOAD_KG,
+        "uncertaintyKg": PLACEHOLDER_PAYLOAD_UNCERTAINTY_KG,
+        "holdSeconds": args.payload_hold_seconds,
+        "note": placeholder_note("payload"),
+    }
+    print("Recorded PLACEHOLDER reach and payload; these are not measurements and do not pass A3.")
+    return 0
+
+
 def command_measure(args: argparse.Namespace, report: dict[str, Any]) -> int:
+    if getattr(args, "placeholder", False):
+        return command_measure_placeholder(args, report)
     if args.confirm != "VALUES-MEASURED":
         raise ValueError("Measurements require --confirm VALUES-MEASURED")
+    require_measurement_arguments(
+        args,
+        ("reach_mm", "payload_kg", "reach_uncertainty_mm", "payload_uncertainty_kg",
+         "instrument", "operator", "method"),
+    )
     if args.reach_mm <= 0 or args.payload_kg <= 0:
         raise ValueError("Reach and payload must be positive measured values")
     if args.reach_uncertainty_mm < 0 or args.payload_uncertainty_kg < 0:
@@ -416,9 +519,37 @@ def command_measure(args: argparse.Namespace, report: dict[str, Any]) -> int:
     return 0
 
 
+def command_power_placeholder(args: argparse.Namespace, report: dict[str, Any]) -> int:
+    if args.confirm != PLACEHOLDER_CONFIRM:
+        raise ValueError(f"Placeholder values require --confirm {PLACEHOLDER_CONFIRM}")
+    report["checks"]["power"] = {
+        "status": PLACEHOLDER_STATUS,
+        "observedAt": now_iso(),
+        "provenance": "synthetic",
+        "expectedMinV": PLACEHOLDER_EXPECTED_MIN_V,
+        "expectedMaxV": PLACEHOLDER_EXPECTED_MAX_V,
+        "measuredIdleV": PLACEHOLDER_IDLE_V,
+        "measuredLoadedV": PLACEHOLDER_LOADED_V,
+        "instrument": PLACEHOLDER_FIELD,
+        "operator": args.operator or PLACEHOLDER_FIELD,
+        "method": PLACEHOLDER_FIELD,
+        "evidenceUri": None,
+        "note": placeholder_note("power"),
+    }
+    print("Recorded PLACEHOLDER power rail values; these are not measurements and do not pass A4.")
+    return 0
+
+
 def command_power(args: argparse.Namespace, report: dict[str, Any]) -> int:
+    if getattr(args, "placeholder", False):
+        return command_power_placeholder(args, report)
     if args.confirm != "POWER-MEASURED":
         raise ValueError("Power validation requires --confirm POWER-MEASURED")
+    require_measurement_arguments(
+        args,
+        ("expected_min_v", "expected_max_v", "measured_idle_v", "measured_loaded_v",
+         "instrument", "operator", "method", "evidence_uri"),
+    )
     if not 0 < args.expected_min_v < args.expected_max_v:
         raise ValueError("Expected voltage range must be positive and increasing")
     values = (args.measured_idle_v, args.measured_loaded_v)
@@ -698,26 +829,36 @@ def parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--confirm", required=True)
 
     measure = commands.add_parser("measure", help="Record independently measured reach and payload")
-    measure.add_argument("--reach-mm", type=float, required=True)
-    measure.add_argument("--payload-kg", type=float, required=True)
-    measure.add_argument("--reach-uncertainty-mm", type=float, required=True)
-    measure.add_argument("--payload-uncertainty-kg", type=float, required=True)
+    measure.add_argument("--reach-mm", type=float)
+    measure.add_argument("--payload-kg", type=float)
+    measure.add_argument("--reach-uncertainty-mm", type=float)
+    measure.add_argument("--payload-uncertainty-kg", type=float)
     measure.add_argument("--payload-hold-seconds", type=int, default=30)
-    measure.add_argument("--instrument", required=True)
-    measure.add_argument("--operator", required=True)
-    measure.add_argument("--method", required=True)
+    measure.add_argument("--instrument")
+    measure.add_argument("--operator")
+    measure.add_argument("--method")
     measure.add_argument("--notes", default="")
+    measure.add_argument(
+        "--placeholder",
+        action="store_true",
+        help="Record provisional values that never pass the gate",
+    )
     measure.add_argument("--confirm", required=True)
 
     power = commands.add_parser("power", help="Record measured idle and loaded motor-bus voltage")
-    power.add_argument("--expected-min-v", type=float, required=True)
-    power.add_argument("--expected-max-v", type=float, required=True)
-    power.add_argument("--measured-idle-v", type=float, required=True)
-    power.add_argument("--measured-loaded-v", type=float, required=True)
-    power.add_argument("--instrument", required=True)
-    power.add_argument("--operator", required=True)
-    power.add_argument("--method", required=True)
-    power.add_argument("--evidence-uri", required=True)
+    power.add_argument("--expected-min-v", type=float)
+    power.add_argument("--expected-max-v", type=float)
+    power.add_argument("--measured-idle-v", type=float)
+    power.add_argument("--measured-loaded-v", type=float)
+    power.add_argument("--instrument")
+    power.add_argument("--operator")
+    power.add_argument("--method")
+    power.add_argument("--evidence-uri")
+    power.add_argument(
+        "--placeholder",
+        action="store_true",
+        help="Record provisional values that never pass the gate",
+    )
     power.add_argument("--confirm", required=True)
 
     safety = commands.add_parser("safety", help="Record physical E-stop and deterministic-limit tests")

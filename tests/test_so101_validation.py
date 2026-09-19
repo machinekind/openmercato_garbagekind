@@ -295,5 +295,127 @@ class BusContractTest(unittest.TestCase):
         self.assertTrue(any("firmware" in problem for problem in problems))
 
 
+class PlaceholderTest(unittest.TestCase):
+    def measure_args(self, **overrides):
+        base = {
+            "placeholder": True,
+            "confirm": validator.PLACEHOLDER_CONFIRM,
+            "reach_mm": None,
+            "payload_kg": None,
+            "reach_uncertainty_mm": None,
+            "payload_uncertainty_kg": None,
+            "payload_hold_seconds": 30,
+            "instrument": None,
+            "operator": None,
+            "method": None,
+            "notes": "",
+        }
+        base.update(overrides)
+        return type("Args", (), base)()
+
+    def power_args(self, **overrides):
+        base = {
+            "placeholder": True,
+            "confirm": validator.PLACEHOLDER_CONFIRM,
+            "expected_min_v": None,
+            "expected_max_v": None,
+            "measured_idle_v": None,
+            "measured_loaded_v": None,
+            "instrument": None,
+            "operator": None,
+            "method": None,
+            "evidence_uri": None,
+        }
+        base.update(overrides)
+        return type("Args", (), base)()
+
+    def test_placeholder_measurements_never_get_passed_status(self):
+        report = validator.blank_report()
+
+        validator.command_measure(self.measure_args(), report)
+
+        for check in ("reach", "payload"):
+            self.assertEqual(report["checks"][check]["status"], validator.PLACEHOLDER_STATUS)
+            self.assertEqual(report["checks"][check]["provenance"], "synthetic")
+            self.assertIn("nie pochodzi z pomiaru", report["checks"][check]["note"])
+
+    def test_placeholder_power_never_gets_passed_status(self):
+        report = validator.blank_report()
+
+        validator.command_power(self.power_args(), report)
+
+        self.assertEqual(report["checks"]["power"]["status"], validator.PLACEHOLDER_STATUS)
+        self.assertEqual(report["checks"]["power"]["provenance"], "synthetic")
+
+    def test_placeholder_requires_its_own_confirmation_token(self):
+        report = validator.blank_report()
+
+        with self.assertRaisesRegex(ValueError, validator.PLACEHOLDER_CONFIRM):
+            validator.command_measure(self.measure_args(confirm="VALUES-MEASURED"), report)
+
+    def test_placeholder_evidence_cannot_be_sealed(self):
+        report = validator.blank_report()
+        for name in validator.REQUIRED_CHECKS:
+            report["checks"][name] = {"status": "passed"}
+        validator.command_measure(self.measure_args(), report)
+        validator.command_power(self.power_args(), report)
+
+        self.assertEqual(validator.overall_status(report), "partial")
+        with tempfile.TemporaryDirectory() as directory:
+            args = type(
+                "Args",
+                (),
+                {"confirm": "SEAL-PHYSICAL-EVIDENCE", "output": Path(directory) / "sealed.json"},
+            )()
+            with self.assertRaisesRegex(ValueError, "incomplete"):
+                validator.command_seal(args, report)
+
+    def test_measured_mode_still_demands_every_value(self):
+        report = validator.blank_report()
+        args = self.measure_args(placeholder=False, confirm="VALUES-MEASURED")
+
+        with self.assertRaisesRegex(ValueError, "Missing measured values"):
+            validator.command_measure(args, report)
+
+
+class AdapterIdentityTest(unittest.TestCase):
+    def ports(self):
+        return [
+            {"device": "/dev/ttyACM0", "serialNumber": "5AAF219965", "vid": "1A86", "pid": "55D3"},
+            {"device": "/dev/ttyS0", "serialNumber": None, "vid": None, "pid": None},
+        ]
+
+    def test_identity_is_taken_from_the_matching_port(self):
+        identity = validator.adapter_identity("/dev/ttyACM0", self.ports())
+
+        self.assertEqual(identity["serialNumber"], "5AAF219965")
+        self.assertEqual(identity["vid"], "1A86")
+
+    def test_unknown_port_yields_empty_identity_instead_of_raising(self):
+        identity = validator.adapter_identity("/dev/ttyACM9", self.ports())
+
+        self.assertIsNone(identity["serialNumber"])
+        self.assertEqual(identity["device"], "/dev/ttyACM9")
+
+    def test_swapped_unit_on_the_same_path_is_a_conflict(self):
+        previous = {"device": "/dev/ttyACM0", "serialNumber": "5AAF219965"}
+        current = {"device": "/dev/ttyACM0", "serialNumber": "5AAF220303"}
+
+        conflict = validator.adapter_conflict(previous, current)
+
+        self.assertIsNotNone(conflict)
+        self.assertIn("5AAF220303", conflict)
+
+    def test_same_unit_replugged_is_not_a_conflict(self):
+        identity = {"device": "/dev/ttyACM0", "serialNumber": "5AAF219965"}
+
+        self.assertIsNone(validator.adapter_conflict(identity, identity))
+
+    def test_first_run_has_nothing_to_compare_against(self):
+        self.assertIsNone(
+            validator.adapter_conflict(None, {"device": "/dev/ttyACM0", "serialNumber": "X"})
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
