@@ -14,6 +14,7 @@ sprawdzone na stanowisku.
 | Pełny zestaw testów ERP | 153/153 zestawy, 1354/1354 testy | `c0f5c29` |
 | Testy podpisanej telemetrii edge i retencji wideo | 45/45 testów | `c6386a8` |
 | Testy narzędzia odbioru SO-101 | 6/6 testów | `34b3ba7` |
+| Testy integralności paczki dowodowej | 7/7 testów | `a23a350` |
 | Kompilacja składni narzędzia SO-101 | zaliczona | `34b3ba7` |
 
 Pełny zestaw ERP zawiera testy, które celowo wywołują błędy usług i zapisują
@@ -28,6 +29,9 @@ zestaw zakończył się kodem `0`.
 - ERP przechowuje URI, metadane i skróty nagrań, a nie bajty wideo;
 - raport odbioru SO-101 można zamknąć poleceniem `seal`; kolejna rewizja
   embodimentu otrzymuje obliczony SHA-256 oraz `runRef` tego samego przebiegu;
+- paczka P0 jest sprawdzana pod kątem wymaganych prób, zgodności `runRef`,
+  czasu UTC, anonimizacji, retencji, zamkniętych słowników i sum wszystkich
+  plików; nieudana próba pozostaje ważnym dowodem, ale nie przechodzi bramy;
 - narzędzie odmawia finalizacji przy braku któregokolwiek wymaganego dowodu
   fizycznego i nie nadpisuje istniejącej rewizji;
 - zachowanie polityki po wygaśnięciu dzierżawy i słowniki przyczyn alarmów są
