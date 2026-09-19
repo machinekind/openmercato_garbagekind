@@ -58,6 +58,18 @@ export async function GET(req: Request): Promise<Response> {
   const em = container.resolve('em') as EntityManager
   const tenantId = auth.tenantId as string
 
+  /**
+   * Materiał oznaczony, ale nadal istniejący — właściwa liczba zgodności.
+   * Liczba oznaczeń sama w sobie nie mówi nic: z punktu widzenia przepisu
+   * nagranie, którego nikt nie skasował, wciąż tam jest.
+   */
+  const retencja = await em.getConnection().execute<Array<{ nieusuniete: string; po_terminie: string }>>(
+    `select count(*) filter (where marked_for_deletion_at is not null and deletion_confirmed_at is null) as nieusuniete,
+            count(*) filter (where delete_after <= now() and marked_for_deletion_at is null and legal_hold_reference is null) as po_terminie
+       from vision_clips where tenant_id = ?`,
+    [tenantId],
+  )
+
   const cameras = await em.getConnection().execute<Array<{
     code: string
     view_role: string
@@ -175,6 +187,8 @@ export async function GET(req: Request): Promise<Response> {
         batches: rows.length,
         withThirdWitness: rows.filter((r) => r.visionCount !== null).length,
         suspected: rows.filter((r) => r.suspect !== 'none' && r.suspect !== 'no_reference').length,
+        clipsOverdueUnmarked: Number(retencja?.[0]?.po_terminie ?? 0),
+        clipsMarkedNotDeleted: Number(retencja?.[0]?.nieusuniete ?? 0),
       },
       bySuspect,
       cameras: cameras.map((c) => ({

@@ -261,7 +261,7 @@ export class DetectionWindow {
  */
 @Entity({ tableName: 'vision_clips' })
 @Index({ name: 'vision_clips_scope_idx', properties: ['organizationId', 'tenantId'] })
-@Index({ name: 'vision_clips_purge_idx', properties: ['tenantId', 'deleteAfter', 'purgedAt'] })
+@Index({ name: 'vision_clips_purge_idx', properties: ['tenantId', 'deleteAfter', 'markedForDeletionAt'] })
 export class Clip {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string
@@ -296,8 +296,31 @@ export class Clip {
   @Property({ name: 'delete_after', type: Date })
   deleteAfter!: Date
 
-  @Property({ name: 'purged_at', type: Date, nullable: true })
-  purgedAt?: Date | null
+  /**
+   * Moment oznaczenia do usunięcia — **nie** moment usunięcia.
+   *
+   * Rozdział wprowadzony, gdy zadanie cykliczne zaczęło oznaczać klipy
+   * automatycznie. Poprzednia nazwa (`purgedAt`) sugerowała, że plik zniknął,
+   * a platforma nigdy go nie kasuje: bajty leżą w magazynie obiektów, do
+   * którego ERP nie ma dostępu. Zautomatyzowanie samego oznaczania dałoby
+   * **zautomatyzowaną księgowość zamiast zgodności** — i nikt by tego nie
+   * zauważył, bo kolumna nazywałaby się „purged".
+   */
+  @Property({ name: 'marked_for_deletion_at', type: Date, nullable: true })
+  markedForDeletionAt?: Date | null
+
+  /**
+   * Potwierdzenie usunięcia bajtów przez tego, kto je trzyma.
+   *
+   * Dopóki to pole jest puste przy wypełnionym `markedForDeletionAt`, materiał
+   * **nadal istnieje po ustawowym terminie**. To jest właściwa liczba
+   * zgodności — i to ona ma być widoczna, a nie liczba oznaczeń.
+   */
+  @Property({ name: 'deletion_confirmed_at', type: Date, nullable: true })
+  deletionConfirmedAt?: Date | null
+
+  @Property({ name: 'deletion_confirmed_by', type: 'text', nullable: true })
+  deletionConfirmedBy?: string | null
 
   /**
    * Wstrzymanie usunięcia, gdy nagranie jest dowodem w postępowaniu.

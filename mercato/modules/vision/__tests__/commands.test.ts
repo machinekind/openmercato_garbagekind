@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import {
   attachClipCommand,
+  confirmDeletionCommand,
   purgeClipsCommand,
   recordWindowCommand,
   registerCameraCommand,
@@ -34,6 +35,7 @@ function makeCtx(options: { camera?: Row | null; detector?: Row | null; window?:
       if (name.includes('Camera')) return options.camera ?? null
       return null
     }),
+    // `$in` obsłużone wprost: komenda potwierdzenia filtruje po liście identyfikatorów.
     find: jest.fn(async () => options.clips ?? []),
     create: jest.fn((entity: unknown, data: Row) => ({ __table: (entity as { name?: string })?.name, ...data })),
     persist: jest.fn((row: Row) => persisted.push(row)),
@@ -233,8 +235,8 @@ describe('vision.clips.purge', () => {
   it('oznacza do usunięcia wyłącznie materiał po terminie', async () => {
     const { ctx } = makeCtx({
       clips: [
-        { id: 'a', uri: 's3://a', deleteAfter: wczoraj },
-        { id: 'b', uri: 's3://b', deleteAfter: jutro },
+        { id: 'a', uri: 's3://a', deleteAfter: wczoraj, markedForDeletionAt: null },
+        { id: 'b', uri: 's3://b', deleteAfter: jutro, markedForDeletionAt: null },
       ],
     })
     const wynik = await purgeClipsCommand.execute({ tenantId: TENANT }, ctx)
@@ -243,7 +245,7 @@ describe('vision.clips.purge', () => {
 
   it('wstrzymanie dowodowe zatrzymuje usunięcie', async () => {
     const { ctx } = makeCtx({
-      clips: [{ id: 'a', uri: 's3://a', deleteAfter: wczoraj, legalHoldReference: 'II K 123/26' }],
+      clips: [{ id: 'a', uri: 's3://a', deleteAfter: wczoraj, markedForDeletionAt: null, legalHoldReference: 'II K 123/26' }],
     })
     const wynik = await purgeClipsCommand.execute({ tenantId: TENANT }, ctx)
     expect(wynik.purged).toHaveLength(0)
@@ -253,8 +255,54 @@ describe('vision.clips.purge', () => {
   it('zwraca adresy do skasowania, ale plików nie kasuje', async () => {
     // ERP nie ma dostępu do magazynu obiektów i nie powinien mieć — inaczej
     // stałby się systemem zdolnym nieodwracalnie usunąć materiał dowodowy.
-    const { ctx } = makeCtx({ clips: [{ id: 'a', uri: 's3://a', deleteAfter: wczoraj }] })
+    const { ctx } = makeCtx({ clips: [{ id: 'a', uri: 's3://a', deleteAfter: wczoraj, markedForDeletionAt: null }] })
     const wynik = await purgeClipsCommand.execute({ tenantId: TENANT }, ctx)
     expect(wynik.purged[0].uri).toBe('s3://a')
+  })
+})
+
+describe('vision.clips.confirm_deletion', () => {
+  /**
+   * Rozdział „oznaczone" od „usunięte" to jedyna rzecz, która odróżnia
+   * zgodność od zautomatyzowanej księgowości. Zadanie cykliczne oznacza
+   * materiał co dobę; gdyby na tym poprzestać, ekran pokazywałby zero
+   * zaległości przy nagraniach, które wciąż leżą na dysku.
+   */
+  it('potwierdza usunięcie oznaczonego materiału', async () => {
+    const { ctx } = makeCtx({
+      clips: [{ id: 'a', markedForDeletionAt: new Date(), deletionConfirmedAt: null }],
+    })
+    const wynik = await confirmDeletionCommand.execute(
+      { tenantId: TENANT, clipIds: ['44444444-4444-4444-8444-444444444444'], confirmedBy: 's3-lifecycle' },
+      ctx,
+    )
+    expect(wynik.confirmed).toBe(1)
+  })
+
+  it('ODMAWIA potwierdzenia materiału, którego nikt nie oznaczył', async () => {
+    // Znaczy to, że skasowano go poza procesem — może przed terminem,
+    // może mimo wstrzymania dowodowego. Zapis zamykałby sprawę, która
+    // tylko wygląda na zamkniętą.
+    const { ctx } = makeCtx({
+      clips: [{ id: 'a', markedForDeletionAt: null, deletionConfirmedAt: null }],
+    })
+    const wynik = await confirmDeletionCommand.execute(
+      { tenantId: TENANT, clipIds: ['44444444-4444-4444-8444-444444444444'], confirmedBy: 'ktos' },
+      ctx,
+    )
+    expect(wynik.confirmed).toBe(0)
+    expect(wynik.rejected).toHaveLength(1)
+  })
+
+  it('powtórne potwierdzenie nie zmienia zapisu', async () => {
+    const wczesniej = new Date(Date.now() - 3600_000)
+    const clip = { id: 'a', markedForDeletionAt: wczesniej, deletionConfirmedAt: wczesniej, deletionConfirmedBy: 'pierwszy' }
+    const { ctx } = makeCtx({ clips: [clip] })
+    const wynik = await confirmDeletionCommand.execute(
+      { tenantId: TENANT, clipIds: ['44444444-4444-4444-8444-444444444444'], confirmedBy: 'drugi' },
+      ctx,
+    )
+    expect(wynik.confirmed).toBe(0)
+    expect(clip.deletionConfirmedBy).toBe('pierwszy')
   })
 })

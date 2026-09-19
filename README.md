@@ -23,6 +23,7 @@ robotyczną.
 | [`physical-ai/COMPUTE.md`](physical-ai/COMPUTE.md) | gdzie postawić DGX Sparka, a gdzie go **nie** stawiać — i co z tego wynikło w kodzie |
 | [`physical-ai/PLANT-VIEW.md`](physical-ai/PLANT-VIEW.md) | rzut hali: rozmieszczenie, status i wynik — oraz dlaczego brak obmiaru nie jest zgadywany |
 | [`physical-ai/HMI.md`](physical-ai/HMI.md) | system wizualny wg ISA-101 — i dlaczego pierwsza wersja rzutu była źle zaprojektowana |
+| [`physical-ai/OPERATIONS.md`](physical-ai/OPERATIONS.md) | zadania cykliczne — i dlaczego automatyzacja oznaczania **nie** dawała zgodności |
 | `mercato/modules/` | dziewięć modułów Open Mercato (`sortownia` + osiem robotycznych) |
 | `mercato/embodiments/` | opisy ramion; `so101_follower.json` z dokumentacji LeRobot |
 | `legacy/`, `client/`, `webui/` | system legacy z etapów wcześniejszych — opisany niżej |

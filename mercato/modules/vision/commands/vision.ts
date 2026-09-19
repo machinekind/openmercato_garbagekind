@@ -322,12 +322,12 @@ const purgeClipsCommand: CommandHandler<
 
     const przeterminowane = (await em.find(Clip, {
       tenantId: input.tenantId,
-      purgedAt: null,
+      markedForDeletionAt: null,
     } as never)) as unknown as Array<{
       id: string
       uri: string
       deleteAfter: Date
-      purgedAt?: Date | null
+      markedForDeletionAt?: Date | null
       legalHoldReference?: string | null
     }>
 
@@ -342,13 +342,17 @@ const purgeClipsCommand: CommandHandler<
         heldBack += 1
         continue
       }
-      clip.purgedAt = now
+      clip.markedForDeletionAt = now
       purged.push({ clipId: clip.id, uri: clip.uri })
     }
     await em.flush()
 
     /**
      * Zwracamy adresy do skasowania, **nie kasujemy plików**.
+     *
+     * Oznaczenie nie jest usunięciem i od tej wersji nazywa się tak, jak
+     * działa. Zgodność zamyka dopiero `vision.clips.confirm_deletion`,
+     * wołane przez tego, kto naprawdę skasował bajty.
      *
      * Bajty leżą w magazynie obiektów, do którego ta platforma nie ma i nie
      * powinna mieć dostępu — inaczej ERP stałby się systemem, który potrafi
@@ -359,6 +363,60 @@ const purgeClipsCommand: CommandHandler<
   },
 }
 
+/* ------------------------------------------------------------------ */
+
+export const confirmDeletionSchema = scoped.partial().extend({
+  tenantId: z.string().uuid(),
+  clipIds: z.array(z.string().uuid()).min(1).max(1000),
+  /** Kto potwierdza: nazwa procesu albo systemu, który skasował bajty. */
+  confirmedBy: z.string().trim().min(1).max(191),
+})
+
+export type ConfirmDeletionInput = z.infer<typeof confirmDeletionSchema>
+
+const confirmDeletionCommand: CommandHandler<ConfirmDeletionInput, { confirmed: number; rejected: string[] }> = {
+  id: 'vision.clips.confirm_deletion',
+  async execute(rawInput, ctx) {
+    const input = confirmDeletionSchema.parse(rawInput ?? {})
+    const em = resolveEm(ctx)
+    const now = new Date()
+
+    const clips = (await em.find(Clip, {
+      tenantId: input.tenantId,
+      id: { $in: input.clipIds },
+    } as never)) as unknown as Array<{
+      id: string
+      markedForDeletionAt?: Date | null
+      deletionConfirmedAt?: Date | null
+      deletionConfirmedBy?: string | null
+    }>
+
+    const rejected: string[] = []
+    let confirmed = 0
+
+    for (const clip of clips) {
+      if (!clip.markedForDeletionAt) {
+        /*
+         * Potwierdzenie usunięcia czegoś, czego nikt nie oznaczył, znaczy,
+         * że materiał skasowano poza procesem — może przed terminem, może
+         * mimo wstrzymania dowodowego. Odmawiamy i zwracamy listę, zamiast
+         * przyjąć zapis, który zamyka sprawę wyglądającą na zamkniętą.
+         */
+        rejected.push(clip.id)
+        continue
+      }
+      if (clip.deletionConfirmedAt) continue
+      clip.deletionConfirmedAt = now
+      clip.deletionConfirmedBy = input.confirmedBy
+      confirmed += 1
+    }
+    await em.flush()
+
+    return { confirmed, rejected }
+  },
+}
+
+registerCommand(confirmDeletionCommand)
 registerCommand(registerCameraCommand)
 registerCommand(registerDetectorCommand)
 registerCommand(recordWindowCommand)
@@ -366,6 +424,7 @@ registerCommand(attachClipCommand)
 registerCommand(purgeClipsCommand)
 
 export {
+  confirmDeletionCommand,
   registerCameraCommand,
   registerDetectorCommand,
   recordWindowCommand,

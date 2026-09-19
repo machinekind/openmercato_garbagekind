@@ -3,6 +3,7 @@ import type { EntityManager } from '@mikro-orm/postgresql'
 import type { ModuleCli } from '@open-mercato/shared/modules/registry'
 import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
+import { ensureSessionsSweepSchedule } from './setup'
 import { fingerprintPublicKey, payloads } from './lib/crypto'
 import { evaluateLiveness } from './lib/liveness'
 
@@ -265,6 +266,26 @@ const statusCommand: ModuleCli = {
   },
 }
 
+
+/**
+ * Rejestracja harmonogramu w tenancie, który już istnieje.
+ *
+ * Platforma woła `seedDefaults` wyłącznie przy inicjalizacji tenanta, więc
+ * moduł **doinstalowany później nigdy nie zarejestrowałby swojego zadania
+ * cyklicznego** — i nikt by tego nie zauważył, bo brak zadania nie generuje
+ * błędu, tylko ciszę. Ta komenda domyka tę lukę i jest idempotentna:
+ * identyfikator harmonogramu jest stały, a `register` nadpisuje.
+ */
+const installSchedulesCommand: ModuleCli = {
+  command: 'install-schedules',
+  async run(_rest) {
+    const container = await createRequestContainer()
+    await ensureSessionsSweepSchedule(container as unknown as import('awilix').AwilixContainer)
+    console.log('Harmonogram zamiatania sesji po ciszy: zarejestrowany (albo już był).')
+    console.log('Sprawdzenie: yarn mercato scheduler list')
+  },
+}
+
 const sweepCommand: ModuleCli = {
   command: 'sweep',
   async run(rest) {
@@ -299,4 +320,4 @@ const sweepCommand: ModuleCli = {
   },
 }
 
-export default [issueCommand, simulateCommand, statusCommand, sweepCommand] satisfies ModuleCli[]
+export default [issueCommand, simulateCommand, statusCommand, sweepCommand, installSchedulesCommand] satisfies ModuleCli[]

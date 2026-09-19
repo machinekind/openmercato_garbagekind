@@ -3,6 +3,7 @@ import type { EntityManager } from '@mikro-orm/postgresql'
 import type { ModuleCli } from '@open-mercato/shared/modules/registry'
 import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
+import { ensureClipsPurgeSchedule } from './setup'
 import { contamination, triangulate } from './lib/triangulate'
 
 /** Komendy operatorskie wzroku maszynowego. */
@@ -417,16 +418,102 @@ const statusCommand: ModuleCli = {
       )
     }
 
-    const klipy = await em.getConnection().execute<Array<{ po_terminie: string; wstrzymane: string; razem: string }>>(
-      `select count(*) filter (where delete_after <= now() and purged_at is null and legal_hold_reference is null) as po_terminie,
-              count(*) filter (where legal_hold_reference is not null and purged_at is null) as wstrzymane,
+    const klipy = await em.getConnection().execute<Array<{
+      po_terminie: string
+      wstrzymane: string
+      nieusuniete: string
+      razem: string
+    }>>(
+      `select count(*) filter (where delete_after <= now() and marked_for_deletion_at is null and legal_hold_reference is null) as po_terminie,
+              count(*) filter (where legal_hold_reference is not null and marked_for_deletion_at is null) as wstrzymane,
+              count(*) filter (where marked_for_deletion_at is not null and deletion_confirmed_at is null) as nieusuniete,
               count(*) as razem
          from vision_clips where tenant_id = ?`,
       [scope.tenantId],
     )
     const k = klipy[0]
-    console.log(`\n  klipy: ${k.razem} łącznie, ${k.po_terminie} po terminie usunięcia, ${k.wstrzymane} wstrzymanych jako dowód`)
-    if (Number(k.po_terminie) > 0) console.log('  → yarn mercato vision purge')
+    console.log(`\n  klipy: ${k.razem} łącznie, ${k.po_terminie} po terminie i nieoznaczonych, ${k.wstrzymane} wstrzymanych jako dowód`)
+    /*
+     * Właściwa liczba zgodności: oznaczone, ale nadal istniejące. Liczba
+     * oznaczeń sama w sobie nie mówi nic — z punktu widzenia art. 22² § 3 KP
+     * nagranie, którego nikt nie skasował, wciąż tam jest.
+     */
+    if (Number(k.nieusuniete) > 0) {
+      console.log(`  !! ${k.nieusuniete} oznaczonych, ale NIEUSUNIĘTYCH — materiał po terminie nadal istnieje`)
+      console.log('     zgodność zamyka dopiero potwierdzenie z magazynu obiektów')
+    }
+    if (Number(k.po_terminie) > 0) console.log('  → harmonogram oznacza je automatycznie co 24 h')
+  },
+}
+
+
+/**
+ * Potwierdzenie usunięcia bajtów.
+ *
+ * Wołane przez ten system albo proces, który naprawdę skasował pliki
+ * z magazynu obiektów. Do tego momentu materiał jest **oznaczony i nadal
+ * istniejący** — a z punktu widzenia art. 22² § 3 Kodeksu pracy to znaczy,
+ * że nagranie wciąż tam jest.
+ */
+const confirmCommand: ModuleCli = {
+  command: 'confirm',
+  async run(rest) {
+    const args = parseArgs(rest)
+    const by = typeof args.by === 'string' ? args.by : ''
+    if (!by) throw new Error('Podaj, kto potwierdza usunięcie: --by <nazwa systemu>')
+
+    const container = await createRequestContainer()
+    const em = container.resolve('em') as EntityManager
+    const scope = await resolveScope(em, args)
+    const bus = container.resolve('commandBus') as CommandBus
+
+    const jawne = typeof args.clips === 'string' ? args.clips.split(',').map((s) => s.trim()).filter(Boolean) : []
+    const identyfikatory = jawne.length
+      ? jawne
+      : (
+          await em.getConnection().execute<Array<{ id: string }>>(
+            `select id from vision_clips
+              where tenant_id = ? and marked_for_deletion_at is not null and deletion_confirmed_at is null
+              limit 1000`,
+            [scope.tenantId],
+          )
+        ).map((r) => r.id)
+
+    if (!identyfikatory.length) {
+      console.log('Brak materiału oznaczonego i nieusuniętego — nie ma czego potwierdzać.')
+      return
+    }
+
+    const envelope = await bus.execute('vision.clips.confirm_deletion', {
+      input: { ...scope, clipIds: identyfikatory, confirmedBy: by },
+      ctx: buildCommandContext(container, scope),
+    })
+    const result = envelope.result as { confirmed: number; rejected: string[] }
+
+    console.log(`Potwierdzono usunięcie: ${result.confirmed}`)
+    if (result.rejected.length) {
+      console.log(`Odrzucono ${result.rejected.length} — materiał nieoznaczony, czyli skasowany poza procesem.`)
+    }
+  },
+}
+
+
+/**
+ * Rejestracja harmonogramu w tenancie, który już istnieje.
+ *
+ * Platforma woła `seedDefaults` wyłącznie przy inicjalizacji tenanta, więc
+ * moduł **doinstalowany później nigdy nie zarejestrowałby swojego zadania
+ * cyklicznego** — i nikt by tego nie zauważył, bo brak zadania nie generuje
+ * błędu, tylko ciszę. Ta komenda domyka tę lukę i jest idempotentna:
+ * identyfikator harmonogramu jest stały, a `register` nadpisuje.
+ */
+const installSchedulesCommand: ModuleCli = {
+  command: 'install-schedules',
+  async run(_rest) {
+    const container = await createRequestContainer()
+    await ensureClipsPurgeSchedule(container as unknown as import('awilix').AwilixContainer)
+    console.log('Harmonogram oznaczania materiału po terminie: zarejestrowany (albo już był).')
+    console.log('Sprawdzenie: yarn mercato scheduler list')
   },
 }
 
@@ -450,7 +537,8 @@ const purgeCommand: ModuleCli = {
     if (result.heldBack) console.log(`Wstrzymanych jako dowód w postępowaniu: ${result.heldBack}`)
     console.log('\nPlików nie kasuje ta platforma — kasuje ten, kto je trzyma.')
     console.log('Wpis w bazie mówi „ten plik ma zniknąć", nie „ten plik zniknął".')
+    console.log('Zgodność zamyka: mercato vision confirm --by <system> --clips <id,...>')
   },
 }
 
-export default [proveCommand, triangulateCommand, statusCommand, purgeCommand] satisfies ModuleCli[]
+export default [proveCommand, triangulateCommand, statusCommand, purgeCommand, confirmCommand, installSchedulesCommand] satisfies ModuleCli[]
