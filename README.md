@@ -1,253 +1,380 @@
-# Sortownia → Physical AI
+# Sortownia: Integracja ERP i Robotyki Przemysłowej (Physical AI)
 
-Repozytorium prowadzone etapami, każdy na własnej gałęzi. **Ta gałąź to
-`physical_ai`** i zawiera wszystko z etapów wcześniejszych plus warstwę
-robotyczną.
+System integrujący infrastrukturę sortowni odpadów z platformą Open Mercato.
+Projekt łączy trzy domeny:
+1. System legacy sortowni (interfejs XML-RPC w dialekcie webERP oraz zrzuty plikowe).
+2. Ewidencję gospodarczo-magazynową w Open Mercato (WMS, CRM, sprzedaż, fakturowanie, KPO).
+3. Warstwę wykonawczą na hali (roboty sortujące SO-101, wagi tensometryczne, kamery wizyjne i pętla uczenia maszynowego).
 
-| Gałąź | Co zawiera | Stan |
-| --- | --- | --- |
-| `claude/quirky-hypatia-1afn6m` | serwer XML-RPC w dialekcie webERP + klient CSV | zamknięta |
-| `legacy_erp` | generator danych legacy, saldo magazynu liczone z księgi | zamknięta |
-| `mercato_erp` | moduł `sortownia`: pełna ścieżka ERP na Open Mercato | zamknięta |
-| **`physical_ai`** | osiem modułów robotycznych + kafelek embodimentu | **bieżąca** |
+---
 
-## Mapa tej gałęzi
+## 1. Główny schemat interakcji między komponentami (Poziom ogólny)
 
-| Ścieżka | Co tam jest |
-| --- | --- |
-| [`physical-ai/README.md`](physical-ai/README.md) | teza, warunki brzegowe, konsekwencja regulacyjna, stan implementacji i **dowody wszystkich faz** |
-| [`physical-ai/ROADMAP.md`](physical-ai/ROADMAP.md) | mapa faz 0–6: co dostarcza, czego świadomie nie ma, co jest dowodem zamknięcia |
-| [`physical-ai/EMBODIMENTS.md`](physical-ai/EMBODIMENTS.md) | format opisu ramienia, SO-101 jako wzorzec i **cztery usterki, które ujawnił** |
-| [`physical-ai/ERP-BRIDGE.md`](physical-ai/ERP-BRIDGE.md) | most hala ↔ ERP: waga rozstrzyga o zapasie, deklaracja robota o ocenie robota |
-| [`physical-ai/VISION.md`](physical-ai/VISION.md) | wzrok maszynowy jako **trzeci świadek** — i granice prawne monitoringu egzekwowane w kodzie |
-| [`physical-ai/COMPUTE.md`](physical-ai/COMPUTE.md) | gdzie postawić DGX Sparka, a gdzie go **nie** stawiać — i co z tego wynikło w kodzie |
-| [`physical-ai/PLANT-VIEW.md`](physical-ai/PLANT-VIEW.md) | rzut hali: rozmieszczenie, status i wynik — oraz dlaczego brak obmiaru nie jest zgadywany |
-| [`physical-ai/HMI.md`](physical-ai/HMI.md) | system wizualny wg ISA-101 — i dlaczego pierwsza wersja rzutu była źle zaprojektowana |
-| [`physical-ai/OPERATIONS.md`](physical-ai/OPERATIONS.md) | zadania cykliczne — i dlaczego automatyzacja oznaczania **nie** dawała zgodności |
-| [`physical-ai/EVENTS.md`](physical-ai/EVENTS.md) | co wtyczka **ogłasza**, czego świadomie nie ogłasza i dlaczego ruch o częstotliwości maszynowej nie jest faktem |
-| [`physical-ai/HANDOFF-PHYSICAL.md`](physical-ai/HANDOFF-PHYSICAL.md) | zadania dla zespołu physical: co wytrenować i udokumentować, **twarde bramki** kontra ostrzeżenia, i nasz własny dług |
-| `mercato/modules/` | trzynaście modułów Open Mercato (`sortownia` + jedenaście robotycznych + `hmi` jako system wizualny) |
-| `mercato/embodiments/` | opisy ramion; `so101_follower.json` z dokumentacji LeRobot |
-| `legacy/`, `client/`, `webui/` | system legacy z etapów wcześniejszych — opisany niżej |
+Architektura systemu łączy warstwę urządzeń przemysłowych, moduły sterowania robotami, most uzgadniający zapasy oraz ewidencję ERP:
 
-### Uczciwa etykieta całości
+```mermaid
+flowchart TB
+    subgraph URZADZENIA["Urzadzenia na hali"]
+        ROBOT["Manipulator sortujacy SO-101"]
+        WAGA["Waga tensometryczna pod pojemnikiem"]
+        KAMERA["Kamery stanowiskowe"]
+    end
 
-Warstwa robotyczna **nie widziała dotąd żadnego prawdziwego robota**. Wszystkie
-dane pochodzą z naszych własnych komend `seed` i `prove`. To jest wykonywalny
-dokument projektowy z odtwarzalnymi dowodami zachowania, a nie oprogramowanie
-sprawdzone w ruchu. Pełna ocena wartości i lista tego, czego brakuje, jest
-w `physical-ai/EMBODIMENTS.md` oraz w sekcji „Stan po fazach 0–6".
+    subgraph STEROWANIE["Warstwa Physical AI (Autonomia i bezpieczenstwo)"]
+        FLEET["fleet: rejestr maszyn i kalibracji"]
+        EDGE["edge: tozsamosc mTLS, sesje, heartbeat"]
+        POLICY["policy_registry: wersje modeli i skroty wag"]
+        SAFETY["safety: dopuszczenia celi, strefy, E-Stop"]
+        DEPLOY["deployment: dzierzawy czasowe uprawnien"]
+        EPISODES["episodes: rejestr trajektorii i interwencji"]
+        ROLLOUT["rollout: ewaluacja metryk jakosciowych"]
+        DATASETS["datasets: domknieta petla danych treningowych"]
+    end
 
-### Uruchomienie warstwy robotycznej
+    subgraph MOST_HALA["Most Hala - ERP"]
+        WO["work_orders: uzgodnienie waga vs robot"]
+        VISION["vision: retencja nagran i dowody usuniecia"]
+        HMI["hmi: interfejs operatora"]
+        PM["physical_management: cyfrowy blizniak hali"]
+    end
 
-```bash
-./mercato/install.sh                     # wszystkie moduły do klonu Open Mercato
-cd /sciezka/do/open-mercato/apps/mercato
-yarn generate && yarn mercato db migrate
-yarn mercato auth sync-role-acls
-yarn mercato fleet seed
-yarn mercato fleet embodiment --file .../mercato/embodiments/so101_follower.json
+    subgraph SYSTEM_LEGACY["System legacy sortowni"]
+        DB[("sortownia.db (SQLite)")]
+        SERVER_RPC["server.py (XML-RPC)"]
+        SPOOLER["spooler.py (CSV / ruchy.xlsx)"]
+        SYNC_CLIENT["weberp_sync.py / adapter.ts"]
+    end
+
+    subgraph ERP_CORE["Platforma Open Mercato"]
+        WMS["wms: boksy, partie FIFO, pojemnosci, rezerwacje"]
+        CAT["catalog: pozycje katalogowe, kody odzysku R1-R5"]
+        CRM["customers: baza kontrahentow, etapy cyklu zycia"]
+        SALES["sales: zamowienia, faktury, karty przekazania KPO"]
+    end
+
+    %% Interakcje hali ze sterowaniem
+    ROBOT <-->|"komunikacja agenta brzegowego"| EDGE
+    ROBOT -->|"raporty wykonania chwytow"| EPISODES
+    KAMERA -->|"material dowodowy"| VISION
+    WAGA -->|"odczyt masy netto"| WO
+
+    %% Przeplyw w warstwie Physical AI
+    FLEET --> EDGE
+    EDGE --> DEPLOY
+    POLICY --> SAFETY --> DEPLOY
+    DEPLOY --> EPISODES
+    EPISODES --> ROLLOUT
+    EPISODES --> DATASETS --> POLICY
+
+    %% Interakcje mostu z hala i ERP
+    EPISODES -->|"deklaracja liczby chwytow"| WO
+    WO -->|"zaksiegowanie partii z wagi"| WMS
+    WO -->|"pobranie masy nominalnej frakcji"| CAT
+    WO -->|"flaga rozjazdu overclaim/underclaim"| ROLLOUT
+    VISION --> PM
+    WO --> PM
+    HMI --> PM
+
+    %% Interakcje legacy z ERP
+    DB --> SERVER_RPC & SPOOLER
+    SERVER_RPC & SPOOLER --> SYNC_CLIENT
+    SYNC_CLIENT -->|"import danych historycznych"| WMS & CAT & CRM & SALES
 ```
 
 ---
 
-# Prymitywny system legacy sortowni (etapy wcześniejsze)
+## 2. Podsystem Legacy ERP i zasilanie bazy (Poziom średni)
 
-Wiarygodne źródło danych „sprzed epoki”, z którego Open Mercato zasysa dane przez
-XML-RPC — bez instalowania prawdziwego webERP w środku hackatonu.
+### 2.1. Dwa kanały danych
 
-## Uczciwa etykieta
+Dane historyczne oraz bieżące zasilenie z instalacji legacy pobierane są dwoma torami:
 
-Ten system **nie jest webERP**. Mówi dialektem XML-RPC prawdziwego webERP: te same
-nazwy metod (`weberp.xmlrpc_*`), ta sama mechanika sesji (logowanie zwraca kod
-liczbowy, autoryzacja jedzie dalej ciasteczkiem `PHPSESSID`), te same nazwy pól
-w danych (`debtorno`, `stockid`, `loccode`, `qty`) i ta sama ścieżka endpointu.
-Dzięki temu klient napisany przeciw temu systemowi zadziała przeciw prawdziwej
-instancji webERP po zmianie jednego URL-a.
+```mermaid
+flowchart LR
+    subgraph KANAL_RPC["Kanal 1: XML-RPC (server.py)"]
+        RPC_CUST["xmlrpc_GetCustomer"]
+        RPC_LOC["xmlrpc_GetLocationList / Details"]
+        RPC_BAL["xmlrpc_GetStockBalance"]
+        RPC_SO["xmlrpc_GetSalesOrderHeader"]
+    end
 
-Zdanie, które wolno powiedzieć ze sceny:
+    subgraph KANAL_PLIKOWY["Kanal 2: Zrzut plikowy (spooler.py)"]
+        FILE_CUST["kontrahenci.csv (klucze)"]
+        FILE_FRAC["frakcje.csv (katalog odpadow)"]
+        FILE_MOVES["ruchy.xlsx (ksiega ruchow)"]
+        FILE_ORDERS["zamowienia.csv"]
+        FILE_PAY["zaplaty.csv"]
+    end
 
-> Po drugiej stronie stoi system legacy mówiący XML-RPC, protokołem z 1998 roku,
-> odwzorowany na podstawie rzeczywistego API webERP.
+    subgraph ADAPTER["Klient integracyjny (adapter.ts / weberp_sync.py)"]
+        PARSER["Deduplikacja i normalizacja jednostek (kg na Mg / t)"]
+    end
 
-Zdanie, którego powiedzieć **nie wolno**: „zintegrowaliśmy się z webERP”.
+    subgraph DOCELOWE["Moduly Open Mercato"]
+        DEST_WMS["wms (lokalizacje i salda)"]
+        DEST_CAT["catalog (frakcje i warianty)"]
+        DEST_CRM["customers (firmy i etapy)"]
+        DEST_SALES["sales (zamowienia i faktury)"]
+    end
 
-**Żadnych metod wymyślonych.** Powierzchnia XML-RPC zawiera wyłącznie metody,
-które w webERP istnieją. Danych, których webERP przez XML-RPC nie wystawia,
-nie udajemy zaślepką — przychodzą tam, skąd przychodzą w prawdziwym wdrożeniu:
-z drugiej bazy, z raportu, z excelka podesłanego przez księgowość.
-
-## Dwa kanały danych
-
-| Kanał | Co daje | Czym jest w prawdziwym wdrożeniu |
-| --- | --- | --- |
-| XML-RPC (`legacy/server.py`) | dane kontrahenta, lista i szczegóły lokalizacji, stany magazynowe, nagłówki wydań | API webERP, jeden do jednego |
-| Zrzut plikowy (`legacy/spooler.py` → katalog `wsad/`) | katalog kontrahentów (same klucze), katalog frakcji, księga ruchów | nocny eksport, raport z innej bazy, excelek z księgowości |
-
-Klient (`client/weberp_sync.py`) łączy oba: klucze bierze ze zrzutu, a wartości
-— gdzie się da — dociąga po XML-RPC. `wsad/ruchy.xlsx` czyta własnym czytnikiem
-`.xlsx` (`legacy/xlsx.py`, sama biblioteka standardowa), więc podmiana tego pliku
-na prawdziwy arkusz od księgowości nie wymaga zmiany kodu.
-
-Podział danych wygląda tak:
-
-| Plik wynikowy | Klucze | Wartości |
-| --- | --- | --- |
-| `kontrahenci.csv` | `wsad/kontrahenci.csv` | `xmlrpc_GetCustomer` |
-| `frakcje.csv` | `wsad/frakcje.csv` | `wsad/frakcje.csv` |
-| `lokalizacje.csv` | `xmlrpc_GetLocationList` | `xmlrpc_GetLocationDetails` |
-| `stany.csv` | frakcje × lokalizacje | `xmlrpc_GetStockBalance` |
-| `ruchy.csv` | `wsad/ruchy.xlsx` | `wsad/ruchy.xlsx` |
-
-## Szybki start
-
-Wymagania: Python 3.11+, wyłącznie biblioteka standardowa. Żadnych zależności.
-
-```bash
-./run_demo.sh                              # generator -> serwer + spooler -> klient pełny -> przyrostowy
-PAUSE=5 ./run_demo.sh --reserve-step 3     # szybsza wersja na próbę
+    KANAL_RPC --> PARSER
+    KANAL_PLIKOWY --> PARSER
+    PARSER --> DEST_WMS & DEST_CAT & DEST_CRM & DEST_SALES
 ```
 
-Albo krok po kroku:
+### 2.2. Mapowanie struktur danych
 
-```bash
-python3 legacy/generate.py --db legacy/sortownia.db --wsad legacy/wsad
-python3 legacy/server.py   --db legacy/sortownia.db --port 8088       # kanał XML-RPC
-python3 legacy/spooler.py  --db legacy/sortownia.db --wsad legacy/wsad --interval 5   # kanał plikowy
-python3 client/weberp_sync.py --url http://127.0.0.1:8088/api/api_xml-rpc.php \
-    --wsad legacy/wsad --out out --full
-python3 client/weberp_sync.py --out out        # kolejne uruchomienia: tryb przyrostowy
-```
-
-Konto testowe: `demo` / `demo`, firma `weberpdemo`. Inne uwierzytelnianie jest poza zakresem.
-
-## Interfejs użytkownika
-
-`webui/simag.html` to makieta siermiężnego UI systemu legacy: kartoteki,
-księga ruchów, stany w układzie krzyżowym, ekran eksportu. Otwiera się
-bezpośrednio w przeglądarce, dane generuje po stronie klienta tym samym ziarnem
-co `legacy/generate.py` — to poglądowa replika, nie widok na bazę.
-
-## Model danych
-
-Nazwy tabel i pól celowo z webERP, łącznie z jego dziwactwami (kontrahent to `debtor`).
-
-| Tabela | Zawartość | Kluczowe pola |
+| Tabela Legacy (webERP) | Encje Open Mercato | Zasada mapowania |
 | --- | --- | --- |
-| `debtorsmaster` | kontrahenci: dostawcy i odbiorcy razem | `debtorno, name, address1, address2, debtortype, currcode, clientsince, creditlimit` |
-| `stockmaster` | frakcje jako pozycje magazynowe | `stockid, description, categoryid, units, actualcost, decimalplaces` |
-| `locations` | boksy i magazyny | `loccode, locationname, deladd1` |
-| `locstock` | stany magazynowe | `stockid, loccode, quantity` |
-| `stockmoves` | księga ruchów, serce systemu | `stkmoveno, stockid, type, loccode, trandate, debtorno, qty, standardcost` |
-| `salesorders` | wydania do odbiorcy | `orderno, debtorno, orddate, deliverydate, stockid, qty, unitprice` |
+| `locations` (`PRZYJ`, `BOKS1-4`, `MAGRDF`) | `wms_warehouses`, `wms_warehouse_zones`, `wms_warehouse_locations` | Odwzorowanie kodów na strefy (`staging`/`bin`) oraz nadanie limitów `capacity_weight` w kg. |
+| `stockmaster` | `catalog_products`, `catalog_product_variants` | Kod odpadu staje się SKU wariantu; dodanie kodów procesów odzysku (R1, R3, R4, R5). |
+| `locstock` | `wms_inventory_balances` | Rejestracja stanów magazynowych w rozbiciu na `on_hand`, `reserved` i `allocated`. |
+| `stockmoves` (`PZ`) | `wms.inventory.receive` | Przyjęcie na plac z założeniem rekordu partii (`wms_inventory_lots`) dostawcy. |
+| `stockmoves` (`SORT`) | `wms.inventory.move` | Złożenie pary wierszy legacy (rozchód z placu i przychód do boksu) w jeden atomowy ruch `transfer`. |
+| `stockmoves` (`WZ`) | `wms.inventory.adjust` | Rozchód z boksu powiązany z zamówieniem sprzedaży odbiorcy. |
+| `stkmoveno` | `idempotency_key` WMS | Deterministyczny `referenceId` gwarantujący brak duplikatów przy powtórnym imporcie. |
+| `debtorsmaster` | `customer_entities`, `customer_companies` | Rozdział na dostawców (`DOS`) i odbiorców (`ODB`) wraz z NIP i numerem rejestrowym BDO. |
+| `salesorders` | `sales_orders`, `sales_order_lines` | Pozycje zamówień z ceną jednostkową i wyliczeniem podatku VAT. |
+| — | `sales_invoices` | Wystawienie faktury powiązanej z zamówieniem (`INV-...`). |
+| `debtortrans` | `sales_payments` | Rozliczenia powiązane z fakturami, analiza wieku należności. |
+| — | `sales_shipments` | Karta przekazania odpadu (KPO) generowana dla faktycznie zrealizowanych wydań. |
 
-**Jednostki.** Legacy trzyma masy w kilogramach, bo tak robią stare systemy.
-Open Mercato normalizuje do Mg. Konwersja jest świadomym elementem demo:
-pokazuje realny problem migracyjny, a nie tylko przepisanie wierszy — klient
-emituje obie wartości (`ilosc_kg`, `ilosc_mg`).
+### 2.3. Sekwencja importu danych
 
-**Typy ruchu** (`stockmoves.type`): `PZ` przyjęcie odpadu na plac, `SORT`
-wysortowanie frakcji, `WZ` wydanie do odbiorcy (ilość ujemna, konwencja webERP).
-Prawdziwy webERP używa w tym miejscu numerycznych `systypes`. To uproszczenie
-jest świadome i oznaczone w schemacie, żeby nikt nie budował na nim fałszywej precyzji.
+Procedura importu zachowuje kolejność wymuszoną zależnościami relacyjnymi:
 
-**`SORT` to para wierszy**, jak przesunięcie międzymagazynowe: minus na placu
-przyjęć, plus w boksie. Generator prowadzi saldo i pozwala wydać albo wysortować
-tylko tyle, ile naprawdę leży, więc **żaden stan nie schodzi poniżej zera** —
-pilnuje tego test. Bioodpady jadą wprost z placu do kompostowni i nie mają
-ruchu `SORT`.
-
-## Zbiory danych
-
-* **Zbiór bazowy (historia)** — stan, który „od lat siedzi w starym systemie”:
-  8 kontrahentów, 6 frakcji, 6 lokalizacji, stany magazynowe i ok. 200 ruchów
-  z ostatnich 30 dni. To migrujecie na scenie w akcie pierwszym.
-* **Zbiór zapasowy (input testowy)** — ok. 60 dodatkowych ruchów ze znacznikami
-  czasu ustawionymi do przodu (domyślnie co 20 s od chwili generowania).
-  Spooler zrzuca do `wsad/ruchy.xlsx` wyłącznie ruchy, których `trandate` już
-  minęła, więc plik rośnie i kolejne uruchomienia klienta znajdują nowe rekordy.
-  Na scenie daje to efekt żywej synchronizacji przyrostowej; poza sceną służy
-  jako input testowy do sprawdzania, czy import nie duplikuje i nie gubi rekordów.
-
-Tempo ujawniania: `python3 legacy/generate.py --reserve-step 5`.
-Ziarno generatora jest stałe — ta sama baza przy każdym uruchomieniu.
-
-## Powierzchnia XML-RPC
-
-Endpoint: `POST /api/api_xml-rpc.php` (ścieżka celowo taka jak w webERP).
-
-| Metoda | Argumenty | Zwraca |
-| --- | --- | --- |
-| `weberp.xmlrpc_Login` | `user, password, company` | `int`, `0` = sukces, plus `Set-Cookie: PHPSESSID` |
-| `weberp.xmlrpc_GetCustomer` | `debtorno` | jeden kontrahent |
-| `weberp.xmlrpc_GetLocationList` | brak | lista lokalizacji |
-| `weberp.xmlrpc_GetLocationDetails` | `loccode` | jedna lokalizacja |
-| `weberp.xmlrpc_GetStockBalance` | `stockid, loccode` | stan magazynowy |
-| `weberp.xmlrpc_GetSalesOrderHeader` | `orderno` | nagłówek wydania |
-
-Dyspozytor ma jawną listę dozwolonych nazw (`ALLOWED_METHODS`); wszystko poza
-nią, łącznie z kuszącymi `GetCustomerList`, `GetStockList` czy
-`GetStockMovesSince`, to `Fault -32601`. Pilnuje tego osobny test.
-
-Kody zwrotne: `0` logowanie OK, `3` złe dane logowania, `4` zła firma,
-`-1` brak ważnej sesji, `-2` brak rekordu. Każda metoda poza `Login` zwraca `-1`
-bez ważnej sesji — to celowe, bo w prawdziwym webERP ta ścieżka wywróci klienta
-jako pierwsza, i jest pokryta testem.
-
-## Kontrakt wyjściowy dla Open Mercato
-
-Klient zapisuje pliki CSV gotowe pod import w hubie `data_sync` albo `sync_excel`:
-
-| Plik | Kolumny |
-| --- | --- |
-| `out/kontrahenci.csv` | `debtorno, name, typ, miasto, waluta, klient_od` |
-| `out/frakcje.csv` | `stockid, nazwa, kategoria, jednostka, koszt` |
-| `out/lokalizacje.csv` | `loccode, nazwa, adres` |
-| `out/stany.csv` | `stockid, loccode, ilosc_kg, ilosc_mg` |
-| `out/ruchy.csv` | `stkmoveno, stockid, typ, loccode, data, debtorno, ilosc_kg, ilosc_mg` |
-| `out/.last_sync` | znacznik czasu ostatniej synchronizacji (tryb przyrostowy) |
-
-Słowniki i stany są nadpisywane pełnym snapshotem; `ruchy.csv` jest dopisywany
-przyrostowo z kontrolą duplikatów po `stkmoveno`.
-
-**Znacznik `.last_sync`** jest zapisywany jako najnowsza `trandate` minus jedna
-sekunda. Filtr jest ostry (`trandate > since`), a ruchy mogą dzielić tę samą
-sekundę — cofnięcie o sekundę chroni przed zgubieniem rekordu z granicy,
-a powstałe nakładanie odsiewa kontrola po `stkmoveno`. Świadomie wybrano
-„powtórzyć i odsiać” zamiast „pominąć i zgubić”.
-
-## Przestawienie na prawdziwy webERP
-
-```bash
-python3 client/weberp_sync.py \
-  --url https://twoj-weberp.example/api/api_xml-rpc.php \
-  --user <user> --password <haslo> --company <firma> \
-  --wsad /sciezka/do/eksportu --out out --full
+```mermaid
+flowchart TD
+    K1["1. Topologia (magazyn, strefy, boksy z limitami)"] --> K2["2. Frakcje (katalog odpadow i kody R)"]
+    K2 --> K3["3. Kontrahenci (dostawcy i odbiorcy w CRM)"]
+    K3 --> K4["4. Zamowienia i faktury sprzedazowe"]
+    K4 --> K5["5. Karty przekazania odpadu (KPO) dla zrealizowanych wydan"]
+    K5 --> K6["6. Wplaty i rozliczenia faktur"]
+    K6 --> K7["7. Rejestracja partii dostawcow (lots)"]
+    K7 --> K8["8. Ksiega ruchow magazynowych (PZ, SORT, WZ w FIFO)"]
+    K8 --> K9["9. Rezerwacje stanow pod otwarte zamowienia"]
+    K9 --> K10["10. Synchronizacja etapow CRM i szans sprzedazy"]
 ```
 
-Kanał XML-RPC działa bez zmian w kodzie: logowanie, sesja i wszystkie pięć metod
-danych istnieją w webERP. Kanał plikowy trzeba podłączyć pod prawdziwy eksport —
-`kontrahenci.csv`/`.xlsx` z kolumną `debtorno`, `frakcje.csv`/`.xlsx` z kolumnami
-`stockid, description, categoryid, units, actualcost`, `ruchy.xlsx`/`.csv`
-z kolumnami `stkmoveno, stockid, type, loccode, trandate, debtorno, qty,
-standardcost`. Klient przyjmuje CSV i XLSX zamiennie (`.xlsx` ma pierwszeństwo).
+---
 
-## Testy
+## 3. Podsystem Robotyki i Zarządzania Flotą (Physical AI)
 
-```bash
-python3 -m unittest discover -s tests -t . -v
+Cykl życia modeli sterujących pracą robotów sortujących realizowany jest przez 8 modułów:
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Fleet: Rejestracja maszyny i weryfikacja kalibracji
+    Fleet --> Edge: Uwierzytelnienie kryptograficzne agenta
+    Edge --> PolicyRegistry: Sprawdzenie wersji modelu (skrot SHA-256)
+    PolicyRegistry --> Safety: Ocena dopuszczenia celi i procedur E-Stop
+    Safety --> Deployment: Wydanie ograniczonej czasowo dzierzawy
+    Deployment --> Episodes: Wykonanie trajektorii i zliczanie chwytow
+    Episodes --> Rollout: Weryfikacja metryk skutecznosci
+    Rollout --> Datasets: Agregacja danych (korekty operatorskie)
+    Datasets --> PolicyRegistry: Trening nowej wersji modelu
 ```
 
-Pokrywają kryteria gotowości z rozdziału 6 specyfikacji: generator i zrzut
-plikowy, logowanie z ciasteczkiem, ścieżka `-1` bez sesji, brak metod spoza
-webERP (po stronie serwera i klienta), czytelność excelka, narastanie zrzutu
-w czasie, komplet plików CSV, tryb przyrostowy bez duplikatów i bez gubienia
-rekordów.
+* **`fleet`**: Przechowuje rejestr fizycznych ramion, parametry chwytaków, konfigurację stopni swobody (DOF) oraz daty ważności świadectw kalibracji.
+* **`edge`**: Obsługuje sesje agentów brzegowych, weryfikuje tokeny tożsamości maszyn oraz monitoruje sygnały heartbeat, zamykając sesje nieaktywne.
+* **`policy_registry`**: Utrzymuje wersje wag modeli sieci neuronowych identyfikowane skrótem kryptograficznym SHA-256, weryfikując zgodność wymiarów wejść/wyjść z manipulatorem.
+* **`safety`**: Blokuje wydanie dzierżawy w przypadku braku certyfikacji strefy, niesprawnych barier optoelektronicznych lub wygasłej kalibracji.
+* **`deployment`**: Przyznaje maszynie czasową dzierżawę zadania sortowniczego; utrata łączności unieważnia uprawnienia do kontynuowania ruchu.
+* **`episodes`**: Rejestruje szczegółowe dane każdego cyklu roboczego wraz z pełnym zapisem ewentualnych przejęć sterowania przez człowieka.
+* **`rollout`**: Realizuje stopniowe wdrożenia (canary deployment); bramki automatycznie cofają wdrożenie przy wzroście poślizgów materiału.
+* **`datasets`**: Tworzy zbiory danych uczących z wyodrębnieniem epizodów zawierających interwencje jako danych korekcyjnych.
 
-## Poza zakresem
+---
 
-Księgowość, plan kont, podatki, uwierzytelnianie inne niż jedno konto testowe,
-jakiekolwiek zapisy z powrotem do legacy. System jest tylko źródłem danych, nigdy
-celem zapisu. Robot pisze do Open Mercato, nie tutaj — serwer i spooler otwierają
-bazę SQLite w trybie tylko do odczytu (`mode=ro`) i nie wystawiają żadnej metody
-zapisującej.
+## 4. Most Hala - ERP: Uzgadnianie masy (Poziom szczegółowy)
+
+Punkt styku telemetrii robota z księgą magazynową WMS opiera się na rozdziale deklaracji maszyny od fizycznego pomiaru:
+
+```mermaid
+flowchart TD
+    subgraph POMIAR["Stanowisko sortownicze"]
+        A1["Robot deklaruje: 1000 chwytow frakcji PET"]
+        A2["Masa nominalna z katalogu: 30 g / szt."]
+        A3["Deklarowana masa robota: 30,00 kg"]
+        A4["Odczyt z legalizowanej wagi pod pojemnikiem: 24,00 kg"]
+    end
+
+    subgraph LOGIKA_MOSTU["Modul work_orders"]
+        B1["Obliczenie rozjazdu: 24,00 kg - 30,00 kg = -6,00 kg"]
+        B2{"Rozstrzygniecie rozjazdu"}
+        B3["Werdykt: OVERCLAIM (upuszczenie sztuki lub chwyt powietrza)"]
+        B4["Werdykt: UNDERCLAIM (nadmiar materialu lub blad nominalu)"]
+        B5["Werdykt: Zgodnosc w granicach tolerancji"]
+    end
+
+    subgraph SKUTEK_SYSTEMOWY["Aktualizacja w systemach"]
+        C1["WMS: Przyjecie na stan FAKTYCZNEJ masy 24,00 kg (wms.inventory.receive)"]
+        C2["Rollout: Nalozenie flagi ostrzegawczej i obnizenie metryki robota"]
+        C3["Magazyn nie blokuje surowca; flaga dotyczy oceny maszyny"]
+    end
+
+    A1 & A2 --> A3
+    A3 & A4 --> B1
+    B1 --> B2
+    B2 -->|Waga < Deklaracja| B3
+    B2 -->|Waga > Deklaracja| B4
+    B2 -->|W granicach bledu| B5
+    B3 --> C1 & C2 & C3
+```
+
+Obliczenia wewnętrzne mostu wykonywane są w **gramach w liczbach całkowitych**, co eliminuje błędy zmiennoprzecinkowe przy sumowaniu tysięcy operacji.
+
+---
+
+## 5. Przebieg operacyjny obsługi partii (Diagram sekwencji)
+
+Poniższy diagram przedstawia przepływ danych od momentu zważenia surowca na hali do aktualizacji ewidencji magazynowej:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Robot as Manipulator SO-101
+    participant Edge as Modul edge
+    participant Episodes as Modul episodes
+    participant Waga as Waga tensometryczna
+    participant WO as Modul work_orders
+    participant WMS as Modul WMS
+    participant Rollout as Modul rollout
+
+    Robot->>Edge: Heartbeat i raport stanu sesji
+    Edge-->>Robot: Podtrzymanie dzierzawy zadania
+    Robot->>Episodes: Rejestracja zakonczenia serii 1000 chwytow
+    Operator->>Waga: Zamkniecie pojemnika i pomiar masy netto
+    Waga->>WO: Przekazanie fizycznej masy (np. 24,00 kg)
+    WO->>Episodes: Pobranie sumy chwytow z okna czasowego partii
+    WO->>WO: Porownanie masy z wagi z deklaracja chwytow
+    alt Rozjazd ujemny (Waga < Deklaracja)
+        WO->>Rollout: Rejestracja zdarzenia overclaim dla maszyny
+    end
+    WO->>WMS: Wywolanie wms.inventory.receive z masa z wagi (24,00 kg)
+    WMS-->>WO: Identyfikator utworzonej partii magazynowej
+    WO->>WO: Zamkniecie zlecenia roboczego
+```
+
+---
+
+## 6. Struktura modułów w repozytorium
+
+```
+openmercato_garbagekind/
+├── legacy/                    Symulator systemu legacy sortowni (Python, stdlib)
+│   ├── schema.sql             Struktura bazy danych (tabele debtorsmaster, stockmoves, etc.)
+│   ├── generate.py            Generator bazy danych z powtarzalnym ziarnem
+│   ├── server.py              Serwer XML-RPC obslugujacy 6 autentycznych metod webERP
+│   ├── spooler.py             Cykliczny eksport katalogow i ksiegi (ruchy.xlsx)
+│   ├── xlsx.py                Czytnik arkuszy Excel bez zaleznosci zewnetrznych
+│   ├── sortownia.db           Baza SQLite z danymi testowymi
+│   └── wsad/                  Katalog wymiany plikowej
+│
+├── client/                    Klient integracyjny (Python)
+│   └── weberp_sync.py         Pobiera dane z XML-RPC i plikow, generuje pliki CSV
+│
+├── out/                       Wyniki synchronizacji gotowe do importu
+│   ├── kontrahenci.csv, frakcje.csv, lokalizacje.csv, stany.csv, ruchy.csv, ...
+│   └── .last_sync             Znacznik czasowy synchronizacji przyrostowej
+│
+├── mercato/                   Zestaw modulow platformy Open Mercato (TypeScript)
+│   ├── install.sh             Skrypt instalacji modulow w glownym katalogu aplikacji
+│   └── modules/
+│       ├── sortownia/         Most legacy: obsluga WMS, CRM, Sales, KPO, pulpit dyrektora
+│       ├── physical_management/ Cyfrowy blizniak hali i monitorowanie komorek roboczych
+│       ├── fleet/             Rejestr robotow, definicje embodimentow (SO-101), kalibracja
+│       ├── edge/              Agent brzegowy, tozsamosc kryptograficzna, sesje, heartbeat
+│       ├── policy_registry/   Modele AI, skroty wag SHA-256, zgodnosc przestrzeni DOF
+│       ├── safety/            Dopuszczenia celi, strefy bezpieczenstwa, obsluga E-Stop
+│       ├── deployment/        Dzierzawy czasowe uprawnien wykonawczych
+│       ├── episodes/          Ksiega trajektorii i rejestr interwencji operatora
+│       ├── rollout/           Automatyczne bramki wdrazania progresywnego (canary)
+│       ├── datasets/          Pętla danych uczacych i probek korekcyjnych
+│       ├── work_orders/       Most hala - ERP: uzgadnianie wagi z deklaracja chwytow
+│       ├── vision/            Wizja maszynowa, triangulacja, dowod retencji i kasowania nagran
+│       ├── hmi/               Paleta przemyslowa i komponenty interfejsu operatora
+│       └── compute/           Zarzadzanie wezlami obliczeniowymi na hali
+│
+├── physical-ai/               Specyfikacje i dokumentacja techniczna warstwy hali
+│   ├── ROADMAP.md, README.md, ERP-BRIDGE.md, EMBODIMENTS.md, ...
+│
+├── webui/                     Pogladowa makieta interfejsu starego systemu
+│   └── simag.html             Statyczny interfejs legacy SIMAG 3.11
+│
+├── tests/                     Testy integracyjne kanalu legacy (Python)
+│   └── test_end_to_end.py     19 testow poprawnosci protokolu i spojnosci danych
+│
+└── run_demo.sh                Skrypt wykonujacy pelny przebieg demonstracyjny
+```
+
+---
+
+## 7. Instrukcja uruchomienia i weryfikacji
+
+Wymagania systemowe: **Python 3.11+** (wyłącznie biblioteka standardowa) oraz środowisko **Open Mercato** (Node.js, Yarn, PostgreSQL).
+
+### 7.1. Uruchomienie demonstratora kanału legacy
+
+Wykonanie pełnego łańcucha generator -> serwer -> spooler -> klient pełny -> klient przyrostowy:
+
+```bash
+./run_demo.sh
+```
+
+Wariant z krótszym czasem oczekiwania:
+
+```bash
+PAUSE=5 ./run_demo.sh --reserve-step 3
+```
+
+### 7.2. Uruchomienie krok po kroku
+
+1. Inicjalizacja bazy SQLite i zrzutów początkowych:
+   ```bash
+   python3 legacy/generate.py --db legacy/sortownia.db --wsad legacy/wsad
+   ```
+2. Start serwera XML-RPC i spoolera plikowego:
+   ```bash
+   python3 legacy/server.py --db legacy/sortownia.db --port 8088 &
+   python3 legacy/spooler.py --db legacy/sortownia.db --wsad legacy/wsad --interval 5 &
+   ```
+   Konto testowe: użytkownik `demo`, hasło `demo`, firma `weberpdemo`.
+3. Pobranie danych przez klienta synchronizującego:
+   ```bash
+   python3 client/weberp_sync.py --wsad legacy/wsad --out out --full
+   python3 client/weberp_sync.py --out out   # kolejne uruchomienia: tryb przyrostowy
+   ```
+4. Instalacja modułów i wykonanie importu w Open Mercato:
+   ```bash
+   MERCATO_ROOT=/sciezka/do/open-mercato ./mercato/install.sh
+   cd /sciezka/do/open-mercato/apps/mercato
+   yarn generate
+   yarn mercato sortownia import
+   ```
+
+### 7.3. Weryfikacja testami automatycznymi
+
+* Testy modułu `sortownia`:
+  ```bash
+  cd apps/mercato
+  yarn test --testPathPatterns "modules/sortownia"
+  ```
+  Zestaw 197 testów weryfikuje parser XML-RPC, parowanie wierszy SORT, dekompozycję FIFO na partie, kalkulację podatków oraz obsługę pulpitu.
+* Testy modułów Physical AI:
+  329 testów weryfikujących łańcuch od rejestracji robotów po generowanie zbiorów danych uczących.
+* Testy integracyjne kanału legacy:
+  ```bash
+  python3 -m unittest discover -s tests -t . -v
+  ```
+  19 testów kontroluje brak ujemnych stanów, ważność ciasteczek sesyjnych, sumy kontrolne NIP oraz zgodność metod z webERP.
+
+---
+
+## 8. Zakres i ograniczenia systemu
+
+* **Karty przekazania odpadu a urzędowe BDO:** Dokumenty generowane w module `sortownia` stanowią wewnętrzne odzwierciedlenie KPO powiązane z wysyłką magazynową. Moduł nie łączy się z rządowym API rejestru BDO.
+* **Granice obsługi zakupów:** Przyjęcie odpadu na plac (`PZ`) stanowi operację magazynową rejestrującą partię surowca. System nie prowadzi księgi zakupowej ani fakturowania opłat bramowych od dostawców.
+* **Uproszczenie podatkowe:** Sprzedaż frakcji nalicza standardową stawkę 23% VAT bez automatycznego stosowania mechanizmów podzielonej płatności lub odwrotnego obciążenia.
+* **Architektura mostu hali:** Połączenie hali z ERP działa jednokierunkowo pod kątem sterowania ruchem: platforma ewidencjonuje wyniki ważenia i zamyka partie, lecz nie wysyła poleceń trajektorii bezpośrednio do kontrolerów robotów.
