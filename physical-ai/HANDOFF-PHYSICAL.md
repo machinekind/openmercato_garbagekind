@@ -109,10 +109,12 @@ należy do was i do oceny ryzyka stanowiska, nie do tej platformy.
 
 ## Blok B — kontrakt polityki
 
-### B1. 🔴 Zadeklarować przestrzeń obserwacji i akcji
+### B1. ✅ Zadeklarować przestrzeń obserwacji i akcji
 
-**Co dostarczyć:** `observationDim`, `actionDim`, `trainedDofCount`, a do tego
-w dokumentacji (bo system tego jeszcze nie przyjmuje strukturalnie):
+**Co dostarczyć:** `observationDim`, `actionDim`, `trainedDofCount`,
+`controlFrequencyHz` oraz uporządkowane `observationSpec.fields` i
+`actionSpec.fields`. Każde pole podaje `key`, `size`, `unit`, `frame` oraz
+`semantics`:
 
 - **kolejność** wymiarów w wektorze obserwacji i akcji,
 - **jednostki** (radiany czy stopnie, metry czy milimetry),
@@ -120,10 +122,11 @@ w dokumentacji (bo system tego jeszcze nie przyjmuje strukturalnie):
 - **częstotliwość sterowania**, przy której polityka była uczona,
 - czy akcje są **absolutne** czy **przyrostowe**.
 
-**Dlaczego:** liczby wymiarów system sprawdza; reszta jest dziś kontraktem
-słownym. Polityka ucząca się w radianach, uruchomiona na sterowniku
-podającym stopnie, przejdzie każdą bramkę i wykona ruch o 57 razy za duży.
-Nie mamy tego jak wykryć i nie udajemy, że mamy.
+System sprawdza, czy suma `size` zgadza się z zadeklarowanym wymiarem, czy
+klucze nie powtarzają się i czy jednostki oraz semantyka należą do zamkniętych
+słowników. Dzięki temu polityka uczona w radianach nie jest już opisana tak
+samo jak sterownik podający stopnie, a akcja `delta` nie wygląda jak
+`absolute`.
 
 ### B2. 🔴 Podać odcisk kontraktu **niezależnie**
 
@@ -368,16 +371,12 @@ w rejestrze.
 
 ## Blok F — dokumentacja, której nie ma czym zastąpić
 
-### F1. 🔴 Lista kategorii przyczyn interwencji
+### F1. ✅ Lista kategorii przyczyn interwencji
 
-**Co dostarczyć:** zamkniętą, uzgodnioną listę wartości `reasonCategory`.
-
-**Dlaczego:** to pole jest w systemie wolnym tekstem i **to jest dług**.
-Wolny tekst znaczy, że po pół roku będziecie mieli `chwyt`, `chwyt_zly`,
-`zly chwyt` i `grip` jako cztery różne kategorie, a każde zestawienie
-przyczyn rozjedzie się na krzyżu. Lista musi powstać po waszej stronie, bo
-tylko wy wiecie, jakie przyczyny naprawdę występują. Gdy powstanie —
-zamkniemy ją w schemacie.
+Zamknięty słownik jest opisany w `physical-ai/INTERVENTION-REASONS.md` i
+egzekwowany przez komendę oraz podpisany endpoint edge. `kind` opisuje, co
+zrobił operator, a `reasonCategory` — dlaczego; szczegół nadal trafia do
+wolnego pola `reason`.
 
 ### F2. 🔴 Masa nominalna sztuki
 
@@ -438,17 +437,14 @@ Warto powiedzieć wprost, żeby nie robić roboty, której nikt nie odbierze:
 
 Uczciwie, żeby nie odkryli tego w trakcie integracji:
 
-### G1. Brak endpointów HTTP do wgrywania telemetrii
+### G1. ✅ Podpisany endpoint HTTP do wgrywania telemetrii
 
-Agent może się wpisać, połączyć, nadawać uderzenia serca, pobrać dzierżawę
-i zaraportować stan. **Nie ma czym wysłać epizodu, interwencji ani okna
-detekcji.** Te komendy istnieją i działają, ale wyłącznie przez szynę komend
-i wiersz poleceń — brakuje warstwy HTTP dla agenta.
-
-To blokuje blok E po waszej stronie i jest zadaniem dla nas, nie dla was.
-Do czasu jego domknięcia: uzgodnijmy format ładunku, a integrację zróbcie
-przeciwko schematom komend (`episodes.episodes.record`,
-`episodes.interventions.record`, `vision.windows.record`).
+`POST /api/edge/telemetry` przyjmuje epizod, interwencję albo zagregowane
+okno detekcji. Cała koperta jest podpisana Ed25519, rodzaj i treść są związane
+z podpisem, a wspólny z heartbeatami numer kolejny odrzuca powtórki. Zakres
+organizacji, tenant i robot są wyprowadzane z sesji — nie są przyjmowane od
+agenta. Surowe wideo i tensory pozostają w hubie edge/DGX. Format podpisu i
+zasady ponowień opisuje `physical-ai/EDGE-TELEMETRY.md`.
 
 ### G2. Potwierdzenie usunięcia nagrań wymaga wywołania z waszej strony
 
@@ -457,15 +453,16 @@ Jeśli magazyn obiektów jest u was, ktoś po waszej stronie musi wołać
 skasowaniu bajtów. Bez tego licznik „oznaczone i nieusunięte" rośnie, a system
 ogłasza `vision.clips.deletion_overdue` — codziennie, dopóki stan trwa.
 
-### G3. `reasonCategory` jest wolnym tekstem
+### G3. ✅ `reasonCategory` ma zamknięty słownik
 
-Patrz F1. Czeka na waszą listę.
+Patrz F1 oraz `physical-ai/INTERVENTION-REASONS.md`.
 
-### G4. Kolejność, jednostki i układy odniesienia są kontraktem słownym
+### G4. ✅ Kolejność, jednostki i układy odniesienia są kontraktem strukturalnym
 
-Patrz B1. System sprawdza liczby wymiarów i nie sprawdza ich znaczenia.
-Jeżeli uznacie to za zbyt kruche — powiedzcie, to jest do zamknięcia
-w schemacie, ale wymaga waszej decyzji, jak taki opis ma wyglądać.
+Patrz B1. Nowe wersje polityk wymagają uporządkowanych specyfikacji wektorów,
+jednostek, układów odniesienia, semantyki oraz częstotliwości sterowania.
+Wersje historyczne zachowują puste pola — system nie dopisuje im zmyślonych
+kontraktów.
 
 ---
 

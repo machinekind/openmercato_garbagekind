@@ -129,7 +129,7 @@ describe('episodes.interventions.record', () => {
     episodeId: EPISODE_ID,
     kind: 'teleop_takeover' as const,
     stage: 'chwyt',
-    reasonCategory: 'chwyt',
+    reasonCategory: 'grasp_failure',
     reason: 'Chwytak zsunął się z detalu',
     occurredAt: new Date('2026-09-19T10:00:20Z'),
   }
@@ -172,6 +172,13 @@ describe('episodes.interventions.record', () => {
   it('odmawia, gdy wskazany epizod nie istnieje', async () => {
     const { ctx } = makeCtx({ episode: null })
     await expect(recordInterventionCommand.execute(interventionInput, ctx)).rejects.toThrow(/nie istnieje/)
+  })
+
+  it('odrzuca kategorię spoza wspólnego słownika', async () => {
+    const { ctx } = makeCtx({ episode: { ...episode } })
+    await expect(
+      recordInterventionCommand.execute({ ...interventionInput, reasonCategory: 'chwyt' } as never, ctx),
+    ).rejects.toThrow()
   })
 
   it('przyjmuje interwencję bez epizodu — przerwanie między epizodami', async () => {

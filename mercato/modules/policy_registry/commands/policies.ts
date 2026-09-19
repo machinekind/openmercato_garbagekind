@@ -11,6 +11,7 @@ import {
 import { computeContentDigest, validateArtifactSet, type ArtifactInput } from '../lib/digest'
 import { checkEmbodimentCompatibility, type EmbodimentContract } from '../lib/compatibility'
 import { emitPolicyRegistryEvent } from '../events'
+import { policyVectorSpecSchema, sameVectorSpec, vectorDimension, type PolicyVectorSpec } from '../lib/vectorContract'
 
 /**
  * Komendy rejestru polityk.
@@ -67,10 +68,30 @@ export const versionRegisterSchema = scoped.extend({
   /** Odcisk kontraktu, pod który polityka była uczona — deklarowany, nie odczytywany. */
   declaredSpecDigest: z.string().trim().min(1).max(255),
   artifacts: z.array(artifactSchema).min(1),
-  observationDim: z.number().int().positive().optional(),
-  actionDim: z.number().int().positive().optional(),
-  trainedDofCount: z.number().int().positive().optional(),
+  observationDim: z.number().int().positive(),
+  actionDim: z.number().int().positive(),
+  trainedDofCount: z.number().int().positive(),
+  observationSpec: policyVectorSpecSchema,
+  actionSpec: policyVectorSpecSchema,
+  controlFrequencyHz: z.number().positive().max(10_000),
   provenance: z.record(z.string(), z.unknown()).optional(),
+}).superRefine((input, ctx) => {
+  const actualObservationDim = vectorDimension(input.observationSpec)
+  if (actualObservationDim !== input.observationDim) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['observationSpec'],
+      message: `Suma rozmiarów pól obserwacji (${actualObservationDim}) nie zgadza się z observationDim (${input.observationDim}).`,
+    })
+  }
+  const actualActionDim = vectorDimension(input.actionSpec)
+  if (actualActionDim !== input.actionDim) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['actionSpec'],
+      message: `Suma rozmiarów pól akcji (${actualActionDim}) nie zgadza się z actionDim (${input.actionDim}).`,
+    })
+  }
 })
 
 const versionStatuses = ['registered', 'released', 'deprecated'] as const
@@ -220,9 +241,29 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
       tenantId: input.tenantId,
       policyId: input.policyId,
       contentDigest,
-    } as never)) as unknown as { id: string; version: number } | null
+    } as never)) as unknown as {
+      id: string
+      version: number
+      observationDim?: number | null
+      actionDim?: number | null
+      observationSpec?: PolicyVectorSpec | null
+      actionSpec?: PolicyVectorSpec | null
+      controlFrequencyHz?: number | null
+    } | null
 
     if (duplicate) {
+      const sameContract =
+        duplicate.observationDim === input.observationDim &&
+        duplicate.actionDim === input.actionDim &&
+        duplicate.controlFrequencyHz === input.controlFrequencyHz &&
+        sameVectorSpec(duplicate.observationSpec, input.observationSpec) &&
+        sameVectorSpec(duplicate.actionSpec, input.actionSpec)
+      if (!sameContract) {
+        throw new Error(
+          'Te same artefakty są już zarejestrowane z innym albo historycznie pustym kontraktem wektorów. ' +
+          'Nie wolno przypisać tym samym wagom nowych jednostek, układów odniesienia ani semantyki.',
+        )
+      }
       /**
        * Powtórka nie jest błędem — jest odpowiedzią.
        *
@@ -259,8 +300,11 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
       statusReason: 'Rejestracja kompletu artefaktów',
       statusChangedAt: new Date(),
       provenance: input.provenance ?? null,
-      observationDim: input.observationDim ?? null,
-      actionDim: input.actionDim ?? null,
+      observationDim: input.observationDim,
+      actionDim: input.actionDim,
+      observationSpec: input.observationSpec,
+      actionSpec: input.actionSpec,
+      controlFrequencyHz: input.controlFrequencyHz,
       registeredBy: ctx.auth?.sub ?? null,
     } as never)
 

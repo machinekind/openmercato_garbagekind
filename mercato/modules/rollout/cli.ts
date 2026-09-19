@@ -139,7 +139,7 @@ async function feedEpisodes(
         episodeId: recorded.episodeId,
         kind: severe ? 'estop' : 'teleop_takeover',
         stage: 'chwyt',
-        reasonCategory: severe ? 'bezpieczeństwo' : 'chwyt',
+        reasonCategory: severe ? 'person_in_safety_zone' : 'grasp_failure',
         reason: severe ? 'Człowiek w obszarze roboczym' : 'Chwytak zsunął się z detalu',
         occurredAt: new Date(startedAt.getTime() + 15_000),
       },

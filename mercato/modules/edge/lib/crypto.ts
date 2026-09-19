@@ -27,6 +27,36 @@ export function hashEnrollmentToken(token: string): string {
 }
 
 /**
+ * Stabilna reprezentacja JSON używana wyłącznie do podpisu.
+ *
+ * `JSON.stringify` zachowuje kolejność wstawiania kluczy, więc dwa równoważne
+ * obiekty zbudowane przez różne implementacje agenta mogłyby dać inny podpis.
+ * Sortowanie kluczy na każdym poziomie usuwa tę przypadkowość; kolejność tablic
+ * pozostaje znacząca, bo np. wektor obserwacji jest z definicji uporządkowany.
+ */
+export function canonicalJson(value: unknown): string {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value)
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error('Podpisywany JSON nie może zawierać NaN ani nieskończoności.')
+    return JSON.stringify(value)
+  }
+  if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(',')}]`
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    const entries = Object.keys(record)
+      .filter((key) => record[key] !== undefined)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+    return `{${entries.join(',')}}`
+  }
+  throw new Error(`Nieobsługiwana wartość w podpisywanym JSON: ${typeof value}.`)
+}
+
+export function sha256(value: string): string {
+  return createHash('sha256').update(value, 'utf8').digest('hex')
+}
+
+/**
  * Skrót klucza publicznego liczony z postaci **DER**, nie z tekstu PEM.
  *
  * Ten sam klucz zapisany z innymi końcami wierszy dałby inny skrót tekstowy,
@@ -64,6 +94,19 @@ export const payloads = {
   connect: (agentId: string, timestampIso: string): string => `edge.connect:${agentId}:${timestampIso}`,
   heartbeat: (sessionId: string, sequence: number, timestampIso: string): string =>
     `edge.heartbeat:${sessionId}:${sequence}:${timestampIso}`,
+  /**
+   * Treść telemetrii wiążemy z sesją, kolejnością, czasem i rodzajem rekordu.
+   * Do podpisu trafia skrót kanonicznego JSON-u, więc nie przesyłamy ani nie
+   * logujemy drugi raz potencjalnie dużych metryk epizodu.
+   */
+  telemetry: (
+    sessionId: string,
+    sequence: number,
+    timestampIso: string,
+    kind: string,
+    payload: unknown,
+  ): string =>
+    `edge.telemetry:${sessionId}:${sequence}:${timestampIso}:${kind}:${sha256(canonicalJson(payload))}`,
   /** Rotacja podpisywana NOWYM kluczem — dowodem jest posiadanie następcy, nie poprzednika. */
   rotate: (agentId: string, fingerprint: string): string => `edge.rotate:${agentId}:${fingerprint}`,
 }

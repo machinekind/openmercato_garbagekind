@@ -1,5 +1,6 @@
 import { registerVersionCommand, transitionVersionCommand } from '../commands/policies'
 import { computeContentDigest } from '../lib/digest'
+import { demoJointContract } from '../lib/vectorContract'
 
 /**
  * Testy wiązania komend.
@@ -107,9 +108,29 @@ const baseInput = {
   embodimentRevisionId: REVISION_ID,
   declaredSpecDigest: 'demo:ur10e-pick:r1',
   artifacts: ARTIFACTS,
+  ...demoJointContract(6),
 }
 
 describe('policy_registry.versions.register — zgodność z embodimentem', () => {
+  it('odrzuca rozjazd między deklarowanym wymiarem a uporządkowanymi polami', async () => {
+    const { ctx } = makeCtx()
+    await expect(
+      registerVersionCommand.execute({ ...baseInput, actionDim: 7 }, ctx),
+    ).rejects.toThrow(/Suma rozmiarów pól akcji/)
+  })
+
+  it('odrzuca powtórzony klucz pola wektora', async () => {
+    const { ctx } = makeCtx()
+    const field = baseInput.observationSpec.fields[0]
+    await expect(
+      registerVersionCommand.execute({
+        ...baseInput,
+        observationDim: 12,
+        observationSpec: { fields: [field, field] },
+      }, ctx),
+    ).rejects.toThrow(/Powtórzony klucz pola/)
+  })
+
   it('odmawia rejestracji dla rewizji o innym spec_digest i podaje obie wartości', async () => {
     const { ctx } = makeCtx()
     await expect(
@@ -172,11 +193,21 @@ describe('policy_registry.versions.register — zgodność z embodimentem', () =
 
 describe('policy_registry.versions.register — tożsamość przez skrót', () => {
   it('zwraca istniejącą wersję zamiast tworzyć drugą, gdy wagi te same', async () => {
-    const { ctx, persisted } = makeCtx({ duplicate: { id: VERSION_ID, version: 2 } })
+    const { ctx, persisted } = makeCtx({ duplicate: { id: VERSION_ID, version: 2, ...demoJointContract(6) } })
     const result = await registerVersionCommand.execute(baseInput, ctx)
     expect(result).toMatchObject({ policyVersionId: VERSION_ID, version: 2, deduplicated: true })
     // Nic nie zostało zapisane — to jest cała treść „dwa wgrania to jedna wersja".
     expect(persisted).toHaveLength(0)
+  })
+
+  it('nie pozwala opisać tych samych wag innymi jednostkami lub semantyką', async () => {
+    const { ctx } = makeCtx({ duplicate: { id: VERSION_ID, version: 2, ...demoJointContract(6) } })
+    await expect(registerVersionCommand.execute({
+      ...baseInput,
+      actionSpec: {
+        fields: [{ ...baseInput.actionSpec.fields[0], unit: 'deg' as const }],
+      },
+    }, ctx)).rejects.toThrow(/tym samym wagom nowych jednostek/)
   })
 
   it('liczy skrót treści tak samo jak czysta funkcja', async () => {
@@ -235,6 +266,9 @@ describe('policy_registry.versions.register — zapis', () => {
     const version = persisted.find((row) => row.__table === 'PolicyVersion')!
     expect(version.embodimentSpecDigest).toBe('demo:ur10e-pick:r1')
     expect(version.status).toBe('registered')
+    expect(version.observationSpec).toEqual(baseInput.observationSpec)
+    expect(version.actionSpec).toEqual(baseInput.actionSpec)
+    expect(version.controlFrequencyHz).toBe(20)
   })
 
   it('odmawia, gdy polityka nie istnieje', async () => {

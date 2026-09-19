@@ -1,4 +1,5 @@
 import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy'
+import type { PolicyVectorSpec } from '../lib/vectorContract'
 
 /**
  * Rejestr polityk — wyuczonych sterowników i ich artefaktów.
@@ -175,6 +176,16 @@ export class PolicyVersion {
 
   @Property({ name: 'action_dim', type: 'int', nullable: true })
   actionDim?: number | null
+
+  /** Uporządkowane pola są częścią kontraktu — kolejność tablicy jest kolejnością wektora. */
+  @Property({ name: 'observation_spec', type: 'json', nullable: true })
+  observationSpec?: PolicyVectorSpec | null
+
+  @Property({ name: 'action_spec', type: 'json', nullable: true })
+  actionSpec?: PolicyVectorSpec | null
+
+  @Property({ name: 'control_frequency_hz', type: 'double', nullable: true })
+  controlFrequencyHz?: number | null
 
   @Property({ name: 'registered_by', type: 'uuid', nullable: true })
   registeredBy?: string | null

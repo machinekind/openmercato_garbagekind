@@ -709,7 +709,7 @@ const sweepSessionsCommand: CommandHandler<
  * ważnych **w tej chwili**. Sprawdzamy wszystkie, bo w oknie rotacji ważne są
  * dwa — a agent nie ma jak powiedzieć, którym właśnie podpisał.
  */
-async function authenticateAgent(
+export async function authenticateAgent(
   em: EntityManager,
   agentId: string,
   payload: string,
