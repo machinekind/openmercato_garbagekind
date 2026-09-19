@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 
-TOOL_VERSION = "1.4.0"
+TOOL_VERSION = "1.5.0"
 JOINTS = (
     ("shoulder_pan", 1),
     ("shoulder_lift", 2),
@@ -432,6 +432,7 @@ def command_safety(args: argparse.Namespace, report: dict[str, Any]) -> int:
     common = {
         "observedAt": now_iso(),
         "mechanism": args.mechanism,
+        "bypassable": args.bypassable == "true",
         "operator": args.operator,
         "method": args.method,
         "evidenceUri": args.evidence_uri,
@@ -615,6 +616,7 @@ def command_finalize(args: argparse.Namespace, report: dict[str, Any]) -> int:
     output["safetyLayer"] = {
         "mechanism": safety["mechanism"],
         "implementedIn": limits["implementedIn"],
+        "bypassable": safety["bypassable"],
         "verifiedAgainstHardware": True,
         "measuredStopTimeMs": safety["stopTimeMs"],
         "testedScenarios": safety["testedScenarios"],
@@ -690,6 +692,7 @@ def parser() -> argparse.ArgumentParser:
 
     safety = commands.add_parser("safety", help="Record physical E-stop and deterministic-limit tests")
     safety.add_argument("--mechanism", choices=SAFETY_MECHANISMS, required=True)
+    safety.add_argument("--bypassable", choices=("true", "false"), required=True)
     safety.add_argument("--stop-time-ms", type=float, required=True)
     safety.add_argument("--estop-scenarios", required=True, help="Comma-separated: idle,motion,grasp")
     safety.add_argument("--limit-tests", required=True, help="Comma-separated: position,speed,command_timeout")

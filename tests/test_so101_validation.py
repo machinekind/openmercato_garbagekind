@@ -79,6 +79,7 @@ class SO101ValidationTest(unittest.TestCase):
             {
                 "confirm": "PHYSICAL-SAFETY-TESTED",
                 "mechanism": "hardware_estop",
+                "bypassable": "false",
                 "stop_time_ms": 75.0,
                 "estop_scenarios": "idle,motion",
                 "limit_tests": "position,speed",
@@ -90,6 +91,7 @@ class SO101ValidationTest(unittest.TestCase):
             },
         )()
         self.assertEqual(validator.command_safety(args, report), 1)
+        self.assertFalse(report["checks"]["emergencyStop"]["bypassable"])
         self.assertEqual(report["checks"]["emergencyStop"]["missingScenarios"], ["grasp"])
         self.assertEqual(
             report["checks"]["deterministicLimits"]["missingLimits"],
@@ -164,6 +166,7 @@ class SO101ValidationTest(unittest.TestCase):
         report["checks"]["emergencyStop"].update(
             {
                 "mechanism": "hardware_estop",
+                "bypassable": False,
                 "stopTimeMs": 75.0,
                 "testedScenarios": ["grasp", "idle", "motion"],
                 "evidenceUri": "sha256:safety",
@@ -216,6 +219,7 @@ class SO101ValidationTest(unittest.TestCase):
             self.assertEqual(created["kinematics"]["reachMm"], 420.0)
             self.assertEqual(created["kinematics"]["measurementUncertainty"]["payloadKg"], 0.01)
             self.assertEqual(created["safetyLayer"]["mechanism"], "hardware_estop")
+            self.assertFalse(created["safetyLayer"]["bypassable"])
             self.assertTrue(created["safetyLayer"]["verifiedAgainstHardware"])
             self.assertTrue(created["provenance"]["verifiedAgainstHardware"])
             self.assertEqual(created["provenance"]["evidenceDigest"], expected_digest)

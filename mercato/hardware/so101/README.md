@@ -95,7 +95,7 @@ interpretera. Raport domyślnie powstaje poza Git w
 
    ```powershell
    & $py mercato\hardware\so101\validate.py safety `
-     --mechanism hardware_estop --stop-time-ms 0 `
+     --mechanism hardware_estop --bypassable false --stop-time-ms 0 `
      --estop-scenarios idle,motion,grasp `
      --limit-tests position,speed,command_timeout `
      --implemented-in 'nazwa sterownika bezpieczeństwa' `
@@ -104,8 +104,10 @@ interpretera. Raport domyślnie powstaje poza Git w
      --confirm PHYSICAL-SAFETY-TESTED
    ```
 
-   Zerowy czas w przykładzie jest niedozwolony. `torque-off` nie zastępuje
-   E-stopu i sam nie zalicza tego kroku.
+   Zerowy czas w przykładzie jest niedozwolony. Wartość `bypassable` musi
+   opisywać rzeczywiste okablowanie i konfigurację; `false` w przykładzie nie
+   jest założeniem o stanowisku. `torque-off` nie zastępuje E-stopu i sam nie
+   zalicza tego kroku.
 
 7. Jeśli istnieje polityka, haszujemy prawdziwe artefakty:
 
