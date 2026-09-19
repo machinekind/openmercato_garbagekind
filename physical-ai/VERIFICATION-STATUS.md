@@ -58,8 +58,8 @@ Dlatego nie wykonano i nie zaliczono:
 Brak urządzenia pozostaje stanem `blocked` w raporcie roboczym poza Git. Nie
 został zastąpiony mockiem ani wartością katalogową.
 
-Pełny audyt wyników zespołu physical znajduje się w
-`physical-ai/PHYSICAL-RESULTS-ASSESSMENT.md`. Kod bridge'a przeszedł testy, ale
+Inwentaryzacja materiału `mercatoXD` względem naszych bram znajduje się w
+`physical-ai/MATERIAL-MERCATOXD.md`. Kod bridge'a przeszedł testy, ale
 repo źródłowe nie zawiera surowych logów, datasetu, wag ani zakończonego
 autonomicznego chwytu, więc nie zmienia statusu fizycznych bramek P0–P3.
 

@@ -5,7 +5,7 @@ import { mayRunPolicy } from '../../fleet/lib/lifecycle'
 import { mayBeDeployed } from '../../policy_registry/lib/compatibility'
 import { Assignment, Lease, StateReport, type DesiredState, type LeaseExpiryBehavior } from '../data/entities'
 import { leaseSecondsFor, reconcile, renewAfterSeconds } from '../lib/lease'
-import { leasePayload } from '../lib/protocol'
+import { leasePayload, reportPayload } from '../lib/protocol'
 import { selectUsableKeys, verifyPayloadSignature } from '../../edge/lib/crypto'
 import { emitDeploymentEvent } from '../events'
 
@@ -59,6 +59,16 @@ export const reportSchema = z.object({
   agentSessionId: z.string().uuid(),
   reportedState: z.enum(['running', 'stopped']),
   reportedPolicyVersionId: z.string().uuid().nullable().optional(),
+  /**
+   * Zgłoszenie stanu jest podpisywane tak samo jak żądanie dzierżawy.
+   *
+   * Bez podpisu wystarczyłaby znajomość identyfikatora sesji, żeby wmówić
+   * centrali, że maszyna stoi — a uzgodnienie stanu jest jedyną rzeczą,
+   * która odróżnia wdrożenie od nadziei. Przedrostek `deployment.report:`
+   * wiąże podpis z kontekstem: podpis dzierżawy nie przejdzie tu i odwrotnie.
+   */
+  timestamp: z.string().min(1),
+  signature: z.string().min(1),
 })
 
 export type AssignInput = z.infer<typeof assignSchema>
@@ -498,6 +508,32 @@ const reportCommand: CommandHandler<ReportInput, { reconciliation: string; reaso
     )
     if (!sessions?.length) throw new Error('Nie rozpoznano sesji agenta.')
     const session = sessions[0]
+
+    if (session.ended_at) throw new Error('Sesja agenta jest zamknięta — połącz się na nowo.')
+    if (session.agent_status !== 'enrolled') throw new Error('Agent jest odwołany.')
+
+    const reportKeys = await em.getConnection().execute<Array<{
+      public_key: string
+      active_from: string
+      active_until: string | null
+      revoked_at: string | null
+    }>>(
+      `select public_key, active_from, active_until, revoked_at
+         from edge_agent_keys where agent_id = ?`,
+      [session.agent_id],
+    )
+    const usableReportKeys = selectUsableKeys(
+      reportKeys.map((key) => ({
+        publicKey: key.public_key,
+        activeFrom: new Date(key.active_from),
+        activeUntil: key.active_until ? new Date(key.active_until) : null,
+        revokedAt: key.revoked_at ? new Date(key.revoked_at) : null,
+      })),
+    )
+    const reportSigned = reportPayload(input.agentSessionId, input.reportedState, input.timestamp)
+    if (!usableReportKeys.some((key) => verifyPayloadSignature(reportSigned, input.signature, key.publicKey))) {
+      throw new Error('Podpis zgłoszenia stanu nie zgadza się z żadnym ważnym kluczem agenta.')
+    }
 
     const assignment = (await em.findOne(Assignment, {
       tenantId: session.tenant_id,

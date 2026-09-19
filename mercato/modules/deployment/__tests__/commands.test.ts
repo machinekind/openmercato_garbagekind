@@ -1,6 +1,6 @@
 import { generateKeyPairSync, sign as signPayload } from 'node:crypto'
-import { assignCommand, issueLeaseCommand } from '../commands/assignments'
-import { leasePayload } from '../lib/protocol'
+import { assignCommand, issueLeaseCommand, reportCommand } from '../commands/assignments'
+import { leasePayload, reportPayload } from '../lib/protocol'
 import { LEASE_SECONDS } from '../lib/lease'
 
 /**
@@ -104,6 +104,8 @@ function makeCtx(options: {
         return []
       }),
     }),
+    // Zgłoszenie stanu czyta poprzedni werdykt, żeby wyzwalać zboczem.
+    find: jest.fn(async () => []),
     create: jest.fn((entity: unknown, data: Row) => ({
       __table: (entity as { name?: string })?.name,
       ...data,
@@ -391,5 +393,97 @@ describe('deployment.leases.issue — uwierzytelnienie i termin', () => {
     expect(result.policyVersionId).toBeNull()
     // I nie zostawia po sobie dzierżawy, na którą robot mógłby się powołać.
     expect(persisted).toHaveLength(0)
+  })
+})
+
+describe('deployment.reports.record — zgłoszenie stanu jest dowodem, nie deklaracją', () => {
+  const activeKey = (pem: string) => ({
+    public_key: pem,
+    active_from: new Date(Date.now() - 60_000).toISOString(),
+    active_until: null,
+    revoked_at: null,
+  })
+
+  function signedReport(state: 'running' | 'stopped' = 'stopped') {
+    const { publicKey, privateKey } = generateKeyPairSync('ed25519')
+    const stamp = new Date().toISOString()
+    const signature = signPayload(
+      null,
+      Buffer.from(reportPayload(SESSION_ID, state, stamp), 'utf8'),
+      privateKey,
+    ).toString('base64')
+    return {
+      publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+      privateKey,
+      input: {
+        organizationId: scope.organizationId,
+        agentSessionId: SESSION_ID,
+        reportedState: state,
+        reportedPolicyVersionId: null,
+        timestamp: stamp,
+        signature,
+      },
+    }
+  }
+
+  it('przyjmuje zgłoszenie podpisane ważnym kluczem agenta', async () => {
+    const { publicKeyPem, input } = signedReport()
+    const { ctx, persisted } = makeCtx({ keys: [activeKey(publicKeyPem)], assignment: null, previousAssignment: null })
+    await reportCommand.execute(input, ctx)
+    expect(persisted.some((row) => row.__table === 'StateReport')).toBe(true)
+  })
+
+  it('odrzuca zgłoszenie bez ważnego podpisu — sama znajomość sesji nie wystarcza', async () => {
+    const { publicKeyPem, input } = signedReport()
+    const obcy = generateKeyPairSync('ed25519')
+    const podrobiony = {
+      ...input,
+      signature: signPayload(
+        null,
+        Buffer.from(reportPayload(SESSION_ID, 'stopped', input.timestamp), 'utf8'),
+        obcy.privateKey,
+      ).toString('base64'),
+    }
+    const { ctx, persisted } = makeCtx({ keys: [activeKey(publicKeyPem)] })
+    await expect(reportCommand.execute(podrobiony, ctx)).rejects.toThrow(/Podpis zgłoszenia stanu/)
+    expect(persisted).toHaveLength(0)
+  })
+
+  it('nie przyjmuje podpisu zebranego w kontekście dzierżawy', async () => {
+    const { publicKey, privateKey } = generateKeyPairSync('ed25519')
+    const stamp = new Date().toISOString()
+    const input = {
+      organizationId: scope.organizationId,
+      agentSessionId: SESSION_ID,
+      reportedState: 'stopped' as const,
+      reportedPolicyVersionId: null,
+      timestamp: stamp,
+      // Podpis poprawny, ale pod innym przedrostkiem — wiązanie kontekstu.
+      signature: signPayload(
+        null,
+        Buffer.from(leasePayload(SESSION_ID, 1, stamp), 'utf8'),
+        privateKey,
+      ).toString('base64'),
+    }
+    const pem = publicKey.export({ type: 'spki', format: 'pem' }).toString()
+    const { ctx } = makeCtx({ keys: [activeKey(pem)] })
+    await expect(reportCommand.execute(input, ctx)).rejects.toThrow(/Podpis zgłoszenia stanu/)
+  })
+
+  it('odrzuca zgłoszenie z zamkniętej sesji', async () => {
+    const { publicKeyPem, input } = signedReport()
+    const { ctx } = makeCtx({
+      keys: [activeKey(publicKeyPem)],
+      session: {
+        session_id: SESSION_ID,
+        agent_id: 'agent-1',
+        robot_id: ROBOT_ID,
+        tenant_id: scope.tenantId,
+        organization_id: scope.organizationId,
+        ended_at: new Date().toISOString(),
+        agent_status: 'enrolled',
+      },
+    })
+    await expect(reportCommand.execute(input, ctx)).rejects.toThrow(/zamknięta/)
   })
 })

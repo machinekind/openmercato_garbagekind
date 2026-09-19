@@ -36,6 +36,8 @@ export async function POST(req: Request): Promise<Response> {
       agentSessionId: payload.sessionId,
       reportedState: payload.reportedState,
       reportedPolicyVersionId: payload.reportedPolicyVersionId ?? null,
+      timestamp: payload.timestamp,
+      signature: payload.signature,
     }),
   )
 }
