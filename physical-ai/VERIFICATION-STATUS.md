@@ -16,6 +16,7 @@ sprawdzone na stanowisku.
 | Testy narzędzia odbioru SO-101 | 10/10 testów | `3749e5b` |
 | Testy integralności paczki dowodowej | 8/8 testów | `d3e0fdc` |
 | Kompilacja składni narzędzi sprzętowych | zaliczona | `d3e0fdc` |
+| Źródłowy bridge A1X z `mercatoXD` | 56/56 testów, 84% pokrycia, bez sprzętu | commit źródła `fd5fe08` |
 
 Pełny zestaw ERP zawiera testy, które celowo wywołują błędy usług i zapisują
 komunikaty `WARN` lub `ERROR`. O wyniku decyduje podsumowanie Jest; cały
@@ -56,6 +57,11 @@ Dlatego nie wykonano i nie zaliczono:
 
 Brak urządzenia pozostaje stanem `blocked` w raporcie roboczym poza Git. Nie
 został zastąpiony mockiem ani wartością katalogową.
+
+Pełny audyt wyników zespołu physical znajduje się w
+`physical-ai/PHYSICAL-RESULTS-ASSESSMENT.md`. Kod bridge'a przeszedł testy, ale
+repo źródłowe nie zawiera surowych logów, datasetu, wag ani zakończonego
+autonomicznego chwytu, więc nie zmienia statusu fizycznych bramek P0–P3.
 
 ## Warunek następnego odbioru
 

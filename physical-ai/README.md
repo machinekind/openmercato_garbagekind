@@ -11,6 +11,8 @@ Ostatni zweryfikowany stan programu i jawne blokady sprzętowe:
 [`VERIFICATION-STATUS.md`](VERIFICATION-STATUS.md).
 Kontrakt paczki dowodowej i jej kontrola integralności:
 [`EVIDENCE-BUNDLE.md`](EVIDENCE-BUNDLE.md).
+Ocena wyników i kodu dostarczonego przez zespół physical:
+[`PHYSICAL-RESULTS-ASSESSMENT.md`](PHYSICAL-RESULTS-ASSESSMENT.md).
 Procedura odbioru podłączonego SO-101 znajduje się w
 [`mercato/hardware/so101/README.md`](../mercato/hardware/so101/README.md).
 
