@@ -5,7 +5,52 @@ const countSchema = z.number().int().nonnegative()
 export const boundsSchema = z.object({ min: coordinateSchema, max: coordinateSchema })
   .refine((bounds) => bounds.min.every((value, index) => value <= bounds.max[index]), 'Invalid bounds')
 
-export const publicAssetNameSchema = z.enum(['room.glb', 'viewer.js', 'poster.webp'])
+export const publicAssetNameSchema = z.enum([
+  'room.glb', 'viewer.js', 'tracker.js', 'poster.webp', 'detector.model.json',
+  'group1-shard1of5', 'group1-shard2of5', 'group1-shard3of5', 'group1-shard4of5', 'group1-shard5of5',
+])
+
+const imagePointSchema = z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)])
+const floorPointSchema = z.tuple([z.number().finite(), z.number().finite()])
+
+export const cameraManifestSchema = z.object({
+  version: z.literal(1),
+  roomId: z.string().min(1).max(128),
+  cameras: z.array(z.object({
+    id: z.string().min(1).max(128),
+    name: z.string().min(1).max(256),
+    location: z.string().min(1).max(256),
+    status: z.enum(['ready', 'calibration_required', 'offline']),
+    source: z.object({
+      kind: z.enum(['local_recording', 'browser_camera', 'rtsp_gateway']),
+      width: z.number().int().positive().max(16384),
+      height: z.number().int().positive().max(16384),
+      fps: z.number().positive().max(240),
+      durationSeconds: z.number().nonnegative().max(86400).optional(),
+    }),
+    calibration: z.object({
+      state: z.enum(['estimated', 'verified']),
+      cameraPosition: coordinateSchema,
+      target: coordinateSchema,
+      imageFloorPolygon: z.tuple([imagePointSchema, imagePointSchema, imagePointSchema, imagePointSchema]),
+      twinFloorPolygon: z.tuple([floorPointSchema, floorPointSchema, floorPointSchema, floorPointSchema]),
+      obstacles: z.array(z.object({
+        elementId: z.string().min(1).max(128),
+        bounds: z.tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()]),
+        clearance: z.number().nonnegative().max(5),
+      })).max(100).default([]),
+    }),
+    privacy: z.object({
+      identityRecognition: z.literal(false),
+      rawVideoUploaded: z.literal(false),
+      trackRetention: z.literal('session'),
+    }),
+  })).max(500),
+}).superRefine((manifest, context) => {
+  if (new Set(manifest.cameras.map((camera) => camera.id)).size !== manifest.cameras.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: 'Duplicate camera identifiers' })
+  }
+})
 
 export const roomManifestSchema = z.object({
   version: z.literal(1),
@@ -56,3 +101,5 @@ export const roomManifestSchema = z.object({
 })
 
 export type RoomManifest = z.infer<typeof roomManifestSchema>
+export type CameraManifest = z.infer<typeof cameraManifestSchema>
+export type CameraDefinition = CameraManifest['cameras'][number]

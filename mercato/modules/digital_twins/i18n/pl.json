@@ -38,5 +38,21 @@
   "digital_twins.layer.chairs": "Krzesła",
   "digital_twins.layer.plants": "Rośliny",
   "digital_twins.layer.services": "Instalacje",
-  "digital_twins.layer.roof": "Sufit"
+  "digital_twins.layer.roof": "Sufit",
+  "digital_twins.cameras.title": "Kamery i tracking pracowników",
+  "digital_twins.cameras.description": "Lokalna analiza obrazu z projekcją anonimowych śladów na model 3D.",
+  "digital_twins.cameras.count": "kamer",
+  "digital_twins.cameras.private": "przetwarzanie lokalne",
+  "digital_twins.cameras.selectRecording": "Wybierz nagranie z kamery przemysłowej. Plik pozostanie w tej przeglądarce.",
+  "digital_twins.cameras.chooseFile": "Wybierz nagranie",
+  "digital_twins.cameras.start": "Uruchom tracking",
+  "digital_twins.cameras.pause": "Wstrzymaj",
+  "digital_twins.cameras.loadingModel": "Ładowanie AI…",
+  "digital_twins.cameras.codecError": "Przeglądarka nie obsługuje kodeka tego pliku MOV. Przekonwertuj go do MP4/H.264 bez zmiany rozdzielczości.",
+  "digital_twins.cameras.trackerError": "Nie udało się uruchomić detektora osób. Odśwież stronę i spróbuj ponownie.",
+  "digital_twins.cameras.activeTracks": "Aktywne anonimowe ślady",
+  "digital_twins.cameras.privacyHelp": "Bez identyfikacji twarzy. Nagranie nie jest wysyłane do ERP, a ślady są usuwane po zakończeniu sesji.",
+  "digital_twins.cameras.loadingRegistry": "Ładowanie rejestru kamer…",
+  "digital_twins.cameras.calibration.estimated": "kalibracja przybliżona",
+  "digital_twins.cameras.calibration.verified": "kalibracja zweryfikowana"
 }

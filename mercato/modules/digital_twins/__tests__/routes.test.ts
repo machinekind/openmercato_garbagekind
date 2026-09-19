@@ -1,6 +1,7 @@
 import { getAuthFromRequest } from '@open-mercato/shared/lib/auth/server'
 import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 import { GET as getAsset } from '../api/assets/[name]/route'
+import { GET as getCameras } from '../api/cameras/route'
 import { GET as getRoom } from '../api/room/route'
 import { readPackagedAsset } from '../lib/assets'
 
@@ -51,7 +52,10 @@ test.each(['../room.glb', '%2e%2e%2froom.glb', 'room.manifest.json', 'source.ble
 test.each([
   ['room.glb', 'model/gltf-binary'],
   ['viewer.js', 'text/javascript; charset=utf-8'],
+  ['tracker.js', 'text/javascript; charset=utf-8'],
   ['poster.webp', 'image/webp'],
+  ['detector.model.json', 'application/json; charset=utf-8'],
+  ['group1-shard1of5', 'application/octet-stream'],
 ])('serves allowed %s privately with correct MIME type', async (name, contentType) => {
   mockReadAsset.mockResolvedValue(Buffer.from('packaged-content'))
   const response = await getAsset(request(), assetContext(name))
@@ -60,6 +64,25 @@ test.each([
   expect(response.headers.get('cache-control')).toBe('private, no-store')
   expect(response.headers.get('x-content-type-options')).toBe('nosniff')
   expect(await response.text()).toBe('packaged-content')
+})
+
+test('camera registry validates calibration and strips undeclared source details', async () => {
+  const registry = {
+    version: 1, roomId: 'scene-7', cameras: [{
+      id: 'cam-1', name: 'Camera 1', location: 'Room', status: 'calibration_required',
+      source: { kind: 'local_recording', width: 1920, height: 1080, fps: 30, durationSeconds: 10, url: 'rtsp://private' },
+      calibration: {
+        state: 'estimated', cameraPosition: [0, 3, 0], target: [5, 0, -5],
+        imageFloorPolygon: [[0, 1], [1, 1], [1, .5], [0, .5]],
+        twinFloorPolygon: [[0, 0], [10, 0], [10, -10], [0, -10]],
+      },
+      privacy: { identityRecognition: false, rawVideoUploaded: false, trackRetention: 'session' },
+    }],
+  }
+  mockReadAsset.mockResolvedValue(Buffer.from(JSON.stringify(registry)))
+  const response = await getCameras(request())
+  expect(response.status).toBe(200)
+  expect((await response.json()).cameras[0].source.url).toBeUndefined()
 })
 
 test('unavailable file returns bounded error without filesystem details', async () => {

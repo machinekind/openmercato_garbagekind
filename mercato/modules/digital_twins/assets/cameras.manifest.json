@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "roomId": "scene-7",
+  "cameras": [
+    {
+      "id": "cam-industrial-01",
+      "name": "Kamera przemysłowa 01",
+      "location": "Sala główna · stół T07 przy szklanej ścianie",
+      "status": "calibration_required",
+      "source": {
+        "kind": "local_recording",
+        "width": 1920,
+        "height": 1080,
+        "fps": 29.983568,
+        "durationSeconds": 310.37
+      },
+      "calibration": {
+        "state": "estimated",
+        "cameraPosition": [0.22, 3.05, -3.8],
+        "target": [5.7, 0, -12.6],
+        "imageFloorPolygon": [[0.12, 0.99], [1.0, 0.99], [0.98, 0.48], [0.24, 0.48]],
+        "twinFloorPolygon": [[1.5, -9.4], [10.2, -9.4], [9.7, -15.35], [1.8, -15.35]],
+        "obstacles": [
+          {
+            "elementId": "tables-23",
+            "bounds": [4.51952, -13.31765, 6.87267, -11.91923],
+            "clearance": 0.3
+          }
+        ]
+      },
+      "privacy": {
+        "identityRecognition": false,
+        "rawVideoUploaded": false,
+        "trackRetention": "session"
+      }
+    }
+  ]
+}

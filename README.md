@@ -28,14 +28,15 @@ robotyczną.
 | [`physical-ai/HANDOFF-PHYSICAL.md`](physical-ai/HANDOFF-PHYSICAL.md) | zadania dla zespołu physical: co wytrenować i udokumentować, **twarde bramki** kontra ostrzeżenia, i nasz własny dług |
 | `mercato/modules/` | trzynaście modułów Open Mercato (`sortownia` + jedenaście robotycznych + `hmi` jako system wizualny) |
 | `mercato/embodiments/` | opisy ramion; `so101_follower.json` z dokumentacji LeRobot |
+| [`mercato/hardware/so101/`](mercato/hardware/so101/README.md) | bezpieczny protokół fizycznego odbioru SO-101: magistrala, kalibracja, pomiary, torque-off i dowód nowej rewizji |
 | `legacy/`, `client/`, `webui/` | system legacy z etapów wcześniejszych — opisany niżej |
 
 ### Uczciwa etykieta całości
 
-Warstwa robotyczna **nie widziała dotąd żadnego prawdziwego robota**. Wszystkie
-dane pochodzą z naszych własnych komend `seed` i `prove`. To jest wykonywalny
-dokument projektowy z odtwarzalnymi dowodami zachowania, a nie oprogramowanie
-sprawdzone w ruchu. Pełna ocena wartości i lista tego, czego brakuje, jest
+Warstwa robotyczna ma protokół fizycznego odbioru, ale rewizja 1 SO-101 nadal
+pochodzi wyłącznie z dokumentacji. Dopóki raport z magistrali, kalibracji,
+pomiarów i testu torque-off nie przejdzie w całości, nie wolno opisywać jej jako
+sprawdzonej w ruchu. Pełna ocena wartości i lista tego, czego brakuje, jest
 w `physical-ai/EMBODIMENTS.md` oraz w sekcji „Stan po fazach 0–6".
 
 ### Uruchomienie warstwy robotycznej

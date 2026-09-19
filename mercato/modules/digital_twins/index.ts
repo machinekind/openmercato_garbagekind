@@ -3,8 +3,8 @@ import type { ModuleInfo } from '@open-mercato/shared/modules/registry'
 export const metadata: ModuleInfo = {
   name: 'digital_twins',
   title: 'Digital twins',
-  version: '0.1.0',
-  description: 'Authenticated geometric room viewer from LiDAR and video references.',
+  version: '0.2.0',
+  description: 'Authenticated room twin with camera management and anonymous worker tracking.',
   author: 'machinekind',
   license: 'MIT',
   requires: [],

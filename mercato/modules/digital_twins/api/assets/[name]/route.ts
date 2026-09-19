@@ -12,7 +12,12 @@ export async function GET(request: Request, context: { params: Promise<{ name: s
   const { name } = await context.params
   const parsed = publicAssetNameSchema.safeParse(name)
   if (!parsed.success) return errorResponse('asset_not_found', 404)
-  const mimeTypes = { 'room.glb': 'model/gltf-binary', 'viewer.js': 'text/javascript; charset=utf-8', 'poster.webp': 'image/webp' }
+  const mimeTypes = {
+    'room.glb': 'model/gltf-binary', 'viewer.js': 'text/javascript; charset=utf-8', 'tracker.js': 'text/javascript; charset=utf-8',
+    'poster.webp': 'image/webp', 'detector.model.json': 'application/json; charset=utf-8',
+    'group1-shard1of5': 'application/octet-stream', 'group1-shard2of5': 'application/octet-stream', 'group1-shard3of5': 'application/octet-stream',
+    'group1-shard4of5': 'application/octet-stream', 'group1-shard5of5': 'application/octet-stream',
+  }
   try {
     const asset = await readPackagedAsset(parsed.data)
     return new Response(new Uint8Array(asset), {
@@ -36,7 +41,7 @@ export const openApi: OpenApiRouteDoc = {
   methods: {
     GET: {
       summary: 'Read an authenticated room model, renderer or preview',
-      description: 'Content-Type follows the allowlisted asset: model/gltf-binary, text/javascript or image/webp.',
+      description: 'Content-Type follows the allowlisted asset: room model, application script, detector model or preview.',
       responses: [{ status: 200, description: 'Packaged asset bytes', mediaType: 'application/octet-stream' }],
       errors: [400, 401, 403, 404, 503].map((status) => ({ status, description: 'Asset unavailable or access denied', schema: z.object({ error: z.string() }) })),
     },
