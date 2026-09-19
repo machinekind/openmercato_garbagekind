@@ -24,9 +24,13 @@ edge/DGX; ERP otrzymuje fakty potrzebne do audytu i zarządzania.
 }
 ```
 
-`kind` przyjmuje `episode`, `intervention` albo `detection_window`. Dokładne
-kształty ładunków publikuje OpenAPI aplikacji. `organizationId`, `tenantId`
-i `robotId` są zabronione w `payload`: ERP wyprowadza je z podpisanej sesji.
+`kind` przyjmuje `episode`, `intervention`, `detection_window`, `clip` albo
+`clip_deletion_confirmation`. `clip` rejestruje tylko URI i metadane — bajty
+nie przechodzą przez ERP. Przy potwierdzeniu usunięcia pole `confirmedBy` jest
+wyprowadzane z klucza agenta i nie może zostać podane przez wywołującego.
+Dokładne kształty ładunków publikuje OpenAPI aplikacji. `organizationId`,
+`tenantId` i `robotId` są zabronione w `payload`: ERP wyprowadza je z
+podpisanej sesji.
 
 ## Dane podpisywane
 

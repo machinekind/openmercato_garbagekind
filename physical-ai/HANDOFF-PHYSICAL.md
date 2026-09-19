@@ -448,12 +448,13 @@ organizacji, tenant i robot są wyprowadzane z sesji — nie są przyjmowane od
 agenta. Surowe wideo i tensory pozostają w hubie edge/DGX. Format podpisu i
 zasady ponowień opisuje `physical-ai/EDGE-TELEMETRY.md`.
 
-### G2. Potwierdzenie usunięcia nagrań wymaga wywołania z waszej strony
+### G2. ✅ Podpisane potwierdzenie usunięcia nagrań
 
-Jeśli magazyn obiektów jest u was, ktoś po waszej stronie musi wołać
-`vision.clips.confirm_deletion` (dziś: `mercato vision confirm`) po faktycznym
-skasowaniu bajtów. Bez tego licznik „oznaczone i nieusunięte" rośnie, a system
-ogłasza `vision.clips.deletion_overdue` — codziennie, dopóki stan trwa.
+Jeśli magazyn obiektów jest w hubie edge/DGX, po faktycznym skasowaniu bajtów
+agent wysyła podpisaną telemetrię `kind: clip_deletion_confirmation`. ERP
+wyprowadza `confirmedBy` z klucza agenta, więc wywołujący nie może podszyć się
+pod administratora. Bez potwierdzenia licznik „oznaczone i nieusunięte"
+rośnie, a system codziennie ogłasza `vision.clips.deletion_overdue`.
 
 ### G3. ✅ `reasonCategory` ma zamknięty słownik
 

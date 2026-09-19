@@ -56,7 +56,7 @@ function ready() {
 
 function envelope(
   sign: (value: string) => string,
-  kind: 'episode' | 'intervention' | 'detection_window',
+  kind: 'episode' | 'intervention' | 'detection_window' | 'clip' | 'clip_deletion_confirmation',
   payload: Record<string, unknown>,
   sequence = 1,
 ) {
@@ -112,6 +112,50 @@ describe('edge.telemetry.ingest', () => {
     expect(execute.mock.calls[0][0]).toBe('vision.windows.record')
     expect(execute.mock.calls[0][1].input).toMatchObject({ organizationId: ORG, tenantId: TENANT })
     expect(execute.mock.calls[0][1].input).not.toHaveProperty('robotId')
+  })
+
+  it('rejestruje wyłącznie metadane klipu, a termin retencji wylicza vision', async () => {
+    const { execute, ctx, sign } = ready()
+    const payload = {
+      cameraId: '77777777-7777-4777-8777-777777777777',
+      subjectType: 'safety-event',
+      subjectId: '99999999-9999-4999-8999-999999999999',
+      uri: 's3://physical-evidence/cell-a/clip-42.mp4',
+      recordedAt: '2026-09-19T10:00:00.000Z',
+      durationSeconds: 12,
+    }
+    await ingestTelemetryCommand.execute(envelope(sign, 'clip', payload), ctx)
+    expect(execute.mock.calls[0][0]).toBe('vision.clips.attach')
+    expect(execute.mock.calls[0][1].input).toMatchObject({
+      organizationId: ORG,
+      tenantId: TENANT,
+      uri: payload.uri,
+    })
+    expect(execute.mock.calls[0][1].input).not.toHaveProperty('deleteAfter')
+  })
+
+  it('potwierdzenie usunięcia przypisuje sprawcę z klucza agenta', async () => {
+    const { execute, ctx, sign } = ready()
+    const payload = { clipIds: ['99999999-9999-4999-8999-999999999999'] }
+    await ingestTelemetryCommand.execute(envelope(sign, 'clip_deletion_confirmation', payload), ctx)
+    expect(execute.mock.calls[0][0]).toBe('vision.clips.confirm_deletion')
+    expect(execute.mock.calls[0][1].input).toMatchObject({
+      organizationId: ORG,
+      tenantId: TENANT,
+      confirmedBy: `edge-agent:${AGENT}`,
+      clipIds: payload.clipIds,
+    })
+  })
+
+  it('agent nie może podszyć się pod inny proces potwierdzający usunięcie', async () => {
+    const { ctx, sign } = ready()
+    const injected = {
+      clipIds: ['99999999-9999-4999-8999-999999999999'],
+      confirmedBy: 'administrator',
+    }
+    await expect(
+      ingestTelemetryCommand.execute(envelope(sign, 'clip_deletion_confirmation', injected), ctx),
+    ).rejects.toThrow()
   })
 
   it('odrzuca zmianę treści po złożeniu podpisu', async () => {

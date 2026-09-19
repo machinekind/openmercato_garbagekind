@@ -28,13 +28,17 @@ export const openApi: OpenApiRouteDoc = {
   summary: 'Ingest signed, structured physical-AI telemetry',
   methods: {
     POST: {
-      summary: 'Record an episode, intervention or aggregated detection window from an enrolled edge agent',
+      summary: 'Record physical-AI facts and clip lifecycle confirmations from an enrolled edge agent',
       requestBody: { schema: telemetryIngressSchema },
       responses: [
         {
           status: 200,
           description: 'Telemetry accepted and recorded in its domain ledger',
-          schema: z.object({ kind: z.enum(['episode', 'intervention', 'detection_window']), sequence: z.number().int(), result: z.unknown() }),
+          schema: z.object({
+            kind: z.enum(['episode', 'intervention', 'detection_window', 'clip', 'clip_deletion_confirmation']),
+            sequence: z.number().int(),
+            result: z.unknown(),
+          }),
         },
       ],
       errors: [400, 401, 404, 422].map((status) => ({

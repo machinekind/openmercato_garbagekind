@@ -68,6 +68,19 @@ const detectionWindowPayloadSchema = z.object({
   meanConfidence: z.record(z.string(), z.number().min(0).max(1)).optional(),
 }).strict()
 
+const clipPayloadSchema = z.object({
+  cameraId: z.string().uuid(),
+  subjectType: z.string().trim().min(1).max(64),
+  subjectId: z.string().uuid().nullable().optional(),
+  uri: z.string().trim().min(1).max(1000),
+  recordedAt: timestamp,
+  durationSeconds: z.number().int().positive().max(3600),
+}).strict()
+
+const clipDeletionConfirmationPayloadSchema = z.object({
+  clipIds: z.array(z.string().uuid()).min(1).max(1000),
+}).strict()
+
 const signedEnvelope = z.object({
   sessionId: z.string().uuid(),
   sequence: z.number().int().positive(),
@@ -79,6 +92,11 @@ export const telemetryIngressSchema = z.discriminatedUnion('kind', [
   signedEnvelope.extend({ kind: z.literal('episode'), payload: episodePayloadSchema }).strict(),
   signedEnvelope.extend({ kind: z.literal('intervention'), payload: interventionPayloadSchema }).strict(),
   signedEnvelope.extend({ kind: z.literal('detection_window'), payload: detectionWindowPayloadSchema }).strict(),
+  signedEnvelope.extend({ kind: z.literal('clip'), payload: clipPayloadSchema }).strict(),
+  signedEnvelope.extend({
+    kind: z.literal('clip_deletion_confirmation'),
+    payload: clipDeletionConfirmationPayloadSchema,
+  }).strict(),
 ])
 
 export type TelemetryIngressInput = z.infer<typeof telemetryIngressSchema>
@@ -99,6 +117,8 @@ function resolveEm(ctx: { container: { resolve: (key: string) => unknown } }): E
 function targetFor(kind: TelemetryIngressInput['kind']): string {
   if (kind === 'episode') return 'episodes.episodes.record'
   if (kind === 'intervention') return 'episodes.interventions.record'
+  if (kind === 'clip') return 'vision.clips.attach'
+  if (kind === 'clip_deletion_confirmation') return 'vision.clips.confirm_deletion'
   return 'vision.windows.record'
 }
 
@@ -133,6 +153,7 @@ export const ingestTelemetryCommand: CommandHandler<
       organizationId: agent.organizationId,
       tenantId: agent.tenantId,
       ...(input.kind === 'episode' || input.kind === 'intervention' ? { robotId: agent.robotId } : {}),
+      ...(input.kind === 'clip_deletion_confirmation' ? { confirmedBy: `edge-agent:${agent.id}` } : {}),
     }
     const envelope = await bus.execute(targetFor(input.kind), { input: downstreamInput, ctx })
 
