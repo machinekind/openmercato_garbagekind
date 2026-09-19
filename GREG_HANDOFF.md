@@ -63,7 +63,7 @@ Endpointy gotowe i otestowane (154 zestawy, 1376 testów zielonych,
 | `POST /api/edge/heartbeat` | agent, cyklicznie | podpis Ed25519 |
 | `POST /api/edge/telemetry` | agent | podpis Ed25519 |
 | `POST /api/deployment/lease` | agent | podpis Ed25519 |
-| `POST /api/deployment/report` | agent | sesja |
+| `POST /api/deployment/report` | agent | podpis Ed25519 |
 | `POST /api/fleet/robots/transition` | człowiek (UI) | sesja + `fleet.transition` |
 | `POST /api/fleet/calibrations` | człowiek (UI) | sesja + `fleet.calibrate` |
 | `POST /api/safety/incidents` | człowiek (UI) | sesja + `safety.incidents.report` |

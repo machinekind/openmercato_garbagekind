@@ -329,7 +329,9 @@ miara kosztu interwencji wyrażona w czyimś czasie.
 - para kluczy **Ed25519** generowana **na maszynie**; klucz prywatny nigdy nie
   opuszcza robota,
 - podpisy z prefiksami wiążącymi kontekst: `edge.enroll:`, `edge.connect:`,
-  `edge.heartbeat:`, `edge.rotate:`,
+  `edge.heartbeat:`, `edge.rotate:`, `edge.telemetry:`, `deployment.lease:`,
+  `deployment.report:` — podpis zebrany pod jednym prefiksem nie przechodzi
+  pod innym,
 - **licznik sekwencji rosnący w obrębie sesji** — nie globalny; restart agenta
   zeruje licznik i otwiera nową sesję,
 - obsługa okna rotacji klucza: przez pewien czas ważne są dwa klucze naraz,
