@@ -96,6 +96,63 @@ class SO101ValidationTest(unittest.TestCase):
             ["command_timeout"],
         )
 
+    def test_policy_artifacts_have_roles_uri_digest_and_training_provenance(self):
+        report = validator.blank_report()
+        with tempfile.TemporaryDirectory() as directory:
+            policy_dir = Path(directory)
+            (policy_dir / "config.json").write_text("{}\n", encoding="utf-8")
+            (policy_dir / "model.safetensors").write_bytes(b"weights")
+            (policy_dir / "policy_preprocessor.json").write_text("{}\n", encoding="utf-8")
+            args = type(
+                "Args",
+                (),
+                {
+                    "policy_dir": policy_dir,
+                    "artifact_base_uri": "s3://physical-ai/policies/run-1/",
+                    "task_key": "sort-plastic",
+                    "training_run_ref": "train-2026-09-19-001",
+                    "framework": "LeRobot 0.6.1",
+                    "dataset_version": "dataset-7",
+                    "declared_spec_digest": "A" * 64,
+                },
+            )()
+            self.assertEqual(validator.command_artifacts(args, report), 0)
+            by_name = {item["name"]: item for item in report["artifacts"]}
+            self.assertEqual(by_name["model.safetensors"]["role"], "weights")
+            self.assertEqual(by_name["config.json"]["role"], "config")
+            self.assertEqual(
+                by_name["policy_preprocessor.json"]["uri"],
+                "s3://physical-ai/policies/run-1/policy_preprocessor.json",
+            )
+            self.assertRegex(by_name["model.safetensors"]["sha256"], r"^[0-9a-f]{64}$")
+            self.assertEqual(report["policyProvenance"]["declaredSpecDigest"], "a" * 64)
+            self.assertEqual(report["policyProvenance"]["trainingRunRef"], "train-2026-09-19-001")
+
+    def test_policy_artifacts_reject_local_uri_and_invalid_declared_digest(self):
+        report = validator.blank_report()
+        with tempfile.TemporaryDirectory() as directory:
+            common = {
+                "policy_dir": Path(directory),
+                "task_key": "sort-plastic",
+                "training_run_ref": "train-1",
+                "framework": "LeRobot",
+                "dataset_version": "dataset-1",
+            }
+            invalid_digest = type(
+                "Args",
+                (),
+                {**common, "artifact_base_uri": "s3://policies", "declared_spec_digest": "abc"},
+            )()
+            with self.assertRaisesRegex(ValueError, "64-character SHA-256"):
+                validator.command_artifacts(invalid_digest, report)
+            local_uri = type(
+                "Args",
+                (),
+                {**common, "artifact_base_uri": "file:///policy", "declared_spec_digest": "a" * 64},
+            )()
+            with self.assertRaisesRegex(ValueError, "non-local object storage"):
+                validator.command_artifacts(local_uri, report)
+
     def test_seal_and_finalize_create_digest_bound_revision_without_overwriting_source(self):
         report = validator.blank_report()
         for name in validator.REQUIRED_CHECKS:

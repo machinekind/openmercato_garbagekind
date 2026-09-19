@@ -14,6 +14,7 @@ import dataclasses
 import hashlib
 import json
 import platform
+import re
 import sys
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -21,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 
-TOOL_VERSION = "1.3.0"
+TOOL_VERSION = "1.4.0"
 JOINTS = (
     ("shoulder_pan", 1),
     ("shoulder_lift", 2),
@@ -49,8 +50,16 @@ SAFETY_MECHANISMS = (
     "fence_interlock",
     "dual_channel_relay",
 )
+POLICY_ARTIFACTS = (
+    ("config.json", "config", True),
+    ("model.safetensors", "weights", True),
+    ("train_config.json", "metadata", False),
+    ("policy_preprocessor.json", "preprocessor", False),
+    ("normalizer.json", "normalizer", False),
+)
 REQUIRED_ESTOP_SCENARIOS = {"idle", "motion", "grasp"}
 REQUIRED_LIMIT_TESTS = {"position", "speed", "command_timeout"}
+SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 def now_iso() -> str:
@@ -485,17 +494,47 @@ def command_torque_off(args: argparse.Namespace, report: dict[str, Any]) -> int:
 
 
 def command_artifacts(args: argparse.Namespace, report: dict[str, Any]) -> int:
-    required = ("config.json", "model.safetensors")
-    optional = ("train_config.json", "policy_preprocessor.json")
+    if not SHA256_RE.fullmatch(args.declared_spec_digest):
+        raise ValueError("Declared spec digest must be a 64-character SHA-256")
+    for label, value in (
+        ("task key", args.task_key),
+        ("training run reference", args.training_run_ref),
+        ("framework", args.framework),
+        ("dataset version", args.dataset_version),
+    ):
+        if not value.strip():
+            raise ValueError(f"Policy {label} must be non-empty")
+    artifact_base_uri = args.artifact_base_uri.rstrip("/")
+    if "://" not in artifact_base_uri or artifact_base_uri.lower().startswith("file://"):
+        raise ValueError("Artifact base URI must point to non-local object storage")
+
     artifacts = []
     missing = []
-    for name in required + optional:
+    for name, role, required in POLICY_ARTIFACTS:
         path = args.policy_dir / name
         if path.is_file():
-            artifacts.append({"name": name, "path": str(path.resolve()), "sha256": sha256_file(path)})
-        elif name in required:
+            artifacts.append(
+                {
+                    "name": name,
+                    "role": role,
+                    "path": str(path.resolve()),
+                    "uri": f"{artifact_base_uri}/{name}",
+                    "sha256": sha256_file(path),
+                }
+            )
+        elif required:
             missing.append(name)
     report["artifacts"] = artifacts
+    report["policyProvenance"] = {
+        "taskKey": args.task_key,
+        "trainingRunRef": args.training_run_ref,
+        "framework": args.framework,
+        "datasetVersion": args.dataset_version,
+        # This value is supplied by the training side and deliberately is not
+        # derived from the local embodiment file during upload.
+        "declaredSpecDigest": args.declared_spec_digest.lower(),
+        "artifactBaseUri": artifact_base_uri,
+    }
     report["checks"]["policyArtifacts"] = {
         "status": "passed" if not missing else "blocked",
         "observedAt": now_iso(),
@@ -667,6 +706,12 @@ def parser() -> argparse.ArgumentParser:
 
     artifacts = commands.add_parser("artifacts", help="Hash real policy artifacts")
     artifacts.add_argument("--policy-dir", type=Path, required=True)
+    artifacts.add_argument("--artifact-base-uri", required=True)
+    artifacts.add_argument("--task-key", required=True)
+    artifacts.add_argument("--training-run-ref", required=True)
+    artifacts.add_argument("--framework", required=True)
+    artifacts.add_argument("--dataset-version", required=True)
+    artifacts.add_argument("--declared-spec-digest", required=True)
 
     seal = commands.add_parser("seal", help="Create an immutable evidence snapshot and calculate its digest")
     seal.add_argument("--output", type=Path, required=True)

@@ -110,8 +110,18 @@ interpretera. Raport domyślnie powstaje poza Git w
 7. Jeśli istnieje polityka, haszujemy prawdziwe artefakty:
 
    ```powershell
-   & $py mercato\hardware\so101\validate.py artifacts --policy-dir D:\policy\so101
+   & $py mercato\hardware\so101\validate.py artifacts `
+     --policy-dir D:\policy\so101 `
+     --artifact-base-uri s3://physical-ai/policies/<runRef> `
+     --task-key sort-plastic --training-run-ref <runRef> `
+     --framework 'LeRobot 0.6.1' --dataset-version <wersja> `
+     --declared-spec-digest <sha256-kontraktu-embodimentu>
    ```
+
+   `declaredSpecDigest` musi pochodzić z metadanych rozpoczętego treningu,
+   a nie być wyliczony ponownie z bieżącej bazy podczas wgrywania. Raport
+   zapisuje role `weights`, `config`, `metadata`, `preprocessor` i
+   `normalizer`, docelowe URI oraz SHA-256 każdego istniejącego pliku.
 
 8. Komplet dowodów trzeba najpierw zamknąć w niezmiennym pliku. Polecenie
    samo oblicza SHA-256; operator nie wpisuje skrótu ręcznie:
