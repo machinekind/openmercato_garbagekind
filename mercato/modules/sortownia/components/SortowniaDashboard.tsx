@@ -106,13 +106,13 @@ type SalesSummary = {
   topBuyers: Array<{ nazwa: string; netPln: number; orders: number }>
 }
 
-/** Magazyn liczy w kilogramach, sprawozdawczość w megagramach. */
-function toMg(kg: number): number {
+/** Magazyn liczy w kilogramach, ekran pokazuje tony (1 t = 1 Mg = 1000 kg). */
+function toTons(kg: number): number {
   return Math.round((kg / 1000) * 1000) / 1000
 }
 
-function formatMg(kg: number): string {
-  return `${toMg(kg).toLocaleString('pl-PL', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} Mg`
+function formatTons(kg: number): string {
+  return `${toTons(kg).toLocaleString('pl-PL', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} t`
 }
 
 function formatPln(amount: number): string {
@@ -208,9 +208,9 @@ export default function SortowniaDashboard() {
   // ile każdej frakcji przeszło przez zakład w ostatnim miesiącu.
   const chartData = (data?.flow ?? []).map((row) => ({
     frakcja: row.sku,
-    Przyjęte: toMg(row.receivedKg),
-    Wysortowane: toMg(row.sortedKg),
-    Wydane: toMg(row.issuedKg),
+    Przyjęte: toTons(row.receivedKg),
+    Wysortowane: toTons(row.sortedKg),
+    Wydane: toTons(row.issuedKg),
   }))
   const alerts = (data?.fractions ?? []).filter((row) => row.belowReorderPoint)
 
@@ -225,35 +225,35 @@ export default function SortowniaDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Na placu przyjęć"
-          value={totals ? toMg(totals.yardKg) : null}
-          suffix=" Mg"
+          value={totals ? toTons(totals.yardKg) : null}
+          suffix=" t"
           loading={loading}
           footer={<span className="text-xs text-muted-foreground">Czeka na wysortowanie</span>}
         />
         <KpiCard
           title="W boksach"
-          value={totals ? toMg(totals.binsKg) : null}
-          suffix=" Mg"
+          value={totals ? toTons(totals.binsKg) : null}
+          suffix=" t"
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
               {rezerwacje && rezerwacje.count > 0
-                ? `w tym ${formatMg(rezerwacje.reservedKg)} zarezerwowane (${rezerwacje.count} zamówień)`
+                ? `w tym ${formatTons(rezerwacje.reservedKg)} zarezerwowane (${rezerwacje.count} zamówień)`
                 : 'Gotowe do wydania odbiorcom'}
             </span>
           }
         />
         <KpiCard
           title="Wysortowane (30 dni)"
-          value={totals ? toMg(totals.sorted30dKg) : null}
-          suffix=" Mg"
+          value={totals ? toTons(totals.sorted30dKg) : null}
+          suffix=" t"
           loading={loading}
           footer={<span className="text-xs text-muted-foreground">Przesunięcia plac → boks</span>}
         />
         <KpiCard
           title="Wydane (30 dni)"
-          value={totals ? toMg(totals.issues30dKg) : null}
-          suffix=" Mg"
+          value={totals ? toTons(totals.issues30dKg) : null}
+          suffix=" t"
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
@@ -360,15 +360,15 @@ export default function SortowniaDashboard() {
             }`}
           >
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm tabular-nums">
-              <span>{formatMg(bilans.receivedKg)} przyjęte</span>
+              <span>{formatTons(bilans.receivedKg)} przyjęte</span>
               <span className="text-muted-foreground">−</span>
-              <span>{formatMg(bilans.issuedKg)} wydane</span>
+              <span>{formatTons(bilans.issuedKg)} wydane</span>
               <span className="text-muted-foreground">=</span>
-              <span>{formatMg(bilans.onHandKg)} na stanie</span>
+              <span>{formatTons(bilans.onHandKg)} na stanie</span>
               <span className="ml-auto font-medium">
                 {Math.abs(bilans.differenceKg) <= 1
                   ? 'bilans domyka się'
-                  : `różnica ${formatMg(bilans.differenceKg)} — sprawdź ewidencję`}
+                  : `różnica ${formatTons(bilans.differenceKg)} — sprawdź ewidencję`}
               </span>
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function SortowniaDashboard() {
               loading={loading}
               footer={
                 <span className="text-xs text-muted-foreground">
-                  {formatMg(bilans.sortedKg)} wysortowane z {formatMg(bilans.receivedKg)} przyjętych
+                  {formatTons(bilans.sortedKg)} wysortowane z {formatTons(bilans.receivedKg)} przyjętych
                 </span>
               }
             />
@@ -415,7 +415,7 @@ export default function SortowniaDashboard() {
                     <div className="min-w-0">
                       <div className="truncate text-sm">{row.sku}</div>
                       <div className="text-xs text-muted-foreground">
-                        {formatMg(row.soldKg)}
+                        {formatTons(row.soldKg)}
                         {row.pricePerKg !== null ? ` · ${row.pricePerKg.toFixed(2)} zł/kg` : ''}
                       </div>
                     </div>
@@ -447,8 +447,8 @@ export default function SortowniaDashboard() {
             />
             <KpiCard
               title="Masa przekazana"
-              value={toMg(ewidencja.massKg)}
-              suffix=" Mg"
+              value={toTons(ewidencja.massKg)}
+              suffix=" t"
               loading={loading}
               footer={<span className="text-xs text-muted-foreground">suma z kart przekazania</span>}
             />
@@ -489,7 +489,7 @@ export default function SortowniaDashboard() {
                     <div className="truncate text-sm">{row.dostawca}</div>
                     <div className="text-xs text-muted-foreground">{row.lots} partii</div>
                   </div>
-                  <div className="text-sm tabular-nums">{formatMg(row.receivedKg)}</div>
+                  <div className="text-sm tabular-nums">{formatTons(row.receivedKg)}</div>
                 </div>
               ))}
             </div>
@@ -502,7 +502,7 @@ export default function SortowniaDashboard() {
           <div className="text-sm font-medium">Frakcje poniżej progu wysyłki</div>
           <div className="mt-1 text-sm text-muted-foreground">
             {alerts
-              .map((row) => `${row.name} (${formatMg(row.quantityKg)} z ${formatMg(row.reorderPointKg ?? 0)})`)
+              .map((row) => `${row.name} (${formatTons(row.quantityKg)} z ${formatTons(row.reorderPointKg ?? 0)})`)
               .join(' · ')}
           </div>
         </div>
@@ -516,7 +516,7 @@ export default function SortowniaDashboard() {
         loading={loading}
         layout="horizontal"
         showLegend
-        valueFormatter={(value) => `${value.toLocaleString('pl-PL', { maximumFractionDigits: 1 })} Mg`}
+        valueFormatter={(value) => `${value.toLocaleString('pl-PL', { maximumFractionDigits: 1 })} t`}
         emptyMessage="Brak ruchów w ostatnich 30 dniach."
       />
 
@@ -537,8 +537,8 @@ export default function SortowniaDashboard() {
                     ) : null}
                   </div>
                   <div className="text-sm tabular-nums">
-                    {formatMg(row.quantityKg ?? 0)}
-                    <span className="text-muted-foreground"> / {formatMg(row.capacityKg ?? 0)}</span>
+                    {formatTons(row.quantityKg ?? 0)}
+                    <span className="text-muted-foreground"> / {formatTons(row.capacityKg ?? 0)}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -575,14 +575,14 @@ export default function SortowniaDashboard() {
                   <div className="font-mono text-xs text-muted-foreground">{row.sku}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm tabular-nums">{formatMg(row.quantityKg)}</div>
+                  <div className="text-sm tabular-nums">{formatTons(row.quantityKg)}</div>
                   <div className="text-xs text-muted-foreground">
                     {row.reorderPointKg === null ? (
                       'bez progu'
                     ) : row.belowReorderPoint ? (
-                      <span className="text-amber-600">poniżej progu {formatMg(row.reorderPointKg)}</span>
+                      <span className="text-amber-600">poniżej progu {formatTons(row.reorderPointKg)}</span>
                     ) : (
-                      `próg ${formatMg(row.reorderPointKg)}`
+                      `próg ${formatTons(row.reorderPointKg)}`
                     )}
                   </div>
                 </div>
@@ -640,7 +640,7 @@ export default function SortowniaDashboard() {
                     {describeRoute(row)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">
-                    {formatMg(Math.abs(row.quantityKg))}
+                    {formatTons(Math.abs(row.quantityKg))}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 font-mono text-xs text-muted-foreground">
                     {row.legacyMoveNo === null ? '—' : `#${row.legacyMoveNo}`}

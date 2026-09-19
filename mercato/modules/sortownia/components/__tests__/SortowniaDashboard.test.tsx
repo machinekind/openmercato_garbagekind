@@ -7,7 +7,7 @@ import SortowniaDashboard from '../SortowniaDashboard'
 
 /**
  * Pulpit ogląda brygadzista, nie programista. Sprawdzamy to, co widzi:
- * masy w megagramach, ostrzeżenie o zapełnieniu, kierunek ruchu po ludzku
+ * masy w tonach, ostrzeżenie o zapełnieniu, kierunek ruchu po ludzku
  * i numer z systemu legacy, po którym wraca się do kwitu wagowego.
  */
 
@@ -64,7 +64,7 @@ const payload = {
     unpaidDocs: 31,
     oldestUnpaidDays: 28,
     topBuyers: [
-      { nazwa: 'Stora Papier Recykling', netPln: 21340.5, orders: 12 },
+      { nazwa: 'RecycleHub Sp. z o.o.', netPln: 21340.5, orders: 12 },
       { nazwa: 'PlastMet Sp. z o.o.', netPln: 15002.25, orders: 9 },
     ],
   },
@@ -136,29 +136,29 @@ describe('SortowniaDashboard', () => {
     await waitFor(() => expect(apiFetchMock).toHaveBeenCalledWith('/api/sortownia/dashboard'))
   })
 
-  it('pokazuje masy w megagramach, bo w takich jednostkach rozlicza się odpady', async () => {
+  it('pokazuje masy w tonach (1 t = 1 Mg), bo tak mówi operator', async () => {
     render(<SortowniaDashboard />)
     await screen.findByText('Na placu przyjęć')
-    expect(screen.getByText('117.665 Mg')).toBeInTheDocument()
+    expect(screen.getByText('117.665 t')).toBeInTheDocument()
   })
 
   it('pokazuje zapełnienie lokalizacji obok jej pojemności', async () => {
     render(<SortowniaDashboard />)
     await screen.findByText('PRZYJ')
     expect(screen.getByText('78.4%')).toBeInTheDocument()
-    // 150 000 kg pojemności to 150,000 Mg — trzy miejsca po przecinku,
+    // 150 000 kg pojemności to 150,000 t — trzy miejsca po przecinku,
     // a nie sto pięćdziesiąt tysięcy. Ta pomyłka jest łatwa i kosztowna,
     // więc wiersz sprawdzamy w całości.
     const wiersz = screen.getByText('PRZYJ').closest('div')?.parentElement
     const tresc = (wiersz?.textContent ?? '').replace(/\s+/g, ' ')
-    expect(tresc).toContain('117,665 Mg')
-    expect(tresc).toContain('150,000 Mg')
+    expect(tresc).toContain('117,665 t')
+    expect(tresc).toContain('150,000 t')
   })
 
   it('ostrzega o frakcji poniżej progu wysyłki', async () => {
     render(<SortowniaDashboard />)
     expect(await screen.findByText('Frakcje poniżej progu wysyłki')).toBeInTheDocument()
-    expect(screen.getByText(/Papier i tektura \(4,000 Mg/)).toBeInTheDocument()
+    expect(screen.getByText(/Papier i tektura \(4,000 t/)).toBeInTheDocument()
   })
 
   it('nie wyświetla ostrzeżenia, gdy wszystkie frakcje są nad progiem', async () => {
@@ -217,7 +217,7 @@ describe('SortowniaDashboard', () => {
   it('wymienia największych odbiorców z kwotą', async () => {
     render(<SortowniaDashboard />)
     await screen.findByText('Najwięksi odbiorcy')
-    expect(screen.getByText('Stora Papier Recykling')).toBeInTheDocument()
+    expect(screen.getByText('RecycleHub Sp. z o.o.')).toBeInTheDocument()
     expect(screen.getByText('12 wydań')).toBeInTheDocument()
   })
 
@@ -248,7 +248,7 @@ describe('SortowniaDashboard', () => {
     expect(await screen.findByText('Pochodzenie odpadu')).toBeInTheDocument()
     expect(screen.getByText('Gmina Wieliszew')).toBeInTheDocument()
     expect(screen.getByText('95 partii')).toBeInTheDocument()
-    expect(screen.getByText('142,300 Mg')).toBeInTheDocument()
+    expect(screen.getByText('142,300 t')).toBeInTheDocument()
   })
 
   it('nie pokazuje pochodzenia, gdy partii jeszcze nie ma', async () => {
@@ -261,7 +261,7 @@ describe('SortowniaDashboard', () => {
   it('odróżnia masę zarezerwowaną od wolnej — stary system znał tylko jedną liczbę', async () => {
     render(<SortowniaDashboard />)
     await screen.findByText('W boksach')
-    expect(screen.getByText('w tym 24,500 Mg zarezerwowane (5 zamówień)')).toBeInTheDocument()
+    expect(screen.getByText('w tym 24,500 t zarezerwowane (5 zamówień)')).toBeInTheDocument()
   })
 
   it('bez rezerwacji mówi po prostu, że towar jest gotowy do wydania', async () => {
@@ -282,7 +282,7 @@ describe('SortowniaDashboard', () => {
     respondWith({ ...payload, bilans: { ...payload.bilans, differenceKg: 1240.5 } })
     render(<SortowniaDashboard />)
     await screen.findByText('Bilans masy i sprawność sortowania')
-    expect(screen.getByText(/różnica 1,241 Mg — sprawdź ewidencję/)).toBeInTheDocument()
+    expect(screen.getByText(/różnica 1,241 t — sprawdź ewidencję/)).toBeInTheDocument()
   })
 
   it('pokazuje przychód per frakcja z ceną za kilogram', async () => {

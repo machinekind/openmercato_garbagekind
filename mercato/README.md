@@ -110,8 +110,12 @@ wpłata potrzebuje faktury, a rezerwacja potrzebuje stanu magazynowego:
 
 ```
 topologia → frakcje → kontrahenci → zamówienia (+faktury)
-          → karty przekazania → wpłaty → partie → rezerwacje → księga ruchów
+          → karty przekazania → wpłaty → partie → księga ruchów → rezerwacje
 ```
+
+Rezerwacje idą **po** księdze, nie przed: przed ruchami magazyn jest pusty i
+WMS odmówiłby każdej, a rezerwacja założona na placu przyjęć blokowałaby masę,
+która ma dopiero zostać wysortowana do boksu.
 
 Wszystko idzie komendami platformy (`commandBus`), a nie zapisem do encji.
 Komenda odpala zdarzenia, wpis do dziennika audytu i indeks wyszukiwania —
@@ -145,6 +149,13 @@ liczbę niezapłaconych dokumentów i wiek najstarszego.
 **Identyfikowalność.** Każde `PZ` zakłada partię (`wms.lots.create`) z nazwą
 dostawcy, kodem odpadu, masą i datą przyjęcia, a ruch przyjęcia ją wskazuje.
 Pytanie „czyj odpad leży w boksie trzecim" ma odpowiedź w magazynie.
+
+WMS prowadzi saldo **osobno dla każdej partii** w lokalizacji, a `SORT` i `WZ`
+w legacy mówią tylko „ile" i „skąd". Most rozkłada więc każde przesunięcie i
+wydanie na partie leżące w lokalizacji źródłowej w kolejności przyjęcia (FIFO):
+jeden wiersz legacy może stać się kilkoma ruchami WMS, po jednym na partię,
+wszystkie z tym samym `referenceId`. Pulpit zwija je z powrotem po numerze
+kwitu, a powtórzony import dolicza tylko brakującą resztę masy — nie dubluje.
 
 **Ewidencja przekazań.** Każde zrealizowane wydanie dostaje kartę przekazania
 jako wysyłkę na zamówieniu: masa w kilogramach, kod odpadu, kod procesu odzysku
@@ -226,21 +237,33 @@ kontrolnej i że każde `WZ` wskazuje istniejące zamówienie, a `PZ` i `SORT` �
 
 ## Stan na dziś
 
-Zweryfikowane uruchomieniem na żywej instancji (Postgres + Redis + `apps/mercato`):
+Zweryfikowane uruchomieniem na żywej instancji (Open Mercato `main` z
+2026‑09‑19, Postgres 17 bez Redisa i Meilisearch — oba są opcjonalne):
 
 * topologia: 6 lokalizacji, 3 strefy, 1 magazyn,
 * frakcje: 6 pozycji katalogu z profilami zapasu,
-* ruchy: 176 zapisanych (81 `receipt`, 66 `transfer`, 29 `adjust`), 176
-  unikalnych kluczy idempotencji, zero duplikatów przy ponownym imporcie,
-* stany po imporcie zgodne z legacy co do kilograma (np. `BOKS3` 46 593 kg),
+* 8 kontrahentów, 46 zamówień, 46 faktur, 29 kart przekazania, 11 wpłat,
+  80 partii, 15 rezerwacji (2 odmówione przez WMS z braku pokrycia),
+* ruchy: 239 wierszy legacy → 174 operacje WMS, zero błędów, zero duplikatów
+  przy ponownym imporcie,
+* stany po imporcie zgodne z legacy co do kilograma we wszystkich lokalizacjach
+  (np. `BOKS3` 46 593 kg), bilans masy domyka się (378 631 − 164 906 = 213 725 kg),
 * WMS sam wystawił powiadomienia `wms.inventory.low_stock` dla frakcji poniżej
   progu — czyli reguła, której stary system nie miał gdzie zapisać.
 
 Pulpit sprawdzony w przeglądarce (zalogowanie, render, zrzut ekranu): kafelki,
 wykres przepływu, zapełnienie boksów i księga ruchów zasilają się z żywej bazy.
 
-Testy: 191 jednostkowych i 19 po stronie legacy przechodzi, cross-walidacja
-(28 przypadków Playwright) przechodzi na żywym stacku bez ponowień.
+Testy: 197 jednostkowych przechodzi (także na Windows), 19 po stronie legacy.
+Cross-walidacja Playwright nie była w tym przebiegu uruchamiana.
+
+### Zmiana wymuszona przez nowszy WMS
+
+Na bieżącym `main` saldo WMS jest koszykiem per partia. Wcześniejsza wersja
+mostu przyjmowała z partią, a przesuwała i wydawała bez niej — komenda patrzyła
+na pusty koszyk „bez partii" i odmawiała (`insufficient_stock`) dla 94 ze 174
+operacji. Stąd rozkład na partie opisany w sekcji „Identyfikowalność" oraz
+przesunięcie rezerwacji za księgę ruchów.
 
 Nie zrobione jeszcze: uruchamianie importu z panelu Data Sync end‑to‑end
 (adapter jest zarejestrowany i waliduje połączenie, ale przebiegi odpalaliśmy

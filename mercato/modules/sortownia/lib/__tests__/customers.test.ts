@@ -19,7 +19,7 @@ const scope = { organizationId: 'org-1', tenantId: 'ten-1' }
 function customer(overrides: Partial<LegacyCustomerRow> = {}): LegacyCustomerRow {
   return {
     debtorno: 'D005',
-    nazwa: 'Stora Papier Recykling',
+    nazwa: 'RecycleHub Sp. z o.o.',
     typ: 'ODB',
     miasto: 'Ostroleka',
     waluta: 'PLN',

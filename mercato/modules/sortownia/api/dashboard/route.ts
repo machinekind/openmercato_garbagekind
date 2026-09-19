@@ -166,18 +166,20 @@ export async function GET(req: Request): Promise<Response> {
     performed_at: string
     quantity: string
     reason: string | null
-    metadata: Record<string, unknown> | null
+    metadata: Record<string, unknown> | string | null
     sku: string | null
     variant_name: string | null
     from_code: string | null
     to_code: string | null
   }>>(
-    `select m.id,
+    // Jeden wiersz legacy może być kilkoma ruchami WMS (po jednym na partię);
+    // operator ma widzieć kwit, nie rozkład na partie — zwijamy po `reference_id`.
+    `select min(m.id::text) as id,
             m.type,
             m.performed_at,
-            m.quantity,
+            sum(m.quantity) as quantity,
             m.reason,
-            m.metadata,
+            min(m.metadata::text) as metadata,
             v.sku,
             v.name as variant_name,
             lf.code as from_code,
@@ -189,13 +191,15 @@ export async function GET(req: Request): Promise<Response> {
       where m.organization_id = ?
         and m.tenant_id = ?
         and m.deleted_at is null
-      order by m.performed_at desc, m.created_at desc
+      group by m.reference_id, m.type, m.performed_at, m.reason, v.sku, v.name, lf.code, lt.code
+      order by m.performed_at desc, min(m.created_at) desc
       limit 20`,
     [scope.organizationId, scope.tenantId],
   )
 
   const movementRows: MovementRow[] = movements.map((row) => {
-    const metadata = (row.metadata ?? {}) as { legacy?: { stkmoveno?: number | number[] } }
+    const rawMetadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata
+    const metadata = (rawMetadata ?? {}) as { legacy?: { stkmoveno?: number | number[] } }
     const legacy = metadata.legacy?.stkmoveno
     return {
       id: row.id,
@@ -242,7 +246,7 @@ export async function GET(req: Request): Promise<Response> {
     `select coalesce(sum(case when type = 'receipt' then quantity else 0 end), 0) as receipts,
             coalesce(sum(case when type = 'adjust' then abs(quantity) else 0 end), 0) as issues,
             coalesce(sum(case when type = 'transfer' then quantity else 0 end), 0) as transfers,
-            count(*) as total,
+            count(distinct (reference_id, type)) as total,
             max(performed_at) as last_performed_at
        from wms_inventory_movements
       where organization_id = ?

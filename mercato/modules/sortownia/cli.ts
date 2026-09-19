@@ -263,34 +263,6 @@ const importCommand: ModuleCli = {
     console.log(`  partie odpadu: ${lotResult.outcomes.length} przyjęć (nowych partii ${lotsCreated})`)
     for (const outcome of lotsFailed.slice(0, 5)) console.log(`    ! partia PZ/${outcome.stkmoveno}: ${outcome.error}`)
 
-    // 8. Rezerwacje pod zamówienia jeszcze niezrealizowane.
-    if (salesOrderIndex.size > 0 && (await fileExists(ordersPath))) {
-      const orderRows = await readOrders(ordersPath)
-      // Wydane = ma swój ruch WZ w księdze. Reszta czeka i ma być zablokowana.
-      const fulfilled = fulfilledOrders
-      const result = await applyReservations(
-        {
-          em,
-          commandBus,
-          commandContext,
-          scope,
-          warehouseId: warehouse.id,
-          fractions: movementContext.fractions,
-          orders: salesOrderIndex,
-          fulfilled,
-        },
-        orderRows,
-      )
-      const created = result.outcomes.filter((o) => o.action === 'create').length
-      const short = result.outcomes.filter((o) => o.action === 'insufficient')
-      const failedRes = result.outcomes.filter((o) => o.action === 'failed')
-      console.log(`  rezerwacje: ${orderRows.length - fulfilled.size} zamówień otwartych (nowych rezerwacji ${created})`)
-      for (const outcome of short) {
-        console.log(`    · zamówienie ${outcome.orderno}: brak pokrycia w magazynie — WMS odmówił rezerwacji`)
-      }
-      for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
-    }
-
     let buffer: LegacyMovementRow[] = []
     let carry: LegacyMovementRow[] = []
     let written = 0
@@ -326,6 +298,37 @@ const importCommand: ModuleCli = {
     console.log(`  ruchy: przeczytane ${seen}, zapisane ${written}, duplikaty ${duplicates}, błędy ${failed}`)
     for (const error of errors) console.log(`    ! ${error}`)
 
+    // 8. Rezerwacje pod zamówienia jeszcze niezrealizowane — dopiero po księdze.
+    // Rezerwacja potrzebuje stanu: przed ruchami magazyn jest pusty i WMS
+    // odmówiłby każdej, a rezerwacja założona na placu przyjęć blokowałaby masę,
+    // która ma dopiero zostać wysortowana do boksu.
+    if (salesOrderIndex.size > 0 && (await fileExists(ordersPath))) {
+      const orderRows = await readOrders(ordersPath)
+      // Wydane = ma swój ruch WZ w księdze. Reszta czeka i ma być zablokowana.
+      const fulfilled = fulfilledOrders
+      const result = await applyReservations(
+        {
+          em,
+          commandBus,
+          commandContext,
+          scope,
+          warehouseId: warehouse.id,
+          fractions: movementContext.fractions,
+          orders: salesOrderIndex,
+          fulfilled,
+        },
+        orderRows,
+      )
+      const created = result.outcomes.filter((o) => o.action === 'create').length
+      const short = result.outcomes.filter((o) => o.action === 'insufficient')
+      const failedRes = result.outcomes.filter((o) => o.action === 'failed')
+      console.log(`  rezerwacje: ${orderRows.length - fulfilled.size} zamówień otwartych (nowych rezerwacji ${created})`)
+      for (const outcome of short) {
+        console.log(`    · zamówienie ${outcome.orderno}: brak pokrycia w magazynie — WMS odmówił rezerwacji`)
+      }
+      for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
+    }
+
     const balances = await em.find(InventoryBalance, {
       organizationId: scope.organizationId,
       tenantId: scope.tenantId,
@@ -343,7 +346,7 @@ const importCommand: ModuleCli = {
     }
     console.log('  stany po imporcie:')
     for (const [code, quantity] of [...perLocation.entries()].sort()) {
-      console.log(`    ${code.padEnd(8)} ${(quantity / 1000).toFixed(3).padStart(10)} Mg`)
+      console.log(`    ${code.padEnd(8)} ${(quantity / 1000).toFixed(3).padStart(10)} t`)
     }
   },
 }

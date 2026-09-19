@@ -23,11 +23,28 @@ function row(overrides: Partial<LegacyMovementRow> & { stkmoveno: number }): Leg
   }
 }
 
-function buildContext(options: { existingMovement?: boolean; failOn?: string } = {}) {
+type Bucket = { lot: { id: string } | null; quantityOnHand: string; quantityReserved?: string; quantityAllocated?: string }
+
+function bucket(lotId: string | null, onHand: number, reserved = 0): Bucket {
+  return { lot: lotId ? { id: lotId } : null, quantityOnHand: String(onHand), quantityReserved: String(reserved), quantityAllocated: '0' }
+}
+
+/** Domyślnie w każdej lokalizacji leży jedna partia z zapasem, żeby ruch miał co zdejmować. */
+const DEFAULT_BUCKETS: Bucket[] = [bucket('lot-a', 100000)]
+
+function buildContext(
+  options: { existingMovement?: boolean; existingQuantity?: number; failOn?: string; buckets?: Bucket[] } = {},
+) {
   const commands: RecordedCommand[] = []
   const context = {
     em: {
-      findOne: jest.fn(async () => (options.existingMovement ? { id: 'istnieje' } : null)),
+      find: jest.fn(async (entity: { name?: string }) => {
+        if (entity?.name === 'InventoryMovement') {
+          if (options.existingMovement) return [{ quantity: String(options.existingQuantity ?? 1000000) }]
+          return []
+        }
+        return options.buckets ?? DEFAULT_BUCKETS
+      }),
     },
     commandBus: {
       execute: jest.fn(async (id: string, payload: { input: Record<string, unknown> }) => {
@@ -127,6 +144,7 @@ describe('applyMovementBatch — mapowanie na komendy WMS', () => {
       fromLocationId: 'loc-przyj',
       toLocationId: 'loc-boks1',
       quantity: 4685.98,
+      lotId: 'lot-a',
       type: 'transfer',
       reasonCode: 'SORT',
       referenceId: legacyUuid('movement', 100011),
@@ -151,10 +169,87 @@ describe('applyMovementBatch — mapowanie na komendy WMS', () => {
     expect(commands[0].input).toMatchObject({
       locationId: 'loc-boks1',
       delta: -9004.1,
+      lotId: 'lot-a',
       reasonCode: 'WZ',
       referenceType: 'so',
     })
     expect(String(commands[0].input.reason)).toContain('D005')
+  })
+
+  it('PZ zawsze zapisuje partię z indeksu, jeśli została założona', async () => {
+    const { context, commands } = buildContext()
+    context.lots = new Map([[100001, 'lot-pz-100001']])
+    await applyMovementBatch(context, [row({ stkmoveno: 100001 })], { final: true })
+    expect(commands[0].input.lotId).toBe('lot-pz-100001')
+  })
+})
+
+describe('applyMovementBatch — rozkład na partie', () => {
+  const pair = [
+    row({ stkmoveno: 100010, typ: 'SORT', loccode: 'PRZYJ', iloscKg: -5000, debtorno: '' }),
+    row({ stkmoveno: 100011, typ: 'SORT', loccode: 'BOKS1', iloscKg: 5000, debtorno: '' }),
+  ]
+
+  it('jedna para SORT schodzi z kilku partii w kolejności przyjęcia — po jednym ruchu na partię', async () => {
+    const { context, commands } = buildContext({
+      buckets: [bucket('lot-stara', 3000), bucket('lot-nowa', 4000)],
+    })
+    const { outcomes } = await applyMovementBatch(context, pair, { final: true })
+
+    expect(commands.map((command) => command.id)).toEqual(['wms.inventory.move', 'wms.inventory.move'])
+    expect(commands.map((command) => [command.input.lotId, command.input.quantity])).toEqual([
+      ['lot-stara', 3000],
+      ['lot-nowa', 2000],
+    ])
+    // Wszystkie kawałki niosą ten sam odcisk legacy — po numerze wraca się do kwitu.
+    const referenceIds = new Set(commands.map((command) => command.input.referenceId))
+    expect(referenceIds).toEqual(new Set([legacyUuid('movement', 100011)]))
+    expect(outcomes).toHaveLength(1)
+    expect(outcomes[0]).toMatchObject({ action: 'create', externalId: '100010+100011' })
+  })
+
+  it('masa zarezerwowana nie schodzi — liczy się dostępne, nie leżące', async () => {
+    const { context, commands } = buildContext({
+      buckets: [bucket('lot-a', 5000, 4000), bucket('lot-b', 1000)],
+    })
+    const { outcomes } = await applyMovementBatch(context, pair, { final: true })
+    expect(commands).toHaveLength(0)
+    expect(outcomes[0].action).toBe('failed')
+    expect(outcomes[0].error).toContain('insufficient_stock')
+  })
+
+  it('koszyk bez partii też jest źródłem — przyjęcia sprzed partii nie znikają', async () => {
+    const { context, commands } = buildContext({ buckets: [bucket(null, 5000)] })
+    await applyMovementBatch(context, pair, { final: true })
+    expect(commands).toHaveLength(1)
+    expect(commands[0].input.lotId).toBeUndefined()
+  })
+
+  it('import przerwany w połowie rozkładu dokłada przy powtórce tylko resztę', async () => {
+    const { context, commands } = buildContext({
+      existingMovement: true,
+      existingQuantity: 3000,
+      buckets: [bucket('lot-nowa', 4000)],
+    })
+    const { outcomes } = await applyMovementBatch(context, pair, { final: true })
+    expect(commands).toHaveLength(1)
+    expect(commands[0].input.quantity).toBe(2000)
+    expect(outcomes[0].action).toBe('create')
+  })
+
+  it('WZ z boksu schodzi z partii, więc wiadomo, czyj odpad pojechał do odbiorcy', async () => {
+    const { context, commands } = buildContext({
+      buckets: [bucket('lot-dostawca-1', 6000), bucket('lot-dostawca-2', 6000)],
+    })
+    await applyMovementBatch(
+      context,
+      [row({ stkmoveno: 100030, typ: 'WZ', loccode: 'BOKS1', iloscKg: -9000, debtorno: 'D005' })],
+      { final: true },
+    )
+    expect(commands.map((command) => [command.input.lotId, command.input.delta])).toEqual([
+      ['lot-dostawca-1', -6000],
+      ['lot-dostawca-2', -3000],
+    ])
   })
 
   it('masy jadą w kilogramach — megagramy są jednostką raportową, nie magazynową', async () => {

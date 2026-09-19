@@ -24,7 +24,7 @@ jest.mock('@open-mercato/shared/lib/encryption/find', () => ({
   // Nazwy kontrahentów są szyfrowane w spoczynku — trasa MUSI czytać je
   // przez warstwę deszyfrującą, więc mock odwzorowuje właśnie ją.
   findWithDecryption: jest.fn(async () => [
-    { id: 'ent-5', displayName: 'Stora Papier Recykling' },
+    { id: 'ent-5', displayName: 'RecycleHub Sp. z o.o.' },
   ]),
 }))
 
@@ -241,7 +241,7 @@ describe('GET /api/sortownia/dashboard — dane', () => {
   it('nazwy odbiorców biorą się z warstwy deszyfrującej, a nie z surowego SQL-a', async () => {
     const body = await readBody(await GET(makeRequest()))
     // Surowy odczyt `display_name` oddaje kryptogram i ląduje on na ekranie.
-    expect(body.sales.topBuyers[0].nazwa).toBe('Stora Papier Recykling')
+    expect(body.sales.topBuyers[0].nazwa).toBe('RecycleHub Sp. z o.o.')
   })
 
   it('liczy bilans masy i sprawność sortowania', async () => {

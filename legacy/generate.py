@@ -51,7 +51,7 @@ DEBTORS = [
     ("D002", "Spoldzielnia Mieszkaniowa Zorza", "ul. Sloneczna 4",   "Legionowo",  "DOS", "PLN", "2013-09-01", 0.0, nip("536241002"), "000023781"),
     ("D003", "PPHU Transbud",                "ul. Przemyslowa 88",   "Nowy Dwor",  "DOS", "PLN", "2016-06-20", 0.0, nip("536310003"), "000031094"),
     ("D004", "Zaklad Komunalny Serock",      "ul. Nadrzeczna 3",     "Serock",     "DOS", "PLN", "2009-01-08", 0.0, nip("536422004"), "000047215"),
-    ("D005", "Stora Papier Recykling",       "ul. Fabryczna 21",     "Ostroleka",  "ODB", "PLN", "2012-04-02", 250000.0, nip("774113005"), "000118340"),
+    ("D005", "RecycleHub Sp. z o.o.",        "ul. Fabryczna 21",     "Ostroleka",  "ODB", "PLN", "2012-04-02", 250000.0, nip("774113005"), "000118340"),
     ("D006", "PlastMet Sp. z o.o.",          "ul. Tworzywowa 7",     "Plock",      "ODB", "PLN", "2014-11-17", 180000.0, nip("774250006"), "000126702"),
     ("D007", "Huta Szkla Jaroslaw",          "ul. Hutnicza 1",       "Jaroslaw",   "ODB", "EUR", "2018-02-05", 120000.0, nip("795104007"), "000139518"),
     ("D008", "Cementownia Odolanow RDF",     "ul. Wapienna 40",      "Odolanow",   "ODB", "PLN", "2019-08-22", 300000.0, nip("622187008"), "000145063"),

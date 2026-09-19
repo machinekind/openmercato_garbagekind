@@ -1,8 +1,7 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
 import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import type { TenantScope } from '@open-mercato/core/modules/data_sync/lib/adapter'
-import { InventoryMovement, type WarehouseLocation } from '@open-mercato/core/modules/wms/data/entities'
-import { buildMovementIdempotencyKey } from '@open-mercato/core/modules/wms/lib/inventoryIdempotency'
+import { InventoryBalance, InventoryMovement, type WarehouseLocation } from '@open-mercato/core/modules/wms/data/entities'
 import { legacyUuid, type LegacyMovementRow } from './legacyFiles'
 import type { FractionIndex } from './fractions'
 
@@ -20,7 +19,19 @@ import type { FractionIndex } from './fractions'
  *    się od bazy, a nie od naszej pamięci.
  * 3. Masy jadą w kilogramach, bo w takich jednostkach prowadzony jest magazyn;
  *    megagramy są przeliczane na ekranach i w raportach.
+ *
+ * Do tego dochodzi partia. WMS prowadzi saldo osobno dla każdej partii w danej
+ * lokalizacji: przyjęcie ze wskazaną partią ląduje w koszyku tej partii, a
+ * przesunięcie i korekta bez `lotId` patrzą wyłącznie na koszyk bez partii —
+ * który jest pusty. Legacy nie zna partii, więc `SORT` i `WZ` mówią tylko
+ * „ile" i „skąd". Rozstrzygamy to po stronie mostu: masa schodzi z partii
+ * leżących w lokalizacji źródłowej w kolejności przyjęcia (FIFO) i jeden wiersz
+ * legacy może stać się kilkoma ruchami WMS, po jednym na partię. Wszystkie
+ * niosą ten sam `referenceId`, więc po numerze ze starego systemu nadal wraca
+ * się do kwitu, a magazyn wie, czyj odpad wyjechał do odbiorcy.
  */
+
+const EPSILON = 0.000001
 
 export type MovementOutcome = {
   externalId: string
@@ -94,48 +105,95 @@ export function pairSortRows(rows: LegacyMovementRow[]): { pairs: SortPair[]; or
 }
 
 /**
- * Czy ten ruch już siedzi w księdze WMS.
+ * Ile masy z tego wiersza legacy już siedzi w księdze WMS.
  *
- * Klucz idempotencji liczymy tak samo jak WMS, więc powtórzony import nie
- * wysyła komendy w ogóle — a licznik po przebiegu mówi prawdę zamiast meldować
- * „zapisano" o czymś, co system po cichu uznał za powtórkę.
+ * Klucz idempotencji WMS obejmuje `lotId` i ilość, więc jeden wiersz legacy
+ * rozłożony na partie ma w magazynie kilka kluczy — kontrola po kluczu nie
+ * powiedziałaby, czy wiersz wszedł w całości. `referenceId` jest naszym
+ * własnym, deterministycznym odciskiem `stkmoveno` i nie zmienia się nigdy,
+ * dlatego to on rozstrzyga. Zwracamy sumę, a nie flagę: import przerwany w
+ * połowie rozkładu na partie dokłada przy powtórce tylko brakującą resztę.
  */
-async function alreadyApplied(
-  ctx: MovementContext,
-  input: Parameters<typeof buildMovementIdempotencyKey>[0],
-): Promise<boolean> {
-  const idempotencyKey = buildMovementIdempotencyKey(input)
-  const existing = await ctx.em.findOne(InventoryMovement, {
-    idempotencyKey,
-    organizationId: ctx.scope.organizationId,
-    tenantId: ctx.scope.tenantId,
-  })
-  return existing !== null
-}
-
-/**
- * Czy ten wiersz legacy jest już w magazynie — niezależnie od kształtu klucza WMS.
- *
- * Klucz idempotencji WMS obejmuje `lotId`, więc od chwili, gdy przyjęcia zaczęły
- * wskazywać partię, ten sam wiersz `PZ` liczy się inaczej niż przed zmianą.
- * Kontrola wyłącznie po kluczu uznałaby każde wcześniej zaimportowane przyjęcie
- * za nowe i zdublowała całą księgę przy pierwszym imporcie po wdrożeniu partii.
- *
- * `referenceId` jest naszym własnym, deterministycznym odciskiem `stkmoveno`
- * i nie zmienia się nigdy — dlatego to on rozstrzyga, czy wiersz już wszedł.
- */
-async function alreadyImported(
+async function appliedQuantity(
   ctx: MovementContext,
   referenceId: string,
   type: 'receipt' | 'transfer' | 'adjust',
-): Promise<boolean> {
-  const existing = await ctx.em.findOne(InventoryMovement, {
-    referenceId,
-    type,
-    organizationId: ctx.scope.organizationId,
-    tenantId: ctx.scope.tenantId,
-  } as never)
-  return existing !== null
+): Promise<number> {
+  const existing = await ctx.em.find(
+    InventoryMovement,
+    {
+      referenceId,
+      type,
+      organizationId: ctx.scope.organizationId,
+      tenantId: ctx.scope.tenantId,
+    } as never,
+    // Komendy WMS zapisują we własnej transakcji; mapa tożsamości EM mogłaby
+    // pamiętać stan sprzed niej.
+    { refresh: true } as never,
+  )
+  let total = 0
+  for (const movement of existing as Array<{ quantity: string | number }>) {
+    total += Math.abs(Number.parseFloat(String(movement.quantity)))
+  }
+  return total
+}
+
+/** Kawałek masy do zdjęcia z jednej partii (albo z koszyka bez partii). */
+export type SourceChunk = { lotId: string | null; quantity: number }
+
+/**
+ * Rozkłada masę do zdjęcia z lokalizacji na partie, które w niej leżą.
+ *
+ * Kolejność jest FIFO po chwili założenia koszyka salda, czyli po kolejności
+ * przyjęć — tak schodzi odpad z placu naprawdę: najstarsza pryzma pierwsza.
+ * Gdy partie nie pokrywają całej masy, odmawiamy tak samo jak WMS
+ * (`insufficient_stock`), zamiast zdejmować część i udawać, że poszło całe.
+ */
+export async function resolveSourceChunks(
+  ctx: MovementContext,
+  locationId: string,
+  catalogVariantId: string,
+  quantity: number,
+): Promise<SourceChunk[]> {
+  const balances = await ctx.em.find(
+    InventoryBalance,
+    {
+      warehouse: ctx.warehouseId,
+      location: locationId,
+      catalogVariantId,
+      organizationId: ctx.scope.organizationId,
+      tenantId: ctx.scope.tenantId,
+    } as never,
+    { refresh: true, orderBy: { createdAt: 'asc' } } as never,
+  )
+
+  const chunks: SourceChunk[] = []
+  let remaining = quantity
+  for (const balance of balances as Array<{
+    lot?: { id: string } | string | null
+    quantityOnHand: string | number
+    quantityReserved: string | number
+    quantityAllocated: string | number
+  }>) {
+    if (remaining <= EPSILON) break
+    const available =
+      Number.parseFloat(String(balance.quantityOnHand)) -
+      Number.parseFloat(String(balance.quantityReserved)) -
+      Number.parseFloat(String(balance.quantityAllocated))
+    if (!(available > EPSILON)) continue
+    const lotRaw = balance.lot ?? null
+    const lotId = typeof lotRaw === 'string' ? lotRaw : lotRaw?.id ?? null
+    const take = Math.min(available, remaining)
+    chunks.push({ lotId, quantity: Math.round(take * 10000) / 10000 })
+    remaining -= take
+  }
+
+  if (remaining > EPSILON) {
+    throw new Error(
+      `insufficient_stock: w lokalizacji brakuje ${remaining.toFixed(2)} kg z ${quantity.toFixed(2)} kg`,
+    )
+  }
+  return chunks
 }
 
 function parseMoment(value: string): Date {
@@ -152,8 +210,8 @@ async function applyReceipt(ctx: MovementContext, row: LegacyMovementRow): Promi
   const performedAt = parseMoment(row.data)
   const referenceId = legacyUuid('movement', row.stkmoveno)
   // Przyjęcie wskazuje partię, a `lotId` wchodzi do klucza idempotencji WMS,
-  // więc rozstrzygamy po `referenceId` — patrz komentarz przy `alreadyImported`.
-  if (await alreadyImported(ctx, referenceId, 'receipt')) {
+  // więc rozstrzygamy po `referenceId` — patrz komentarz przy `appliedQuantity`.
+  if ((await appliedQuantity(ctx, referenceId, 'receipt')) > EPSILON) {
     return true
   }
 
@@ -193,43 +251,40 @@ async function applyTransfer(ctx: MovementContext, pair: SortPair): Promise<bool
   if (!fraction) throw new Error(`Nieznana frakcja legacy: ${pair.in.stockid}`)
 
   const referenceId = legacyUuid('movement', pair.in.stkmoveno)
-  if (
-    await alreadyApplied(ctx, {
-      referenceType: 'transfer',
-      referenceId,
-      type: 'transfer',
-      warehouseId: ctx.warehouseId,
-      locationFromId: from.id,
-      locationToId: to.id,
-      catalogVariantId: fraction.variantId,
-      quantity: Math.abs(pair.in.iloscKg),
-    })
-  ) {
+  const total = Math.abs(pair.in.iloscKg)
+  const remaining = total - (await appliedQuantity(ctx, referenceId, 'transfer'))
+  if (remaining <= EPSILON) {
     return true
   }
 
-  await ctx.commandBus.execute('wms.inventory.move', {
-    input: {
-      organizationId: ctx.scope.organizationId,
-      tenantId: ctx.scope.tenantId,
-      warehouseId: ctx.warehouseId,
-      fromLocationId: from.id,
-      toLocationId: to.id,
-      catalogVariantId: fraction.variantId,
-      quantity: Math.abs(pair.in.iloscKg),
-      type: 'transfer',
-      reason: `Wysortowanie frakcji (SORT ${pair.out.stkmoveno}/${pair.in.stkmoveno})`,
-      reasonCode: 'SORT',
-      referenceType: 'transfer',
-      referenceId,
-      performedBy: ctx.performedBy,
-      performedAt: parseMoment(pair.in.data),
-      metadata: {
-        legacy: { stkmoveno: [pair.out.stkmoveno, pair.in.stkmoveno], typ: 'SORT' },
+  // Jedna para SORT może zejść z kilku partii: po jednym ruchu na partię,
+  // wszystkie z tym samym `referenceId` i tym samym śladem legacy.
+  const chunks = await resolveSourceChunks(ctx, from.id, fraction.variantId, remaining)
+  for (const chunk of chunks) {
+    await ctx.commandBus.execute('wms.inventory.move', {
+      input: {
+        organizationId: ctx.scope.organizationId,
+        tenantId: ctx.scope.tenantId,
+        warehouseId: ctx.warehouseId,
+        fromLocationId: from.id,
+        toLocationId: to.id,
+        catalogVariantId: fraction.variantId,
+        lotId: chunk.lotId ?? undefined,
+        quantity: chunk.quantity,
+        type: 'transfer',
+        reason: `Wysortowanie frakcji (SORT ${pair.out.stkmoveno}/${pair.in.stkmoveno})`,
+        reasonCode: 'SORT',
+        referenceType: 'transfer',
+        referenceId,
+        performedBy: ctx.performedBy,
+        performedAt: parseMoment(pair.in.data),
+        metadata: {
+          legacy: { stkmoveno: [pair.out.stkmoveno, pair.in.stkmoveno], typ: 'SORT' },
+        },
       },
-    },
-    ctx: ctx.commandContext,
-  })
+      ctx: ctx.commandContext,
+    })
+  }
   return false
 }
 
@@ -240,51 +295,47 @@ async function applyIssue(ctx: MovementContext, row: LegacyMovementRow): Promise
   if (!fraction) throw new Error(`Nieznana frakcja legacy: ${row.stockid}`)
 
   const referenceId = legacyUuid('movement', row.stkmoveno)
-  if (
-    await alreadyApplied(ctx, {
-      referenceType: 'so',
-      referenceId,
-      type: 'adjust',
-      warehouseId: ctx.warehouseId,
-      // Korekta zapisuje lokalizację jako `locationTo`, nawet gdy zdejmuje stan
-      // — klucz musi to odwzorować, inaczej powtórka wygląda na nowy ruch.
-      locationToId: location.id,
-      catalogVariantId: fraction.variantId,
-      quantity: -Math.abs(row.iloscKg),
-    })
-  ) {
+  const total = Math.abs(row.iloscKg)
+  const remaining = total - (await appliedQuantity(ctx, referenceId, 'adjust'))
+  if (remaining <= EPSILON) {
     return true
   }
 
-  await ctx.commandBus.execute('wms.inventory.adjust', {
-    input: {
-      organizationId: ctx.scope.organizationId,
-      tenantId: ctx.scope.tenantId,
-      warehouseId: ctx.warehouseId,
-      locationId: location.id,
-      catalogVariantId: fraction.variantId,
-      delta: -Math.abs(row.iloscKg),
-      reason: `Wydanie do odbiorcy ${row.debtorno || 'nieznany'} (WZ ${row.stkmoveno})`,
-      reasonCode: 'WZ',
-      referenceType: 'so',
-      referenceId,
-      performedBy: ctx.performedBy,
-      performedAt: parseMoment(row.data),
-      metadata: {
-        legacy: {
-          stkmoveno: row.stkmoveno,
-          typ: row.typ,
-          debtorno: row.debtorno || null,
-          orderno: row.orderno || null,
+  // Wydanie schodzi z partii leżących w boksie — dzięki temu karta przekazania
+  // ma odpowiedź, czyj odpad pojechał do odbiorcy.
+  const chunks = await resolveSourceChunks(ctx, location.id, fraction.variantId, remaining)
+  for (const chunk of chunks) {
+    await ctx.commandBus.execute('wms.inventory.adjust', {
+      input: {
+        organizationId: ctx.scope.organizationId,
+        tenantId: ctx.scope.tenantId,
+        warehouseId: ctx.warehouseId,
+        locationId: location.id,
+        catalogVariantId: fraction.variantId,
+        lotId: chunk.lotId ?? undefined,
+        delta: -chunk.quantity,
+        reason: `Wydanie do odbiorcy ${row.debtorno || 'nieznany'} (WZ ${row.stkmoveno})`,
+        reasonCode: 'WZ',
+        referenceType: 'so',
+        referenceId,
+        performedBy: ctx.performedBy,
+        performedAt: parseMoment(row.data),
+        metadata: {
+          legacy: {
+            stkmoveno: row.stkmoveno,
+            typ: row.typ,
+            debtorno: row.debtorno || null,
+            orderno: row.orderno || null,
+          },
+          // Identyfikator dokumentu sprzedaży, który to wydanie realizuje.
+          // `referenceId` jest zajęty przez klucz idempotencji liczony ze
+          // `stkmoveno`, więc powiązanie z zamówieniem idzie metadanymi.
+          salesOrderId: salesOrderIdFor(ctx, row) ?? null,
         },
-        // Identyfikator dokumentu sprzedaży, który to wydanie realizuje.
-        // `referenceId` jest zajęty przez klucz idempotencji liczony ze
-        // `stkmoveno`, więc powiązanie z zamówieniem idzie metadanymi.
-        salesOrderId: salesOrderIdFor(ctx, row) ?? null,
       },
-    },
-    ctx: ctx.commandContext,
-  })
+      ctx: ctx.commandContext,
+    })
+  }
   return false
 }
 
