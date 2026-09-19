@@ -110,13 +110,22 @@ interpretera. Raport domyślnie powstaje poza Git w
    & $py mercato\hardware\so101\validate.py artifacts --policy-dir D:\policy\so101
    ```
 
-8. Dopiero komplet dowodów może utworzyć kolejną, niezmienną rewizję opisu:
+8. Komplet dowodów trzeba najpierw zamknąć w niezmiennym pliku. Polecenie
+   samo oblicza SHA-256; operator nie wpisuje skrótu ręcznie:
+
+   ```powershell
+   & $py mercato\hardware\so101\validate.py seal `
+     --output .runtime\so101-validation\evidence.sealed.json `
+     --confirm SEAL-PHYSICAL-EVIDENCE
+   ```
+
+9. Dopiero zamknięty raport może utworzyć kolejną, niezmienną rewizję opisu:
 
    ```powershell
    & $py mercato\hardware\so101\validate.py finalize `
      --spec mercato\embodiments\so101_follower.json `
      --output mercato\embodiments\so101_follower.r2.json `
-     --evidence-uri 'sha256:<skrót zatwierdzonego raportu>' `
+     --sealed-report .runtime\so101-validation\evidence.sealed.json `
      --confirm CREATE-HARDWARE-REVISION
    ```
 
@@ -124,4 +133,6 @@ interpretera. Raport domyślnie powstaje poza Git w
 kalibracja, zasilanie, zasięg, udźwig, torque-off, E-stop lub limity lokalne
 nie ma statusu `passed`. Nie nadpisuje istniejącego pliku i zwiększa numer
 rewizji, bo fizycznie zweryfikowany kontrakt nie jest tą samą rewizją co opis
-oparty wyłącznie na dokumentacji.
+oparty wyłącznie na dokumentacji. Rewizja zawiera obliczony przez narzędzie
+skrót zamkniętego raportu oraz `runRef`; raport z innego przebiegu jest
+odrzucany.

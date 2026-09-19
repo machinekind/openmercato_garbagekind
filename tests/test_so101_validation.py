@@ -79,7 +79,7 @@ class SO101ValidationTest(unittest.TestCase):
             ["command_timeout"],
         )
 
-    def test_finalize_creates_new_revision_without_overwriting_source(self):
+    def test_seal_and_finalize_create_digest_bound_revision_without_overwriting_source(self):
         report = validator.blank_report()
         for name in validator.REQUIRED_CHECKS:
             report["checks"][name] = {"status": "passed"}
@@ -113,7 +113,18 @@ class SO101ValidationTest(unittest.TestCase):
             root = Path(directory)
             spec = root / "r1.json"
             output = root / "r2.json"
+            sealed = root / "evidence.sealed.json"
             spec.write_text(json.dumps(source), encoding="utf-8")
+            seal_args = type(
+                "Args",
+                (),
+                {
+                    "confirm": "SEAL-PHYSICAL-EVIDENCE",
+                    "output": sealed,
+                },
+            )()
+            self.assertEqual(validator.command_seal(seal_args, report), 0)
+            expected_digest = validator.sha256_file(sealed)
             args = type(
                 "Args",
                 (),
@@ -121,7 +132,7 @@ class SO101ValidationTest(unittest.TestCase):
                     "confirm": "CREATE-HARDWARE-REVISION",
                     "spec": spec,
                     "output": output,
-                    "evidence_uri": "sha256:abc",
+                    "sealed_report": sealed,
                 },
             )()
             self.assertEqual(validator.command_finalize(args, report), 0)
@@ -133,7 +144,36 @@ class SO101ValidationTest(unittest.TestCase):
             self.assertEqual(created["safetyLayer"]["mechanism"], "hardware_estop")
             self.assertTrue(created["safetyLayer"]["verifiedAgainstHardware"])
             self.assertTrue(created["provenance"]["verifiedAgainstHardware"])
+            self.assertEqual(created["provenance"]["evidenceDigest"], expected_digest)
+            self.assertIn(f"sha256:{expected_digest}", created["provenance"]["sources"])
             self.assertEqual(untouched["kinematics"]["reachMm"], "unknown")
+
+    def test_finalize_rejects_sealed_evidence_from_another_run(self):
+        current = validator.blank_report()
+        sealed_report = validator.blank_report()
+        for name in validator.REQUIRED_CHECKS:
+            sealed_report["checks"][name] = {"status": "passed"}
+        sealed_report["overallStatus"] = "passed"
+        sealed_report["seal"] = {"sealedAt": validator.now_iso(), "algorithm": "sha256"}
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sealed = root / "evidence.sealed.json"
+            spec = root / "r1.json"
+            sealed.write_text(json.dumps(sealed_report), encoding="utf-8")
+            spec.write_text(json.dumps({"embodimentKey": "so101_follower"}), encoding="utf-8")
+            args = type(
+                "Args",
+                (),
+                {
+                    "confirm": "CREATE-HARDWARE-REVISION",
+                    "spec": spec,
+                    "output": root / "r2.json",
+                    "sealed_report": sealed,
+                },
+            )()
+            with self.assertRaisesRegex(ValueError, "different validation run"):
+                validator.command_finalize(args, current)
 
 
 if __name__ == "__main__":

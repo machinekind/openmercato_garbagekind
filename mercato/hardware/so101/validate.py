@@ -9,6 +9,7 @@ move or release the arm.
 from __future__ import annotations
 
 import argparse
+import copy
 import dataclasses
 import hashlib
 import json
@@ -20,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 
-TOOL_VERSION = "1.1.0"
+TOOL_VERSION = "1.2.0"
 JOINTS = (
     ("shoulder_pan", 1),
     ("shoulder_lift", 2),
@@ -469,28 +470,74 @@ def command_artifacts(args: argparse.Namespace, report: dict[str, Any]) -> int:
     return 0 if not missing else 2
 
 
+def command_seal(args: argparse.Namespace, report: dict[str, Any]) -> int:
+    if args.confirm != "SEAL-PHYSICAL-EVIDENCE":
+        raise ValueError("Sealing requires --confirm SEAL-PHYSICAL-EVIDENCE")
+    if overall_status(report) != "passed":
+        missing = [
+            name
+            for name in REQUIRED_CHECKS
+            if report.get("checks", {}).get(name, {}).get("status") != "passed"
+        ]
+        raise ValueError(f"Physical evidence is incomplete: {', '.join(missing)}")
+    if args.output.exists():
+        raise FileExistsError(f"Refusing to overwrite sealed evidence: {args.output}")
+
+    snapshot = copy.deepcopy(report)
+    snapshot["generatedAt"] = now_iso()
+    snapshot["overallStatus"] = overall_status(snapshot)
+    snapshot["seal"] = {
+        "sealedAt": now_iso(),
+        "algorithm": "sha256",
+        "toolVersion": TOOL_VERSION,
+    }
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("x", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n")
+    digest = sha256_file(args.output)
+    report["sealedEvidence"] = {
+        "path": str(args.output.resolve()),
+        "sha256": digest,
+        "sealedAt": snapshot["seal"]["sealedAt"],
+    }
+    print(f"Sealed evidence: {args.output.resolve()}")
+    print(f"Evidence digest: sha256:{digest}")
+    return 0
+
+
 def command_finalize(args: argparse.Namespace, report: dict[str, Any]) -> int:
     if args.confirm != "CREATE-HARDWARE-REVISION":
         raise ValueError("Finalization requires --confirm CREATE-HARDWARE-REVISION")
-    if overall_status(report) != "passed":
+    sealed_report = json.loads(args.sealed_report.read_text(encoding="utf-8"))
+    if sealed_report.get("schemaVersion") != 1 or sealed_report.get("embodimentKey") != "so101_follower":
+        raise ValueError("Sealed evidence is not an SO-101 evidence report")
+    if not isinstance(sealed_report.get("seal"), dict):
+        raise ValueError("Evidence report was not created by the seal command")
+    if sealed_report.get("runRef") != report.get("runRef"):
+        raise ValueError("Sealed evidence belongs to a different validation run")
+    if overall_status(sealed_report) != "passed" or sealed_report.get("overallStatus") != "passed":
         missing = [
-            name for name in REQUIRED_CHECKS if report.get("checks", {}).get(name, {}).get("status") != "passed"
+            name
+            for name in REQUIRED_CHECKS
+            if sealed_report.get("checks", {}).get(name, {}).get("status") != "passed"
         ]
-        raise ValueError(f"Physical evidence is incomplete: {', '.join(missing)}")
+        raise ValueError(f"Sealed physical evidence is incomplete: {', '.join(missing)}")
+    evidence_digest = sha256_file(args.sealed_report)
+    evidence_uri = f"sha256:{evidence_digest}"
     source = json.loads(args.spec.read_text(encoding="utf-8"))
     if source.get("embodimentKey") != "so101_follower":
         raise ValueError("Input spec is not so101_follower")
     output = json.loads(json.dumps(source))
     output["revision"] = int(source["revision"]) + 1
-    output["kinematics"]["reachMm"] = report["checks"]["reach"]["valueMm"]
-    output["kinematics"]["payloadKg"] = report["checks"]["payload"]["valueKg"]
+    output["kinematics"]["reachMm"] = sealed_report["checks"]["reach"]["valueMm"]
+    output["kinematics"]["payloadKg"] = sealed_report["checks"]["payload"]["valueKg"]
     output["kinematics"]["measurementUncertainty"] = {
-        "reachMm": report["checks"]["reach"]["uncertaintyMm"],
-        "payloadKg": report["checks"]["payload"]["uncertaintyKg"],
+        "reachMm": sealed_report["checks"]["reach"]["uncertaintyMm"],
+        "payloadKg": sealed_report["checks"]["payload"]["uncertaintyKg"],
     }
     previous_safety = output.get("safetyLayer")
-    safety = report["checks"]["emergencyStop"]
-    limits = report["checks"]["deterministicLimits"]
+    safety = sealed_report["checks"]["emergencyStop"]
+    limits = sealed_report["checks"]["deterministicLimits"]
     output["safetyLayer"] = {
         "mechanism": safety["mechanism"],
         "implementedIn": limits["implementedIn"],
@@ -504,12 +551,14 @@ def command_finalize(args: argparse.Namespace, report: dict[str, Any]) -> int:
     output["provenance"]["sourcedFrom"] = "hardware_validation"
     output["provenance"]["verifiedAgainstHardware"] = True
     sources = list(output["provenance"].get("sources", []))
-    if args.evidence_uri not in sources:
-        sources.append(args.evidence_uri)
+    if evidence_uri not in sources:
+        sources.append(evidence_uri)
     output["provenance"]["sources"] = sources
+    output["provenance"]["evidenceDigest"] = evidence_digest
+    output["provenance"]["evidenceRunRef"] = sealed_report["runRef"]
     output["provenance"]["note"] = (
-        f"Physical validation completed {report['generatedAt']} on {report.get('port')}; "
-        f"evidence: {args.evidence_uri}."
+        f"Physical validation completed {sealed_report['generatedAt']} on "
+        f"{sealed_report.get('port')}; evidence: {evidence_uri}."
     )
     if args.output.exists():
         raise FileExistsError(f"Refusing to overwrite existing revision: {args.output}")
@@ -582,10 +631,14 @@ def parser() -> argparse.ArgumentParser:
     artifacts = commands.add_parser("artifacts", help="Hash real policy artifacts")
     artifacts.add_argument("--policy-dir", type=Path, required=True)
 
+    seal = commands.add_parser("seal", help="Create an immutable evidence snapshot and calculate its digest")
+    seal.add_argument("--output", type=Path, required=True)
+    seal.add_argument("--confirm", required=True)
+
     finalize = commands.add_parser("finalize", help="Create the next immutable verified embodiment revision")
     finalize.add_argument("--spec", type=Path, required=True)
     finalize.add_argument("--output", type=Path, required=True)
-    finalize.add_argument("--evidence-uri", required=True)
+    finalize.add_argument("--sealed-report", type=Path, required=True)
     finalize.add_argument("--confirm", required=True)
     return root
 
@@ -602,6 +655,7 @@ def main(argv: list[str] | None = None) -> int:
         "safety": command_safety,
         "torque-off": command_torque_off,
         "artifacts": command_artifacts,
+        "seal": command_seal,
         "finalize": command_finalize,
     }[args.command]
     try:
