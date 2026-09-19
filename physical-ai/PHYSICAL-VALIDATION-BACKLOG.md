@@ -44,6 +44,13 @@ Do Git trafia tylko zanonimizowany indeks, skróty SHA-256 i podsumowanie.
 Nagrania oraz ciężkie logi trafiają do magazynu obiektów DGX/edge. Każda
 pozycja w `media-index.json` podaje URI, skrót, czas UTC, kamerę, retencję i
 potwierdzenie anonimizacji. Zegary robota, kamer i DGX muszą być zsynchronizowane.
+Dokładny kontrakt pól i maszynową kontrolę integralności opisuje
+[`EVIDENCE-BUNDLE.md`](EVIDENCE-BUNDLE.md). Paczka przed dopuszczeniem P0 musi
+przejść:
+
+```powershell
+py -3.12 mercato\hardware\evidence_bundle.py <katalog-runRef> --require-p0-pass
+```
 
 ## P0 — bezpieczeństwo przed ruchem autonomicznym
 

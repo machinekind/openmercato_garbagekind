@@ -9,6 +9,8 @@ Aktualna lista prób i artefaktów do zebrania przez zespół physical:
 [`PHYSICAL-VALIDATION-BACKLOG.md`](PHYSICAL-VALIDATION-BACKLOG.md).
 Ostatni zweryfikowany stan programu i jawne blokady sprzętowe:
 [`VERIFICATION-STATUS.md`](VERIFICATION-STATUS.md).
+Kontrakt paczki dowodowej i jej kontrola integralności:
+[`EVIDENCE-BUNDLE.md`](EVIDENCE-BUNDLE.md).
 Procedura odbioru podłączonego SO-101 znajduje się w
 [`mercato/hardware/so101/README.md`](../mercato/hardware/so101/README.md).
 
