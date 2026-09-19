@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Pulpit wdrożeń etapowych.
@@ -62,14 +63,14 @@ type Payload = {
   rollouts: RolloutRow[]
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  planned: 'zaplanowane',
-  running: 'w biegu',
-  halted: 'wstrzymane',
-  completed: 'zakończone',
-  rolled_back: 'wycofane',
-  pending: 'oczekuje',
-  passed: 'zaliczony',
+const STATUS_LABEL: Record<string, [string, string]> = {
+  planned: ['rollout.label.status.planned', "zaplanowane"],
+  running: ['rollout.label.status.running', "w biegu"],
+  halted: ['rollout.label.status.halted', "wstrzymane"],
+  completed: ['rollout.label.status.completed', "zakończone"],
+  rolled_back: ['rollout.label.status.rolled_back', "wycofane"],
+  pending: ['rollout.label.status.pending', "oczekuje"],
+  passed: ['rollout.label.status.passed', "zaliczony"],
 }
 
 const STATUS_TONE: Record<string, string> = {
@@ -82,10 +83,10 @@ const STATUS_TONE: Record<string, string> = {
   planned: 'text-muted-foreground',
 }
 
-const DECISION_LABEL: Record<string, string> = {
-  advance: 'przepuść',
-  hold: 'wstrzymaj — za mało danych',
-  rollback: 'WYCOFAJ',
+const DECISION_LABEL: Record<string, [string, string]> = {
+  advance: ['rollout.label.decision.advance', "przepuść"],
+  hold: ['rollout.label.decision.hold', "wstrzymaj — za mało danych"],
+  rollback: ['rollout.label.decision.rollback', "WYCOFAJ"],
 }
 
 function pct(value: number): string {
@@ -93,6 +94,7 @@ function pct(value: number): string {
 }
 
 export default function RolloutBoard() {
+  const t = useT()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -102,7 +104,7 @@ export default function RolloutBoard() {
       const response = await apiFetch('/api/rollout/rollouts')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('rollout.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -130,29 +132,26 @@ export default function RolloutBoard() {
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard title="Wdrożenia" value={totals?.rollouts ?? null} loading={loading} />
+        <KpiCard title={t('rollout.ui.rollouts', "Wdrożenia")} value={totals?.rollouts ?? null} loading={loading} />
         <KpiCard
-          title="W biegu"
+          title={t('rollout.ui.running', "W biegu")}
           value={totals?.running ?? null}
           loading={loading}
           footer={<span className="text-xs text-muted-foreground">etap czynny, brama czeka na dane</span>}
         />
         <KpiCard
-          title="Wycofane"
+          title={t('rollout.ui.rolledBack', "Wycofane")}
           value={totals?.rolledBack ?? null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">
-              wycofanie jest tańsze niż diagnoza, więc jest domyślne
-            </span>
+            <span className="text-xs text-muted-foreground">{t('rollout.ui.rollbackIsCheaper', "wycofanie jest tańsze niż diagnoza, więc jest domyślne")}</span>
           }
         />
-        <KpiCard title="Zakończone" value={totals?.completed ?? null} loading={loading} />
+        <KpiCard title={t('rollout.ui.completed', "Zakończone")} value={totals?.completed ?? null} loading={loading} />
       </div>
 
       {!loading && !rollouts.length ? (
-        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">
-          Brak zaplanowanych wdrożeń. Uruchom <code>yarn mercato rollout prove</code>.
+        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">{t('rollout.ui.noRollouts', "Brak zaplanowanych wdrożeń. Uruchom")}<code>yarn mercato rollout prove</code>.
         </div>
       ) : null}
 
@@ -166,7 +165,7 @@ export default function RolloutBoard() {
               </div>
             </div>
             <div className={`text-sm ${STATUS_TONE[rollout.status] ?? ''}`}>
-              {STATUS_LABEL[rollout.status] ?? rollout.status}
+              {STATUS_LABEL[rollout.status] ? t(...STATUS_LABEL[rollout.status]) : rollout.status}
               {rollout.statusReason ? (
                 <div className="text-xs text-muted-foreground">{rollout.statusReason}</div>
               ) : null}
@@ -180,13 +179,13 @@ export default function RolloutBoard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
-                <th className="px-4 py-2 font-normal">etap</th>
-                <th className="px-4 py-2 font-normal">roboty</th>
+                <th className="px-4 py-2 font-normal">{t("rollout.h.etap", "etap")}</th>
+                <th className="px-4 py-2 font-normal">{t("rollout.h.roboty", "roboty")}</th>
                 <th className="px-4 py-2 font-normal">status</th>
-                <th className="px-4 py-2 font-normal">brama</th>
+                <th className="px-4 py-2 font-normal">{t("rollout.h.brama", "brama")}</th>
                 <th className="px-4 py-2 font-normal">zmierzone</th>
-                <th className="px-4 py-2 font-normal">próg</th>
-                <th className="px-4 py-2 font-normal">kto</th>
+                <th className="px-4 py-2 font-normal">{t('rollout.ui.threshold', "próg")}</th>
+                <th className="px-4 py-2 font-normal">{t("rollout.h.kto", "kto")}</th>
               </tr>
             </thead>
             <tbody>
@@ -202,12 +201,12 @@ export default function RolloutBoard() {
                     ) : null}
                   </td>
                   <td className={`px-4 py-2 ${STATUS_TONE[stage.status] ?? ''}`}>
-                    {STATUS_LABEL[stage.status] ?? stage.status}
+                    {STATUS_LABEL[stage.status] ? t(...STATUS_LABEL[stage.status]) : stage.status}
                   </td>
                   <td
                     className={`px-4 py-2 ${stage.lastGate?.decision === 'rollback' ? 'text-red-600' : stage.lastGate?.decision === 'hold' ? 'text-amber-600' : ''}`}
                   >
-                    {stage.lastGate ? DECISION_LABEL[stage.lastGate.decision] ?? stage.lastGate.decision : '—'}
+                    {stage.lastGate ? DECISION_LABEL[stage.lastGate.decision] ? t(...DECISION_LABEL[stage.lastGate.decision]) : stage.lastGate.decision : '—'}
                     {stage.lastGate ? (
                       <div className="text-xs text-muted-foreground">{stage.lastGate.reason}</div>
                     ) : null}
@@ -217,7 +216,7 @@ export default function RolloutBoard() {
                       <>
                         ep {stage.lastGate.episodes}
                         <br />
-                        int {pct(stage.lastGate.interventionRate)} / ciężkie {pct(stage.lastGate.severeRate)}
+                        int {pct(stage.lastGate.interventionRate)} / {t('rollout.ui.severe', 'ciężkie')} {pct(stage.lastGate.severeRate)}
                         <br />
                         skut. {pct(stage.lastGate.successRate)}
                       </>
@@ -228,13 +227,13 @@ export default function RolloutBoard() {
                   <td className="px-4 py-2 text-xs text-muted-foreground">
                     ep ≥ {stage.thresholds.minEpisodes}
                     <br />
-                    int ≤ {pct(stage.thresholds.maxInterventionRate)} / ciężkie ≤{' '}
+                    int ≤ {pct(stage.thresholds.maxInterventionRate)} / {t('rollout.ui.severe', 'ciężkie')} ≤{' '}
                     {pct(stage.thresholds.maxSevereRate)}
                     <br />
                     skut. ≥ {pct(stage.thresholds.minSuccessRate)}
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
-                    {stage.lastGate ? (stage.lastGate.automatic ? 'automat' : 'człowiek') : '—'}
+                    {stage.lastGate ? (stage.lastGate.automatic ? 'automat' : t('rollout.ui.human', "człowiek")) : '—'}
                   </td>
                 </tr>
               ))}

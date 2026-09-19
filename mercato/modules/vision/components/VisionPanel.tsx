@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Panel wzroku maszynowego.
@@ -54,15 +55,15 @@ type Payload = {
   batches: Batch[]
 }
 
-const SUSPECT_LABEL: Record<Suspect, string> = {
-  none: 'zgodne',
-  nominal_mass: 'masa nominalna',
-  grip_to_bin: 'ubytek w drodze do pojemnika',
-  under_reporting: 'zaniżone zgłoszenia',
-  vision: 'kamera nie widzi',
-  foreign_material: 'obcy materiał',
-  inconclusive: 'nierozstrzygnięte',
-  no_reference: 'brak odniesienia',
+const SUSPECT_LABEL: Record<Suspect, [string, string]> = {
+  none: ['vision.label.suspect.none', "zgodne"],
+  nominal_mass: ['vision.label.suspect.nominal_mass', "masa nominalna"],
+  grip_to_bin: ['vision.label.suspect.grip_to_bin', "ubytek w drodze do pojemnika"],
+  under_reporting: ['vision.label.suspect.under_reporting', "zaniżone zgłoszenia"],
+  vision: ['vision.label.suspect.vision', "kamera nie widzi"],
+  foreign_material: ['vision.label.suspect.foreign_material', "obcy materiał"],
+  inconclusive: ['vision.label.suspect.inconclusive', "nierozstrzygnięte"],
+  no_reference: ['vision.label.suspect.no_reference', "brak odniesienia"],
 }
 
 /** Kolor niesie, kto jest podejrzany — nie samo „coś nie gra". */
@@ -78,6 +79,8 @@ const SUSPECT_TONE: Record<Suspect, string> = {
 }
 
 export default function VisionPanel() {
+  const t = useT()
+  const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -87,7 +90,7 @@ export default function VisionPanel() {
       const response = await apiFetch('/api/vision/panel')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('vision.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -117,56 +120,54 @@ export default function VisionPanel() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          title="Kamery"
+          title={t('vision.ui.cameras', "Kamery")}
           value={totals?.cameras ?? null}
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
               {totals?.camerasWithGaps
                 ? `${totals.camerasWithGaps} z brakami formalnymi`
-                : 'obowiązki informacyjne dopełnione'}
+                : t('vision.ui.noticesDone', "obowiązki informacyjne dopełnione")}
             </span>
           }
         />
         <KpiCard
-          title="Partie z trzecim świadkiem"
+          title={t('vision.ui.batchesWithThirdWitness', "Partie z trzecim świadkiem")}
           value={totals?.withThirdWitness ?? null}
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              {totals ? `z ${totals.batches} zamkniętych — reszta ma tylko robota i wagę` : 'reszta ma tylko robota i wagę'}
+              {totals ? `z ${totals.batches} zamkniętych — reszta ma tylko robota i wagę` : t('vision.ui.restOnlyRobotScale', "reszta ma tylko robota i wagę")}
             </span>
           }
         />
         <KpiCard
-          title="Z podejrzanym"
+          title={t('vision.ui.withSuspect', "Z podejrzanym")}
           value={totals?.suspected ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">partii, gdzie pomiary się rozjeżdżają</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('vision.ui.batchesDiverging', "partii, gdzie pomiary się rozjeżdżają")}</span>}
         />
         <KpiCard
-          title="Podejrzana kamera"
+          title={t('vision.ui.suspectCamera', "Podejrzana kamera")}
           value={batches.filter((b) => b.suspect === 'vision').length}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">
-              przypadków, gdzie to wizja się myli, nie robot
-            </span>
+            <span className="text-xs text-muted-foreground">{t('vision.ui.visionAtFault', "przypadków, gdzie to wizja się myli, nie robot")}</span>
           }
         />
       </div>
 
       <div className="rounded-lg border">
         <div className="flex items-center justify-between border-b px-4 py-2">
-          <span className="text-sm font-medium">Trzej świadkowie</span>
+          <span className="text-sm font-medium">{t('vision.ui.threeWitnesses', "Trzej świadkowie")}</span>
           <span className="text-xs text-muted-foreground">
-            {data ? `stan na ${new Date(data.generatedAt).toLocaleTimeString('pl-PL')}` : ''}
+            {data ? t('vision.ui.asOf', 'stan na {t}', { t: new Date(data.generatedAt).toLocaleTimeString(locale) }) : ''}
           </span>
         </div>
 
         {batches.length === 0 && !loading ? (
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            Brak zamkniętych partii. Uruchom{' '}
+            {t('vision.empty.batches', 'Brak zamkniętych partii. Uruchom')}{' '}
             <code className="rounded bg-muted px-1">mercato vision prove</code>.
           </div>
         ) : (
@@ -180,7 +181,7 @@ export default function VisionPanel() {
                     {batch.countingMode === 'mixed' ? (
                       <span
                         className="rounded border px-1 text-[10px] uppercase tracking-wide text-amber-600"
-                        title="Okna mieszają zliczanie ścieżek i detekcji — sumy nie da się złożyć"
+                        title={t('vision.ui.mixedCountingModes', "Okna mieszają zliczanie ścieżek i detekcji — sumy nie da się złożyć")}
                       >
                         tryby mieszane
                       </span>
@@ -207,7 +208,7 @@ export default function VisionPanel() {
                 </div>
 
                 <div className="w-52 text-right">
-                  <div className={`text-sm ${SUSPECT_TONE[batch.suspect]}`}>{SUSPECT_LABEL[batch.suspect]}</div>
+                  <div className={`text-sm ${SUSPECT_TONE[batch.suspect]}`}>{t(...SUSPECT_LABEL[batch.suspect])}</div>
                   <div className="text-xs text-muted-foreground">
                     {batch.windows ? `${batch.windows} okien wizji` : 'bez kamery'}
                   </div>
@@ -219,7 +220,7 @@ export default function VisionPanel() {
       </div>
 
       <div className="rounded-lg border">
-        <div className="border-b px-4 py-2 text-sm font-medium">Kamery i zgodność formalna</div>
+        <div className="border-b px-4 py-2 text-sm font-medium">{t('vision.ui.camerasAndCompliance', "Kamery i zgodność formalna")}</div>
         <div className="divide-y">
           {cameras.map((camera) => (
             <div key={camera.code} className="flex flex-wrap items-center gap-x-4 px-4 py-2 text-xs">
@@ -230,7 +231,7 @@ export default function VisionPanel() {
                 {camera.purpose} · {camera.retentionDays} dni
               </span>
               <span className={camera.formalGaps.length ? 'text-red-600' : 'text-muted-foreground'}>
-                {camera.formalGaps.length ? camera.formalGaps.join(', ') : 'w porządku'}
+                {camera.formalGaps.length ? camera.formalGaps.join(', ') : t('vision.ui.ok', "w porządku")}
               </span>
             </div>
           ))}

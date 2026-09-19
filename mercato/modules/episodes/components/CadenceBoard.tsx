@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Kadencja autonomii na ekranie.
@@ -43,12 +44,12 @@ type Payload = {
   interventionsByStage: Record<string, number>
 }
 
-const KIND_LABEL: Record<string, string> = {
-  adjust: 'poprawka otoczenia',
-  manual_reset: 'odblokowanie ręczne',
-  teleop_takeover: 'przejęcie sterowania',
-  abort: 'przerwanie zadania',
-  estop: 'zatrzymanie awaryjne',
+const KIND_LABEL: Record<string, [string, string]> = {
+  adjust: ['episodes.label.kind.adjust', "poprawka otoczenia"],
+  manual_reset: ['episodes.label.kind.manual_reset', "odblokowanie ręczne"],
+  teleop_takeover: ['episodes.label.kind.teleop_takeover', "przejęcie sterowania"],
+  abort: ['episodes.label.kind.abort', "przerwanie zadania"],
+  estop: ['episodes.label.kind.estop', "zatrzymanie awaryjne"],
 }
 
 /** Kolor rośnie z ciężarem przerwania — to nie kategoria, to pilność. */
@@ -67,6 +68,7 @@ function formatMean(value: number | null): string {
 }
 
 function CadenceTable({ title, data, note }: { title: string; data: Record<string, Cadence>; note: string }) {
+  const t = useT()
   const rows = Object.entries(data)
   if (!rows.length) return null
   return (
@@ -78,13 +80,13 @@ function CadenceTable({ title, data, note }: { title: string; data: Record<strin
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-muted-foreground">
-            <th className="px-4 py-2 font-normal">klucz</th>
-            <th className="px-4 py-2 font-normal">epizody</th>
-            <th className="px-4 py-2 font-normal">interwencje</th>
-            <th className="px-4 py-2 font-normal">epizodów na interwencję</th>
-            <th className="px-4 py-2 font-normal">bieżąca seria</th>
-            <th className="px-4 py-2 font-normal">najdłuższa</th>
-            <th className="px-4 py-2 font-normal">skuteczność</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.colKey', 'klucz')}</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.colEpisodes', 'epizody')}</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.colInterventions', 'interwencje')}</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.epiPerIntLower', "epizodów na interwencję")}</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.streakLower', "bieżąca seria")}</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.longest', "najdłuższa")}</th>
+            <th className="px-4 py-2 font-normal">{t('episodes.ui.successRate', "skuteczność")}</th>
           </tr>
         </thead>
         <tbody>
@@ -110,6 +112,7 @@ function CadenceTable({ title, data, note }: { title: string; data: Record<strin
 }
 
 export default function CadenceBoard() {
+  const t = useT()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -119,7 +122,7 @@ export default function CadenceBoard() {
       const response = await apiFetch('/api/episodes/cadence')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('episodes.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -147,34 +150,33 @@ export default function CadenceBoard() {
 
       {data && !data.consistency.consistent ? (
         <div className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm">
-          <div className="font-medium">Raport rozjechał się z księgą epizodów</div>
+          <div className="font-medium">{t('episodes.ui.reportDrift', "Raport rozjechał się z księgą epizodów")}</div>
           <ul className="mt-1 list-disc pl-5 text-xs">
             {data.consistency.problems.map((problem) => (
               <li key={problem}>{problem}</li>
             ))}
           </ul>
           <div className="mt-1 text-xs">
-            Uruchom <code>yarn mercato episodes reconcile</code>. Do tego czasu liczbom poniżej nie wierz.
-          </div>
+            Uruchom <code>yarn mercato episodes reconcile</code>{t("episodes.prose.1", ". Do tego czasu liczbom poniżej nie wierz.")}</div>
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          title="Epizodów na interwencję"
+          title={t('episodes.ui.episodesPerIntervention', "Epizodów na interwencję")}
           value={overall?.meanEpisodesBetweenInterventions ?? null}
           loading={loading}
           formatValue={(value) => value.toFixed(1)}
           footer={
             <span className="text-xs text-muted-foreground">
               {overall && overall.meanEpisodesBetweenInterventions === null
-                ? 'nie było jeszcze ani jednej interwencji — to brak danych, nie autonomia'
-                : 'jedyna liczba, która mówi, czy wdrożenie idzie do przodu'}
+                ? t('episodes.ui.noInterventionsYet', "nie było jeszcze ani jednej interwencji — to brak danych, nie autonomia")
+                : t('episodes.ui.onlyNumberThatMatters', "jedyna liczba, która mówi, czy wdrożenie idzie do przodu")}
             </span>
           }
         />
         <KpiCard
-          title="Bieżąca seria bez człowieka"
+          title={t('episodes.ui.currentStreak', "Bieżąca seria bez człowieka")}
           value={overall?.currentStreak ?? null}
           loading={loading}
           footer={
@@ -184,7 +186,7 @@ export default function CadenceBoard() {
           }
         />
         <KpiCard
-          title="Epizody w księdze"
+          title={t('episodes.ui.episodesInLedger', "Epizody w księdze")}
           value={overall?.episodes ?? null}
           loading={loading}
           footer={
@@ -194,7 +196,7 @@ export default function CadenceBoard() {
           }
         />
         <KpiCard
-          title="Autonomia"
+          title={t('episodes.ui.autonomy', "Autonomia")}
           value={overall ? overall.autonomyRate * 100 : null}
           loading={loading}
           formatValue={(value) => `${value.toFixed(0)}%`}
@@ -207,35 +209,32 @@ export default function CadenceBoard() {
       </div>
 
       {!loading && !overall?.episodes ? (
-        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">
-          Księga epizodów jest pusta. Uruchom <code>yarn mercato episodes simulate</code>.
+        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">{t('episodes.ui.ledgerEmpty', "Księga epizodów jest pusta. Uruchom")}<code>yarn mercato episodes simulate</code>.
         </div>
       ) : null}
 
       <CadenceTable
-        title="Per polityka"
+        title={t('episodes.ui.perPolicy', "Per polityka")}
         data={data?.byPolicy ?? {}}
-        note="ta sama polityka na różnym sprzęcie bywa różną polityką — porównuj wersje, nie nazwy"
+        note={t('episodes.note.perPolicy', 'ta sama polityka na różnym sprzęcie bywa różną polityką — porównuj wersje, nie nazwy')}
       />
       <CadenceTable
-        title="Per cela"
+        title={t('episodes.ui.perCell', "Per cela")}
         data={data?.byCell ?? {}}
-        note="różnica między celami tej samej klasy to zwykle oświetlenie albo ustawienie pojemnika"
+        note={t('episodes.note.perCell', 'różnica między celami tej samej klasy to zwykle oświetlenie albo ustawienie pojemnika')}
       />
       <CadenceTable
-        title="Per robot"
+        title={t('episodes.ui.perRobot', "Per robot")}
         data={data?.byRobot ?? {}}
-        note="jeden robot odstający od reszty to prawie zawsze kalibracja, a nie polityka"
+        note={t('episodes.note.perRobot', 'jeden robot odstający od reszty to prawie zawsze kalibracja, a nie polityka')}
       />
 
       {stages.length ? (
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-md border">
             <div className="border-b px-4 py-3">
-              <div className="font-medium">Interwencje po etapie</div>
-              <div className="text-xs text-muted-foreground">
-                stąd bierze się lista demonstracji do następnego treningu
-              </div>
+              <div className="font-medium">{t("episodes.h.interwencjePoEtapie", "Interwencje po etapie")}</div>
+              <div className="text-xs text-muted-foreground">{t('episodes.ui.sourceOfDemos', "stąd bierze się lista demonstracji do następnego treningu")}</div>
             </div>
             <table className="w-full text-sm">
               <tbody>
@@ -251,16 +250,14 @@ export default function CadenceBoard() {
 
           <div className="rounded-md border">
             <div className="border-b px-4 py-3">
-              <div className="font-medium">Interwencje po ciężarze</div>
-              <div className="text-xs text-muted-foreground">
-                same poprawki otoczenia i same zatrzymania awaryjne to dwa różne wdrożenia
-              </div>
+              <div className="font-medium">{t('episodes.ui.interventionsBySeverity', "Interwencje po ciężarze")}</div>
+              <div className="text-xs text-muted-foreground">{t('episodes.ui.adjustVsEstop', "same poprawki otoczenia i same zatrzymania awaryjne to dwa różne wdrożenia")}</div>
             </div>
             <table className="w-full text-sm">
               <tbody>
                 {kinds.map(([kind, count]) => (
                   <tr key={kind} className="border-t">
-                    <td className={`px-4 py-2 ${KIND_TONE[kind] ?? ''}`}>{KIND_LABEL[kind] ?? kind}</td>
+                    <td className={`px-4 py-2 ${KIND_TONE[kind] ?? ''}`}>{KIND_LABEL[kind] ? t(...KIND_LABEL[kind]) : kind}</td>
                     <td className="px-4 py-2 text-right">{count}</td>
                   </tr>
                 ))}

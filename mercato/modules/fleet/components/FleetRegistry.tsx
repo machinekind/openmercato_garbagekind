@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Rejestr floty na ekranie.
@@ -68,15 +69,15 @@ type Payload = {
   robots: Robot[]
 }
 
-const STATE_LABEL: Record<string, string> = {
-  registered: 'Zarejestrowany',
-  commissioning: 'Uruchamianie',
-  ready: 'Gotowy',
-  operational: 'W ruchu',
-  maintenance: 'Serwis',
-  quarantined: 'Kwarantanna',
-  decommissioning: 'Wycofywanie',
-  decommissioned: 'Wycofany',
+const STATE_LABEL: Record<string, [string, string]> = {
+  registered: ['fleet.label.state.registered', "Zarejestrowany"],
+  commissioning: ['fleet.label.state.commissioning', "Uruchamianie"],
+  ready: ['fleet.label.state.ready', "Gotowy"],
+  operational: ['fleet.label.state.operational', "W ruchu"],
+  maintenance: ['fleet.label.state.maintenance', "Serwis"],
+  quarantined: ['fleet.label.state.quarantined', "Kwarantanna"],
+  decommissioning: ['fleet.label.state.decommissioning', "Wycofywanie"],
+  decommissioned: ['fleet.label.state.decommissioned', "Wycofany"],
 }
 
 /** Kolor niesie pilność, nie kategorię: czerwony znaczy „ta maszyna nie pracuje". */
@@ -88,9 +89,9 @@ const STATE_TONE: Record<string, string> = {
   decommissioned: 'text-muted-foreground',
 }
 
-function formatMoment(value: string | null): string {
+function formatMoment(locale: string, value: string | null): string {
   if (!value) return '—'
-  return new Date(value).toLocaleString('pl-PL', {
+  return new Date(value).toLocaleString(locale, {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -105,34 +106,38 @@ function formatMoment(value: string | null): string {
  * wyglądać tak samo, bo pierwsza jest normalnym stanem floty bez agentów,
  * a druga jest awarią.
  */
-function describeLink(link: AgentLink | undefined): { text: string; tone: string } | null {
+type Tf = (key: string, fallback?: string | Record<string, string | number>, params?: Record<string, string | number>) => string
+
+function describeLink(t: Tf, link: AgentLink | undefined): { text: string; tone: string } | null {
   if (!link) return null
-  if (link.status === 'revoked') return { text: 'agent odwołany', tone: 'text-muted-foreground' }
-  if (link.state === 'never_seen') return { text: 'agent wpisany, nigdy się nie odezwał', tone: 'text-amber-600' }
-  if (link.state === 'lost') return { text: `bez łączności od ${link.silenceSeconds} s`, tone: 'text-red-600' }
-  if (link.state === 'late') return { text: `spóźniony ${link.silenceSeconds} s`, tone: 'text-amber-600' }
+  if (link.status === 'revoked') return { text: t('fleet.link.revoked', 'agent odwołany'), tone: 'text-muted-foreground' }
+  if (link.state === 'never_seen') return { text: t('fleet.link.neverSeen', 'agent wpisany, nigdy się nie odezwał'), tone: 'text-amber-600' }
+  if (link.state === 'lost') return { text: t('fleet.link.lostFor', 'bez łączności od {sec} s', { sec: String(link.silenceSeconds) }), tone: 'text-red-600' }
+  if (link.state === 'late') return { text: t('fleet.link.lateFor', 'spóźniony {sec} s', { sec: String(link.silenceSeconds) }), tone: 'text-amber-600' }
   // Migotanie łącza i stabilna łączność wyglądają w „ostatnio widziany"
   // identycznie — liczba sesji na dobę jest jedyną rzeczą, która je rozdziela.
   if (link.sessionsLastDay > 3) {
-    return { text: `łączność, ale ${link.sessionsLastDay} sesji/dobę`, tone: 'text-amber-600' }
+    return { text: t('fleet.link.flapping', 'łączność, ale {n} sesji/dobę', { n: String(link.sessionsLastDay) }), tone: 'text-amber-600' }
   }
-  return { text: 'łączność', tone: 'text-emerald-600' }
+  return { text: t('fleet.link.online', 'łączność'), tone: 'text-emerald-600' }
 }
 
-function describeCalibration(robot: Robot): { text: string; tone: string } {
+function describeCalibration(t: Tf, robot: Robot): { text: string; tone: string } {
   if (robot.calibrationState === 'blocked') {
-    return { text: 'kalibracja nieważna', tone: 'text-red-600' }
+    return { text: t('fleet.calib.invalid', 'kalibracja nieważna'), tone: 'text-red-600' }
   }
   if (robot.calibrationState === 'expiring') {
-    return { text: `kalibracja wygasa za ${robot.calibrationDaysLeft} dni`, tone: 'text-amber-600' }
+    return { text: t('fleet.calib.expiring', 'kalibracja wygasa za {d} dni', { d: String(robot.calibrationDaysLeft) }), tone: 'text-amber-600' }
   }
   if (robot.calibrationState === 'valid') {
-    return { text: `kalibracja ważna ${robot.calibrationDaysLeft} dni`, tone: 'text-muted-foreground' }
+    return { text: t('fleet.calib.valid', 'kalibracja ważna {d} dni', { d: String(robot.calibrationDaysLeft) }), tone: 'text-muted-foreground' }
   }
-  return { text: 'brak wymagań kalibracyjnych', tone: 'text-muted-foreground' }
+  return { text: t('fleet.calib.notRequired', 'brak wymagań kalibracyjnych'), tone: 'text-muted-foreground' }
 }
 
 export default function FleetRegistry() {
+  const t = useT()
+  const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [edge, setEdge] = React.useState<EdgePayload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
@@ -143,7 +148,7 @@ export default function FleetRegistry() {
       const response = await apiFetch('/api/fleet/robots')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('fleet.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -182,54 +187,52 @@ export default function FleetRegistry() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard
-          title="Roboty w rejestrze"
+          title={t('fleet.ui.robotsInRegistry', "Roboty w rejestrze")}
           value={totals?.robots ?? null}
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
               {totals?.externallyOperated
-                ? `${totals.externallyOperated} obsługiwanych przez integratora`
-                : 'wszystkie obsługiwane własnymi siłami'}
+                ? t('fleet.ui.nExternallyOperated', '{n} obsługiwanych przez integratora', { n: String(totals.externallyOperated) })
+                : t('fleet.ui.allSelfOperated', "wszystkie obsługiwane własnymi siłami")}
             </span>
           }
         />
         <KpiCard
-          title="Czynne"
+          title={t('fleet.ui.active', "Czynne")}
           value={totals?.active ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">gotowe lub w ruchu</span>}
+          footer={<span className="text-xs text-muted-foreground">{t("fleet.h.gotoweLubWRuchu", "gotowe lub w ruchu")}</span>}
         />
         <KpiCard
-          title="W kwarantannie"
+          title={t('fleet.ui.quarantined', "W kwarantannie")}
           value={totals?.quarantined ?? null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">
-              niedopuszczone — bywają mechanicznie sprawne
-            </span>
+            <span className="text-xs text-muted-foreground">{t('fleet.ui.notClearedHint', "niedopuszczone — bywają mechanicznie sprawne")}</span>
           }
         />
         <KpiCard
-          title="Bez łączności"
+          title={t('fleet.ui.noLink', "Bez łączności")}
           value={edge ? edge.totals.lost + edge.totals.late : null}
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
               {edge
-                ? `${edge.totals.online} z ${edge.totals.agents} agentów się odzywa`
-                : 'kanał brzegowy niedostępny'}
+                ? t('fleet.ui.nOfMAgentsOnline', '{n} z {m} agentów się odzywa', { n: String(edge.totals.online), m: String(edge.totals.agents) })
+                : t('fleet.ui.edgeUnavailable', "kanał brzegowy niedostępny")}
             </span>
           }
         />
         <KpiCard
-          title="Blokada kalibracji"
+          title={t('fleet.ui.calibrationBlock', "Blokada kalibracji")}
           value={totals?.calibrationBlocked ?? null}
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
               {totals?.calibrationExpiring
-                ? `${totals.calibrationExpiring} wygasa w ciągu 14 dni`
-                : 'nic nie wygasa w ciągu 14 dni'}
+                ? t('fleet.ui.nExpiring14d', '{n} wygasa w ciągu 14 dni', { n: String(totals.calibrationExpiring) })
+                : t('fleet.ui.nothingExpiring14d', "nic nie wygasa w ciągu 14 dni")}
             </span>
           }
         />
@@ -237,22 +240,22 @@ export default function FleetRegistry() {
 
       <div className="rounded-lg border">
         <div className="flex items-center justify-between border-b px-4 py-2">
-          <span className="text-sm font-medium">Rejestr floty</span>
+          <span className="text-sm font-medium">{t("fleet.h.rejestrFloty", "Rejestr floty")}</span>
           <span className="text-xs text-muted-foreground">
-            {data ? `stan na ${formatMoment(data.generatedAt)}` : ''}
+            {data ? t('fleet.ui.asOf', 'stan na {t}', { t: formatMoment(locale, data.generatedAt) }) : ''}
           </span>
         </div>
 
         {robots.length === 0 && !loading ? (
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            Rejestr jest pusty. Zaimportuj flotę komendą{' '}
+            {t('fleet.empty.registry', 'Rejestr jest pusty. Zaimportuj flotę komendą')}{' '}
             <code className="rounded bg-muted px-1">mercato fleet seed</code>.
           </div>
         ) : (
           <div className="divide-y">
             {robots.map((robot) => {
-              const calibration = describeCalibration(robot)
-              const link = describeLink(edge?.byRobot?.[robot.id])
+              const calibration = describeCalibration(t, robot)
+              const link = describeLink(t, edge?.byRobot?.[robot.id])
               return (
                 <div key={robot.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
                   <div className="min-w-0 flex-1">
@@ -262,7 +265,7 @@ export default function FleetRegistry() {
                       {robot.externallyOperated ? (
                         <span
                           className="rounded border px-1 text-[10px] uppercase tracking-wide text-muted-foreground"
-                          title="Właściciel i operator to różne podmioty"
+                          title={t('fleet.ui.ownerDiffersTitle', "Właściciel i operator to różne podmioty")}
                         >
                           integrator
                         </span>
@@ -275,7 +278,7 @@ export default function FleetRegistry() {
 
                   <div className="w-44">
                     <div className={`text-sm ${STATE_TONE[robot.state] ?? ''}`}>
-                      {STATE_LABEL[robot.state] ?? robot.state}
+                      {STATE_LABEL[robot.state] ? t(...STATE_LABEL[robot.state]) : robot.state}
                     </div>
                     {/* Powód jest tu, a nie w szczegółach: przy kwarantannie to
                         jedyna rzecz odróżniająca wygasłą kalibrację od incydentu. */}
@@ -288,7 +291,7 @@ export default function FleetRegistry() {
                     <div className={`text-xs ${calibration.tone}`}>{calibration.text}</div>
                     {link ? <div className={`text-xs ${link.tone}`}>{link.text}</div> : null}
                     <div className="text-xs text-muted-foreground">
-                      od {formatMoment(robot.stateChangedAt)}
+                      od {formatMoment(locale, robot.stateChangedAt)}
                     </div>
                   </div>
                 </div>

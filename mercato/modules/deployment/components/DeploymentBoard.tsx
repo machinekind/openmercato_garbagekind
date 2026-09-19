@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Pulpit stanu pożądanego.
@@ -45,10 +46,10 @@ type Payload = {
   assignments: Row[]
 }
 
-const RISK_LABEL: Record<string, string> = {
-  fenced: 'ogrodzona',
-  shared: 'dzielona',
-  public: 'publiczna',
+const RISK_LABEL: Record<string, [string, string]> = {
+  fenced: ['deployment.label.risk.fenced', "ogrodzona"],
+  shared: ['deployment.label.risk.shared', "dzielona"],
+  public: ['deployment.label.risk.public', "publiczna"],
 }
 
 /** Kolor niesie pilność zatrzymania, nie kategorię celi. */
@@ -58,13 +59,15 @@ const RISK_TONE: Record<string, string> = {
   public: 'text-red-600',
 }
 
-const RECONCILIATION_LABEL: Record<string, string> = {
-  converged: 'zgodny',
-  drift: 'ROZJAZD',
-  unknown: 'nie zgłosił',
+const RECONCILIATION_LABEL: Record<string, [string, string]> = {
+  converged: ['deployment.label.reconciliation.converged', "zgodny"],
+  drift: ['deployment.label.reconciliation.drift', "ROZJAZD"],
+  unknown: ['deployment.label.reconciliation.unknown', "nie zgłosił"],
 }
 
-function formatDuration(seconds: number | null): string {
+type Tf = (key: string, fallback?: string | Record<string, string | number>, params?: Record<string, string | number>) => string
+
+function formatDuration(t: Tf, seconds: number | null): string {
   if (seconds === null) return '—'
   const abs = Math.abs(seconds)
   const text =
@@ -75,10 +78,11 @@ function formatDuration(seconds: number | null): string {
         : abs >= 60
           ? `${Math.floor(abs / 60)} min ${abs % 60} s`
           : `${abs} s`
-  return seconds < 0 ? `minęło ${text}` : text
+  return seconds < 0 ? t('deployment.ui.elapsed', 'minęło {t}', { t: text }) : text
 }
 
 export default function DeploymentBoard() {
+  const t = useT()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -88,7 +92,7 @@ export default function DeploymentBoard() {
       const response = await apiFetch('/api/deployment/assignments')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('deployment.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -117,42 +121,39 @@ export default function DeploymentBoard() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          title="Przypisania"
+          title={t('deployment.ui.assignments', "Przypisania")}
           value={totals?.assignments ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">czynny stan pożądany floty</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('deployment.ui.activeDesiredState', "czynny stan pożądany floty")}</span>}
         />
         <KpiCard
-          title="Z ważnym mandatem"
+          title={t('deployment.ui.withValidLease', "Z ważnym mandatem")}
           value={totals?.working ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">dzierżawa jeszcze nie wygasła</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('deployment.ui.leaseNotExpired', "dzierżawa jeszcze nie wygasła")}</span>}
         />
         <KpiCard
-          title="Zatrzymane dzierżawą"
+          title={t('deployment.ui.stoppedByLease', "Zatrzymane dzierżawą")}
           value={totals?.haltedByLease ?? null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">
-              centrala nic nie zapisała — mandat po prostu upłynął
-            </span>
+            <span className="text-xs text-muted-foreground">{t('deployment.ui.nothingRecorded', "centrala nic nie zapisała — mandat po prostu upłynął")}</span>
           }
         />
         <KpiCard
-          title="Rozjazd stanu"
+          title={t('deployment.ui.stateDrift', "Rozjazd stanu")}
           value={totals?.drift ?? null}
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              {totals ? `${totals.unknown} robotów nic nie zgłosiło` : '—'}
+              {totals ? t('deployment.ui.nRobotsSilent', '{n} robotów nic nie zgłosiło', { n: String(totals.unknown) }) : '—'}
             </span>
           }
         />
       </div>
 
       {!loading && !rows.length ? (
-        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">
-          Żaden robot nie ma przypisanej polityki. Uruchom <code>yarn mercato deployment prove</code>.
+        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">{t('deployment.ui.noAssignments', "Żaden robot nie ma przypisanej polityki. Uruchom")}<code>yarn mercato deployment prove</code>.
         </div>
       ) : null}
 
@@ -161,13 +162,13 @@ export default function DeploymentBoard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
-                <th className="px-4 py-2 font-normal">robot</th>
-                <th className="px-4 py-2 font-normal">polityka</th>
-                <th className="px-4 py-2 font-normal">cela / ryzyko</th>
-                <th className="px-4 py-2 font-normal">dzierżawa</th>
-                <th className="px-4 py-2 font-normal">do wygaśnięcia</th>
-                <th className="px-4 py-2 font-normal">mandat</th>
-                <th className="px-4 py-2 font-normal">uzgodnienie</th>
+                <th className="px-4 py-2 font-normal">{t("deployment.h.robot", "robot")}</th>
+                <th className="px-4 py-2 font-normal">{t("deployment.h.polityka", "polityka")}</th>
+                <th className="px-4 py-2 font-normal">{t("deployment.h.celaRyzyko", "cela / ryzyko")}</th>
+                <th className="px-4 py-2 font-normal">{t('deployment.ui.lease', "dzierżawa")}</th>
+                <th className="px-4 py-2 font-normal">{t('deployment.ui.untilExpiry', "do wygaśnięcia")}</th>
+                <th className="px-4 py-2 font-normal">{t("deployment.h.mandat", "mandat")}</th>
+                <th className="px-4 py-2 font-normal">{t("deployment.h.uzgodnienie", "uzgodnienie")}</th>
               </tr>
             </thead>
             <tbody>
@@ -180,22 +181,22 @@ export default function DeploymentBoard() {
                   <td className="px-4 py-2">{row.policy}</td>
                   <td className={`px-4 py-2 ${RISK_TONE[row.riskClass] ?? ''}`}>
                     {row.cell ?? '—'}
-                    <span className="text-xs"> · {RISK_LABEL[row.riskClass] ?? row.riskClass}</span>
+                    <span className="text-xs"> · {RISK_LABEL[row.riskClass] ? t(...RISK_LABEL[row.riskClass]) : row.riskClass}</span>
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
-                    {formatDuration(row.leaseSeconds)}
+                    {formatDuration(t, row.leaseSeconds)}
                   </td>
                   <td className={`px-4 py-2 ${row.working ? '' : 'text-red-600'}`}>
-                    {formatDuration(row.secondsLeft)}
+                    {formatDuration(t, row.secondsLeft)}
                   </td>
                   <td className={`px-4 py-2 ${row.working ? 'text-emerald-600' : 'text-red-600'}`}>
-                    {row.working ? 'ważny' : 'wygasł'}
+                    {row.working ? t('deployment.ui.valid', "ważny") : t('deployment.ui.expired', "wygasł")}
                     <div className="text-xs text-muted-foreground">{row.authorizationReason}</div>
                   </td>
                   <td
                     className={`px-4 py-2 ${row.reconciliation === 'drift' ? 'text-red-600' : row.reconciliation === 'unknown' ? 'text-amber-600' : 'text-muted-foreground'}`}
                   >
-                    {RECONCILIATION_LABEL[row.reconciliation] ?? row.reconciliation}
+                    {RECONCILIATION_LABEL[row.reconciliation] ? t(...RECONCILIATION_LABEL[row.reconciliation]) : row.reconciliation}
                   </td>
                 </tr>
               ))}

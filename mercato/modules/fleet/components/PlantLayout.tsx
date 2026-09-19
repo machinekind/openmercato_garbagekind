@@ -22,6 +22,7 @@ import {
 } from '../../hmi/lib/status'
 import { RADIUS, SEVERITY_PRIORITY, SPACE, STROKE, TILE, TYPE, cssVar } from '../../hmi/lib/tokens'
 import { packTiles } from '../../hmi/lib/pack'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Rzut hali.
@@ -87,10 +88,10 @@ type VisionBatch = { cellId: string | null; suspect: string }
  * w których obok maszyny **chodzą ludzie**. To informacja o zagrożeniu,
  * nie o kategorii.
  */
-const RISK: Record<string, { stroke: string; dash?: string; label: string }> = {
-  fenced: { stroke: 'var(--hmi-outline)', label: 'ogrodzona' },
-  shared: { stroke: cssVar('advisory'), dash: '7 4', label: 'dzielona z ludźmi' },
-  public: { stroke: cssVar('alarm'), dash: '4 3', label: 'przestrzeń publiczna' },
+const RISK: Record<string, { stroke: string; dash?: string; label: [string, string] }> = {
+  fenced: { stroke: 'var(--hmi-outline)', label: ['fleet.label.risk.fenced', 'ogrodzona'] },
+  shared: { stroke: cssVar('advisory'), dash: '7 4', label: ['fleet.label.risk.shared', 'dzielona z ludźmi'] },
+  public: { stroke: cssVar('alarm'), dash: '4 3', label: ['fleet.label.risk.public', 'przestrzeń publiczna'] },
 }
 
 /** Proporcje kadru dobierane do hali, żeby rysunek nie pływał w pustce. */
@@ -103,6 +104,8 @@ function viewportFor(bounds: ReturnType<typeof boundsOf>): { width: number; heig
 }
 
 export default function PlantLayout() {
+  const t = useT()
+  const locale = useLocale()
   const [layout, setLayout] = React.useState<LayoutPayload | null>(null)
   const [agents, setAgents] = React.useState<Record<string, AgentLink> | null | undefined>(undefined)
   const [orders, setOrders] = React.useState<OrderRow[] | null>(null)
@@ -116,7 +119,7 @@ export default function PlantLayout() {
       const response = await apiFetch('/api/fleet/layout')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('fleet.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setLayout((await response.json()) as LayoutPayload)
@@ -245,10 +248,10 @@ export default function PlantLayout() {
 
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <span className="text-sm font-semibold text-foreground">{site?.name ?? 'Hala'}</span>
-        <span>{site?.floorWidthM && site?.floorHeightM ? `${site.floorWidthM} × ${site.floorHeightM} m` : 'obrys nieobmierzony'}</span>
+        <span>{site?.floorWidthM && site?.floorHeightM ? `${site.floorWidthM} × ${site.floorHeightM} m` : t('fleet.ui.floorNotSurveyed', 'obrys nieobmierzony')}</span>
         <span>{cells.length} cel · {robots.length} maszyn</span>
-        {orders === null ? <span style={{ color: cssVar('suppressed') }}>wynik: warstwa niedostępna</span> : null}
-        {layout ? <span>{new Date(layout.generatedAt).toLocaleTimeString('pl-PL')}</span> : null}
+        {orders === null ? <span style={{ color: cssVar('suppressed') }}>{t('fleet.ui.outputLayerUnavailable', 'wynik: warstwa niedostępna')}</span> : null}
+        {layout ? <span>{new Date(layout.generatedAt).toLocaleTimeString(locale)}</span> : null}
       </div>
 
       {/*
@@ -282,7 +285,7 @@ export default function PlantLayout() {
           viewBox={`0 0 ${viewport.width} ${viewport.height}`}
           className="h-auto w-full"
           role="img"
-          aria-label="Rzut hali z rozmieszczeniem cel i maszyn"
+          aria-label={t('fleet.ui.plantTitle', 'Rzut hali z rozmieszczeniem cel i maszyn')}
         >
           {site?.floorWidthM && site?.floorHeightM
             ? (() => {
@@ -352,7 +355,7 @@ export default function PlantLayout() {
                   fill={cell.riskClass === 'fenced' ? 'currentColor' : risk.stroke}
                   fillOpacity={cell.riskClass === 'fenced' ? 0.5 : 1}
                 >
-                  {risk.label}
+                  {t(...risk.label)}
                 </text>
 
                 {/*
@@ -450,7 +453,7 @@ export default function PlantLayout() {
               fill="currentColor"
               fillOpacity={0.55}
             >
-              Żadna cela nie ma obmiaru. Uruchom: mercato fleet layout
+              {t('fleet.ui.noCellSurveyed', 'Żadna cela nie ma obmiaru. Uruchom: mercato fleet layout')}
             </text>
           ) : null}
         </svg>
@@ -517,7 +520,7 @@ export default function PlantLayout() {
             </div>
           ) : null}
           <div className="mt-1 text-muted-foreground">
-            Współrzędne nadaje się obmiarem, nie domysłem — dlatego te pozycje nie są zgadywane.
+            {t('fleet.ui.coordsBySurvey', 'Współrzędne nadaje się obmiarem, nie domysłem — dlatego te pozycje nie są zgadywane.')}
           </div>
         </div>
       ) : null}

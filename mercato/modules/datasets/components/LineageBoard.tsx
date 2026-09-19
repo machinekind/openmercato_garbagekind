@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Pochodzenie na ekranie.
@@ -71,8 +72,8 @@ const RUN_STATUS_TONE: Record<string, string> = {
   failed: 'text-red-600',
 }
 
-function formatMoment(value: string): string {
-  return new Date(value).toLocaleString('pl-PL', {
+function formatMoment(locale: string, value: string): string {
+  return new Date(value).toLocaleString(locale, {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -81,6 +82,8 @@ function formatMoment(value: string): string {
 }
 
 export default function LineageBoard() {
+  const t = useT()
+  const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -90,7 +93,7 @@ export default function LineageBoard() {
       const response = await apiFetch('/api/datasets/datasets')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('datasets.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -128,25 +131,25 @@ export default function LineageBoard() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          title="Wersje zbiorów"
+          title={t('datasets.ui.datasetVersions', "Wersje zbiorów")}
           value={totals?.datasetVersions ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">tożsamością jest odcisk zawartości</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('datasets.ui.identityIsContentDigest', "tożsamością jest odcisk zawartości")}</span>}
         />
         <KpiCard
-          title="Przebiegi treningowe"
+          title={t('datasets.ui.trainingRuns', "Przebiegi treningowe")}
           value={totals?.trainingRuns ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">ogniwo zbiór ↔ polityka</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('datasets.ui.datasetPolicyLink', "ogniwo zbiór ↔ polityka")}</span>}
         />
         <KpiCard
-          title="Polityki bez zbioru"
+          title={t('datasets.ui.policiesWithoutDataset', "Polityki bez zbioru")}
           value={totals?.policiesWithoutDataset ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">w zamkniętej pętli zero</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('datasets.ui.zeroInClosedLoop', "w zamkniętej pętli zero")}</span>}
         />
         <KpiCard
-          title="Zbiory bez epizodów"
+          title={t('datasets.ui.datasetsWithoutEpisodes', "Zbiory bez epizodów")}
           value={totals?.datasetsWithoutEpisodes ?? null}
           loading={loading}
           footer={
@@ -158,8 +161,7 @@ export default function LineageBoard() {
       </div>
 
       {!loading && !data?.versions.length ? (
-        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">
-          Brak zbiorów danych. Uruchom <code>yarn mercato datasets prove</code>.
+        <div className="rounded-md border px-4 py-6 text-sm text-muted-foreground">{t('datasets.ui.noDatasets', "Brak zbiorów danych. Uruchom")}<code>yarn mercato datasets prove</code>.
         </div>
       ) : null}
 
@@ -175,28 +177,28 @@ export default function LineageBoard() {
                 odcisk <span className="font-mono">{version.contentDigest.slice(0, 12)}</span>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground">{formatMoment(version.builtAt)}</div>
+            <div className="text-xs text-muted-foreground">{formatMoment(locale, version.builtAt)}</div>
           </div>
 
           <div className="grid gap-2 border-b px-4 py-3 text-sm sm:grid-cols-5">
             <div>
-              <div className="text-xs text-muted-foreground">epizody</div>
+              <div className="text-xs text-muted-foreground">{t("datasets.h.epizody", "epizody")}</div>
               <div>{version.episodeCount}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">demonstracje</div>
+              <div className="text-xs text-muted-foreground">{t("datasets.h.demonstracje", "demonstracje")}</div>
               <div>{version.composition.demo}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">korekcyjne</div>
+              <div className="text-xs text-muted-foreground">{t("datasets.h.korekcyjne", "korekcyjne")}</div>
               <div className="font-medium">{version.composition.correction}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">negatywne</div>
+              <div className="text-xs text-muted-foreground">{t("datasets.h.negatywne", "negatywne")}</div>
               <div>{version.composition.failure}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">ewaluacyjne</div>
+              <div className="text-xs text-muted-foreground">{t("datasets.h.ewaluacyjne", "ewaluacyjne")}</div>
               <div>{version.composition.holdout}</div>
             </div>
           </div>
@@ -213,9 +215,9 @@ export default function LineageBoard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground">
-                  <th className="px-4 py-2 font-normal">przebieg</th>
+                  <th className="px-4 py-2 font-normal">{t("datasets.h.przebieg", "przebieg")}</th>
                   <th className="px-4 py-2 font-normal">status</th>
-                  <th className="px-4 py-2 font-normal">powstała polityka</th>
+                  <th className="px-4 py-2 font-normal">{t('datasets.ui.policyProduced', "powstała polityka")}</th>
                   <th className="px-4 py-2 font-normal">framework</th>
                   <th className="px-4 py-2 font-normal">start</th>
                 </tr>
@@ -227,15 +229,13 @@ export default function LineageBoard() {
                     <td className={`px-4 py-2 ${RUN_STATUS_TONE[run.status] ?? ''}`}>{run.status}</td>
                     <td className="px-4 py-2">{run.policy ?? '—'}</td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">{run.framework ?? '—'}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{formatMoment(run.startedAt)}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{formatMoment(locale, run.startedAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <div className="px-4 py-3 text-sm text-muted-foreground">
-              Na tej wersji zbioru nic się jeszcze nie uczyło.
-            </div>
+            <div className="px-4 py-3 text-sm text-muted-foreground">{t('datasets.ui.nothingTrainedYet', "Na tej wersji zbioru nic się jeszcze nie uczyło.")}</div>
           )}
         </div>
       ))}
@@ -243,18 +243,15 @@ export default function LineageBoard() {
       {data?.byPolicy.length ? (
         <div className="rounded-md border">
           <div className="border-b px-4 py-3">
-            <div className="font-medium">Strona odwrotna: z czego wzięła się polityka</div>
-            <div className="text-xs text-muted-foreground">
-              liczba epizodów rozróżnialnych — jedna polityka bywa dostrajana kolejno na dwóch
-              zbiorach, które częściowo się pokrywają
-            </div>
+            <div className="font-medium">{t('datasets.ui.reverseSide', "Strona odwrotna: z czego wzięła się polityka")}</div>
+            <div className="text-xs text-muted-foreground">{t("datasets.prose.1", "liczba epizodów rozróżnialnych — jedna polityka bywa dostrajana kolejno na dwóch zbiorach, które częściowo się pokrywają")}</div>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
-                <th className="px-4 py-2 font-normal">wersja polityki</th>
-                <th className="px-4 py-2 font-normal">wersji zbiorów</th>
-                <th className="px-4 py-2 font-normal">epizodów źródłowych</th>
+                <th className="px-4 py-2 font-normal">{t("datasets.h.wersjaPolityki", "wersja polityki")}</th>
+                <th className="px-4 py-2 font-normal">{t('datasets.ui.datasetVersionsLower', "wersji zbiorów")}</th>
+                <th className="px-4 py-2 font-normal">{t('datasets.ui.sourceEpisodes', "epizodów źródłowych")}</th>
               </tr>
             </thead>
             <tbody>
