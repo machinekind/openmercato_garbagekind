@@ -42,6 +42,7 @@ const payload = {
     issues30dKg: 164910,
     sorted30dKg: 235890,
     movements30d: 176,
+    movementRows30d: 212,
     lastMovementAt: '2026-09-18T22:14:50.000Z',
   },
   locations: [

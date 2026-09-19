@@ -49,7 +49,7 @@ type LegacyOrder = {
 }
 
 type DashboardPayload = {
-  totals: { yardKg: number; binsKg: number; movements30d: number }
+  totals: { yardKg: number; binsKg: number; movements30d: number; movementRows30d: number }
   locations: Array<{ code: string; type: string; quantityKg: number | null; capacityKg: number | null; utilisation: number | null }>
   fractions: Array<{ sku: string; quantityKg: number }>
   movements: Array<{ type: string; legacyMoveNo: number | string | null }>
@@ -186,7 +186,15 @@ function ledgerBalances(rows: LegacyRow[]) {
   return { perLocation, perFraction }
 }
 
-/** Ile ruchów powinno powstać w WMS: para SORT zwija się w jeden `transfer`. */
+/**
+ * Ile kwitów legacy powinno wejść do magazynu: para SORT zwija się w jeden
+ * `transfer`, reszta idzie jeden do jednego.
+ *
+ * Uwaga: to NIE jest liczba wierszy w księdze WMS. Masa schodzi z konkretnych
+ * partii, a komenda magazynowa rusza jedną partię naraz, więc jeden kwit bywa
+ * kilkoma ruchami. Niezmiennikiem jest kwit — jego zgubienie albo zdublowanie
+ * rozjeżdża salda, a podział na partie nie.
+ */
 function expectedMovementCount(rows: LegacyRow[]): number {
   const sortRows = rows.filter((row) => row.typ === 'SORT').length
   const rest = rows.length - sortRows
@@ -250,10 +258,14 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     }
   })
 
-  test('para SORT zwija się w jeden ruch — liczba ruchów musi się zgadzać', async ({ request }) => {
+  test('para SORT zwija się w jeden kwit — liczba kwitów musi się zgadzać', async ({ request }) => {
     const ledger = await readLegacyLedger()
     const dashboard = await loadDashboard(request)
     expect(dashboard.totals.movements30d).toBe(expectedMovementCount(ledger))
+    // Ruchów magazynowych jest co najmniej tyle, co kwitów: mniej znaczyłoby,
+    // że kwit nie wszedł, a dokładnie tyle — że masa nigdy nie schodzi
+    // z więcej niż jednej partii, czyli że partie przestały działać.
+    expect(dashboard.totals.movementRows30d).toBeGreaterThanOrEqual(dashboard.totals.movements30d)
   })
 
   test('suma na placu i w boksach odtwarza podział z systemu legacy', async ({ request }) => {

@@ -12,7 +12,7 @@ Open Mercato już ma, przede wszystkim na **WMS**.
 | `stockmaster` (frakcje) | `catalog_products` + `catalog_product_variants` (SKU = kod odpadu) + `wms_product_inventory_profiles` | próg ponownego zamówienia, jednostka magazynowa |
 | `locstock` | `wms_inventory_balances` | `on_hand` / `reserved` / `allocated` i liczona kolumna `available` |
 | `stockmoves` `PZ` | komenda `wms.inventory.receive` → ruch `receipt` | |
-| `stockmoves` `SORT` (**para** wierszy) | komenda `wms.inventory.move` → **jeden** ruch `transfer` | przesunięcie staje się atomowe |
+| `stockmoves` `SORT` (**para** wierszy) | komenda `wms.inventory.move` → ruch `transfer` na każdą ruszoną partię | przesunięcie staje się atomowe, a masa nie traci dostawcy po drodze |
 | `stockmoves` `WZ` | komenda `wms.inventory.adjust` → ruch `adjust` | |
 | `stkmoveno` | deterministyczny `referenceId` → `idempotency_key` WMS | powtórzony import odbija się od bazy |
 | `debtorsmaster` (kontrahenci) | `customer_entities` + `customer_companies` (komenda `customers.companies.create`) | historia kontaktów, opiekun, etykiety — rzeczy, których płaska tabela nie miała gdzie trzymać |
@@ -45,6 +45,14 @@ MERCATO_ROOT=/sciezka/do/open-mercato ./mercato/install.sh
 cd /sciezka/do/open-mercato/apps/mercato
 yarn generate          # rejestruje moduł, ACL, i18n, CLI i adapter
 ```
+
+Wymagania klonu: **Node 24** (`engines`) i Yarn 4 przez corepack. Bez Vaulta
+`yarn initialize` przerywa na `no tenant DEK is available` — trzeba wtedy
+dopisać do `.env` sekret zastępczy `TENANT_DATA_ENCRYPTION_FALLBACK_KEY`
+(dowolne ≥32 znaki; bez niego zaszyfrowanych danych tenanta nie da się
+odzyskać po restarcie). W trybie deweloperskim wchodź na `localhost:3000`,
+a nie `127.0.0.1:3000` — Next.js odrzuca wtedy `/_next/static/*` jako żądanie
+cross-origin i formularz logowania się nie hydratuje.
 
 Zmienne środowiskowe (`apps/mercato/.env`):
 
@@ -89,7 +97,10 @@ Ekran `/backend/sortownia` (grupa „Sortownia" w nawigacji, uprawnienie
   pomarańczowy od 70% i czerwony od 90%,
 * frakcje z progiem wysyłki i ostrzeżeniem, gdy stan zejdzie poniżej,
 * ostatnie ruchy z numerem z systemu legacy, po którym da się wrócić do kwitu;
-  para `SORT` pokazuje oba numery obok siebie (`#100240 + 100241`).
+  para `SORT` pokazuje oba numery obok siebie (`#100240 + 100241`), a kwit
+  rozbity na partie powtarza się tyle razy, z ilu partii zeszła masa,
+* licznik ruchów podaje obie liczby — `217 kwitów w 309 ruchach` — bo kwit
+  uzgadnia się z księgą legacy, a ruch mówi, co naprawdę zrobił magazyn.
 
 Dane liczone są wprost z encji WMS przez `api/dashboard/route.ts`, więc pulpit
 i magazyn zawsze mówią to samo. Pulpit odświeża się co 30 sekund.
@@ -106,22 +117,28 @@ kolejkę, wznawianie, historię przebiegów i pasek postępu — zamiast crona i
 
 Import przechodzi kolejno, a kolejność nie jest kosmetyczna — zamówienie
 potrzebuje kontrahenta i frakcji, karta przekazania potrzebuje zamówienia,
-wpłata potrzebuje faktury, a rezerwacja potrzebuje stanu magazynowego:
+wpłata potrzebuje faktury, przyjęcie potrzebuje partii, a rezerwacja potrzebuje
+stanu magazynowego, czyli **całej** księgi ruchów:
 
 ```
 topologia → frakcje → kontrahenci → zamówienia (+faktury)
-          → karty przekazania → wpłaty → partie → rezerwacje → księga ruchów
+          → karty przekazania → wpłaty → partie → księga ruchów → rezerwacje
 ```
+
+Rezerwacje na końcu nie są kosmetyką kolejności. Puszczone przed księgą nie
+mają czego zablokować i każde otwarte zamówienie meldują jako brak pokrycia —
+przy imporcie na pustą bazę taka odmowa WMS-u znaczy tylko tyle, że pytamy
+o stan, którego sami jeszcze nie zapisaliśmy.
 
 Wszystko idzie komendami platformy (`commandBus`), a nie zapisem do encji.
 Komenda odpala zdarzenia, wpis do dziennika audytu i indeks wyszukiwania —
 zapis na skróty dałby wiersz w bazie, którego reszta Open Mercato by nie widziała.
 
-Zweryfikowane na żywej instancji: 8 kontrahentów, 40 zamówień, 40 faktur
-(`INV-20260919-00001` … `-00040`, numery nadane przez
-`salesDocumentNumberGenerator`), 152 372,18 zł netto i 187 417,79 zł brutto.
+Zweryfikowane na żywej instancji: 8 kontrahentów, 46 zamówień, 46 faktur
+(`INV-20260919-00001` … `-00046`, numery nadane przez
+`salesDocumentNumberGenerator`), 161 792,17 zł netto i 199 004,37 zł brutto.
 
-### Dwa błędy, które wyszły dopiero na żywych danych
+### Trzy błędy, które wyszły dopiero na żywych danych
 
 1. **`sales.invoices.create` gubi powiązanie z zamówieniem.** Komenda przyjmuje
    `orderId`, sprawdza, że zamówienie istnieje w tym samym zakresie, a potem
@@ -134,6 +151,24 @@ Zweryfikowane na żywej instancji: 8 kontrahentów, 40 zamówień, 40 faktur
    surowym SQL-em oddaje kryptogram (`BZhh3D8l…:v1`) i ląduje on wprost na
    ekranie operatora. Agregaty kwotowe liczymy SQL-em po identyfikatorze,
    a nazwy dociągamy `findWithDecryption`.
+3. **Partia unieruchomiła cały ruch magazynowy poza przyjęciem.** Odkąd `PZ`
+   zakłada partię, WMS prowadzi saldo osobno dla każdej z nich, a
+   `wms.inventory.move` i `.adjust` rozwiązują saldo DOKŁADNIE
+   (`findExactBalanceForUpdate`) — `lotId` jest częścią jego tożsamości.
+   Wysortowania i wydania szły bez `lotId`, więc trafiały w saldo bezpartyjne,
+   zerowe, i wracały z `insufficient_stock`: 122 z 299 wierszy odrzucone, cała
+   masa uwięziona na placu przyjęć (291% pojemności), sprawność sortowania 0%.
+   Platforma nie wybiera partii po strategii — schemat komendy przyjmuje jedno,
+   opcjonalne `lotId` — więc partie dobiera moduł, FIFO po dacie przyjęcia
+   (`lib/movements.ts`, `sliceByLots`). Jeden kwit legacy bywa przez to kilkoma
+   ruchami WMS.
+
+   Ten błąd przeżył 191 zielonych testów jednostkowych, bo atrapa `commandBus`
+   nie zna sald per partia, i nie widać go było w liczbach z tego pliku, bo
+   pochodziły z przebiegu sprzed wprowadzenia partii. Dopiero uruchomienie
+   importu na czystej instancji go pokazało. Wniosek jest dla tego rozdziału,
+   nie dla czytelnika: liczba w sekcji „Stan na dziś" jest warta tyle, ile
+   data ostatniego przebiegu, z którego pochodzi.
 
 ## Co jeszcze robi ten moduł
 
@@ -144,6 +179,8 @@ liczbę niezapłaconych dokumentów i wiek najstarszego.
 
 **Identyfikowalność.** Każde `PZ` zakłada partię (`wms.lots.create`) z nazwą
 dostawcy, kodem odpadu, masą i datą przyjęcia, a ruch przyjęcia ją wskazuje.
+Partia jedzie dalej: wysortowanie i wydanie schodzą z konkretnych partii, FIFO
+po dacie przyjęcia, więc masa nie gubi dostawcy po drodze z placu do odbiorcy.
 Pytanie „czyj odpad leży w boksie trzecim" ma odpowiedź w magazynie.
 
 **Ewidencja przekazań.** Każde zrealizowane wydanie dostaje kartę przekazania
@@ -186,7 +223,7 @@ Moduł korzysta z narzędzi, które Open Mercato ma na pokładzie: Jest do test�
 jednostkowych i Playwright do integracyjnych (`__integration__/`, odkrywane
 przez `OM_INTEGRATION_MODULES`). Nic własnego nie dokładamy.
 
-Testy jednostkowe — 191 przypadków, 13 zestawów, bez bazy i bez sieci:
+Testy jednostkowe — 198 przypadków, 14 zestawów, bez bazy i bez sieci:
 
 ```bash
 cd apps/mercato
@@ -200,6 +237,12 @@ komendy WMS, zakładanie kontrahentów w CRM, budowę zamówień i faktur
 (jednostka, cena za kilogram, VAT, idempotencja), trasę pulpitu i sam komponent
 pulpitu (jsdom + Testing Library).
 
+Osobny zestaw pilnuje rozkładu masy na partie: kolejności FIFO po dacie
+przyjęcia, licznika części na podzielonym kwicie, czytelnego komunikatu przy
+braku pokrycia, dokładania reszty po przerwanym imporcie i pominięcia kwitu
+zapisanego w całości. Atrapa `em` zwraca tu salda per partia — bez tego
+odrzucenie `insufficient_stock` nie ma prawa wyjść w teście jednostkowym.
+
 Cross-walidacja z legacy — porównuje odpowiedź pulpitu z księgą `out/ruchy.csv`:
 
 ```bash
@@ -210,9 +253,13 @@ OM_INTEGRATION_MODULES=sortownia BASE_URL=http://localhost:3000 \
 
 Obie strony liczą z tej samej księgi, ale inaczej: legacy trzyma płaskie
 wiersze w kilogramach, Mercato prowadzi salda w WMS i zwija parę `SORT` w jeden
-`transfer`. Test sprawdza salda per lokalizacja i per frakcja, liczbę ruchów
+kwit. Test sprawdza salda per lokalizacja i per frakcja, liczbę **kwitów**
 (`reszta + pary/2`), podział plac/boksy, brak ujemnych stanów, zapełnienie
 względem pojemności i to, że każdy ruch niesie numer ze starego systemu.
+Niezmiennikiem jest kwit, nie wiersz w księdze WMS: kwit zgubiony albo
+zdublowany rozjeżdża salda, a rozbicie go na partie — nie. Ruchów magazynowych
+musi być co najmniej tyle, co kwitów; dokładnie tyle znaczyłoby, że masa nigdy
+nie schodzi z więcej niż jednej partii, czyli że partie przestały działać.
 Po stronie sprzedaży: liczbę zamówień wobec `zamowienia.csv`, komplet faktur,
 przychód netto policzony z cennika legacy co do grosza, relację brutto/netto
 oraz to, że nazwy odbiorców są czytelne, a nie kryptogramem z bazy.
@@ -226,21 +273,39 @@ kontrolnej i że każde `WZ` wskazuje istniejące zamówienie, a `PZ` i `SORT` �
 
 ## Stan na dziś
 
-Zweryfikowane uruchomieniem na żywej instancji (Postgres + Redis + `apps/mercato`):
+Zweryfikowane **19.09.2026** importem na czystą instancję (Open Mercato 0.8.0,
+Postgres 16 + Redis 7 + `apps/mercato`), z księgi `out/` liczącej 299 wierszy:
 
 * topologia: 6 lokalizacji, 3 strefy, 1 magazyn,
 * frakcje: 6 pozycji katalogu z profilami zapasu,
-* ruchy: 176 zapisanych (81 `receipt`, 66 `transfer`, 29 `adjust`), 176
-  unikalnych kluczy idempotencji, zero duplikatów przy ponownym imporcie,
-* stany po imporcie zgodne z legacy co do kilograma (np. `BOKS3` 46 593 kg),
+* sprzedaż: 8 kontrahentów, 46 zamówień, 46 faktur, 11 wpłat, 40 kart
+  przekazania,
+* partie: 95 — po jednej na każde przyjęcie,
+* ruchy: **299 wierszy legacy → 217 kwitów → 309 ruchów WMS** (95 `receipt`,
+  134 `transfer`, 80 `adjust`), zero błędów. Każdy ruch wskazuje partię.
+  Podział kwitów na części: 48 zmieściło się w jednej partii, 59 weszło w dwie,
+  13 w trzy, jeden w cztery, jeden w pięć,
+* powtórny import: **0 zapisanych, 217 duplikatów, 0 błędów** — ani jeden ruch,
+  kwit, partia czy rezerwacja nie powstały drugi raz,
+* stany: `PRZYJ` 105 446,27 kg, `BOKS1` 6 638,79, `BOKS2` 18 060,25,
+  `BOKS3` 50 500,28, `BOKS4` 18 523,01, `MAGRDF` 1 609,21 — razem
+  **200 777,81 kg**, zero stanów ujemnych,
+* bilans masy domyka się co do kilograma: 437 131,25 − 236 353,44 =
+  200 777,81; sprawność sortowania 67,9%,
+* rezerwacje: 5 aktywnych na 27 555,20 kg z 6 zamówień otwartych. Szóste
+  (`5045`) nie ma pokrycia i WMS je odrzucił — tym razem naprawdę, bo księga
+  była już w bazie,
 * WMS sam wystawił powiadomienia `wms.inventory.low_stock` dla frakcji poniżej
   progu — czyli reguła, której stary system nie miał gdzie zapisać.
 
 Pulpit sprawdzony w przeglądarce (zalogowanie, render, zrzut ekranu): kafelki,
 wykres przepływu, zapełnienie boksów i księga ruchów zasilają się z żywej bazy.
+Plac przyjęć pokazuje 70,3% pojemności, a nie 291% jak przed poprawką partii.
 
-Testy: 191 jednostkowych i 19 po stronie legacy przechodzi, cross-walidacja
-(28 przypadków Playwright) przechodzi na żywym stacku bez ponowień.
+Testy: 198 jednostkowych i 19 po stronie legacy przechodzi, `eslint` na module
+czysty. Cross-walidacja (28 przypadków Playwright) nie była przepuszczona po
+tej zmianie — jej asercja o liczbie ruchów została przestawiona na kwity, ale
+sam przebieg czeka na uruchomienie.
 
 Nie zrobione jeszcze: uruchamianie importu z panelu Data Sync end‑to‑end
 (adapter jest zarejestrowany i waliduje połączenie, ale przebiegi odpalaliśmy

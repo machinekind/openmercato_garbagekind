@@ -219,7 +219,8 @@ const importCommand: ModuleCli = {
       console.log('  wpłaty: pominięto (brak pliku albo zamówień)')
     }
 
-    // 7. Księga ruchów — kanał plikowy, zapis przez komendy WMS.
+    // 7. Partie odpadu — zakładane przed księgą, bo przyjęcie na nie wskazuje.
+    // 8. Księga ruchów — kanał plikowy, zapis przez komendy WMS.
 
     const { warehouse, byCode } = await loadLocationIndex(em, scope)
     if (!warehouse) throw new Error('Magazyn nie powstał — przerwano.')
@@ -263,34 +264,6 @@ const importCommand: ModuleCli = {
     console.log(`  partie odpadu: ${lotResult.outcomes.length} przyjęć (nowych partii ${lotsCreated})`)
     for (const outcome of lotsFailed.slice(0, 5)) console.log(`    ! partia PZ/${outcome.stkmoveno}: ${outcome.error}`)
 
-    // 8. Rezerwacje pod zamówienia jeszcze niezrealizowane.
-    if (salesOrderIndex.size > 0 && (await fileExists(ordersPath))) {
-      const orderRows = await readOrders(ordersPath)
-      // Wydane = ma swój ruch WZ w księdze. Reszta czeka i ma być zablokowana.
-      const fulfilled = fulfilledOrders
-      const result = await applyReservations(
-        {
-          em,
-          commandBus,
-          commandContext,
-          scope,
-          warehouseId: warehouse.id,
-          fractions: movementContext.fractions,
-          orders: salesOrderIndex,
-          fulfilled,
-        },
-        orderRows,
-      )
-      const created = result.outcomes.filter((o) => o.action === 'create').length
-      const short = result.outcomes.filter((o) => o.action === 'insufficient')
-      const failedRes = result.outcomes.filter((o) => o.action === 'failed')
-      console.log(`  rezerwacje: ${orderRows.length - fulfilled.size} zamówień otwartych (nowych rezerwacji ${created})`)
-      for (const outcome of short) {
-        console.log(`    · zamówienie ${outcome.orderno}: brak pokrycia w magazynie — WMS odmówił rezerwacji`)
-      }
-      for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
-    }
-
     let buffer: LegacyMovementRow[] = []
     let carry: LegacyMovementRow[] = []
     let written = 0
@@ -325,6 +298,41 @@ const importCommand: ModuleCli = {
 
     console.log(`  ruchy: przeczytane ${seen}, zapisane ${written}, duplikaty ${duplicates}, błędy ${failed}`)
     for (const error of errors) console.log(`    ! ${error}`)
+
+    // 9. Rezerwacje pod zamówienia jeszcze niezrealizowane.
+    //
+    // Dopiero po księdze ruchów: rezerwacja blokuje masę, która musi już
+    // leżeć w magazynie. Puszczona wcześniej nie miałaby czego zablokować
+    // i każde otwarte zamówienie zgłaszałaby jako brak pokrycia — przy
+    // imporcie na pustą bazę odmowa WMS-u znaczyłaby wtedy tylko tyle, że
+    // pytamy o stan, którego sami jeszcze nie zapisaliśmy.
+    if (salesOrderIndex.size > 0 && (await fileExists(ordersPath))) {
+      const orderRows = await readOrders(ordersPath)
+      // Wydane = ma swój ruch WZ w księdze. Reszta czeka i ma być zablokowana.
+      const fulfilled = fulfilledOrders
+      const result = await applyReservations(
+        {
+          em,
+          commandBus,
+          commandContext,
+          scope,
+          warehouseId: warehouse.id,
+          fractions: movementContext.fractions,
+          orders: salesOrderIndex,
+          fulfilled,
+        },
+        orderRows,
+      )
+      const created = result.outcomes.filter((o) => o.action === 'create').length
+      const short = result.outcomes.filter((o) => o.action === 'insufficient')
+      const failedRes = result.outcomes.filter((o) => o.action === 'failed')
+      console.log(`  rezerwacje: ${orderRows.length - fulfilled.size} zamówień otwartych (nowych rezerwacji ${created})`)
+      for (const outcome of short) {
+        console.log(`    · zamówienie ${outcome.orderno}: brak pokrycia w magazynie — WMS odmówił rezerwacji`)
+      }
+      for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
+    }
+
 
     const balances = await em.find(InventoryBalance, {
       organizationId: scope.organizationId,
