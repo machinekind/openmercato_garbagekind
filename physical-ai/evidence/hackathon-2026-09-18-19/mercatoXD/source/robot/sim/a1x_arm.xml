@@ -1,0 +1,71 @@
+<mujoco model="a1x">
+  <compiler angle="radian" meshdir="/home/bukareszt/manipulatorr/galaxeo-manipulators/ros2_ws/src/galaxea_a1xy_description/meshes/" />
+  <asset>
+    <mesh name="base_link" content_type="model/stl" file="base_link.STL" />
+    <mesh name="arm_link1" content_type="model/stl" file="arm_link1.STL" />
+    <mesh name="arm_link2" content_type="model/stl" file="arm_link2.STL" />
+    <mesh name="arm_link3" content_type="model/stl" file="arm_link3.STL" />
+    <mesh name="arm_link4" content_type="model/stl" file="arm_link4.STL" />
+    <mesh name="arm_link5" content_type="model/stl" file="arm_link5.STL" />
+    <mesh name="arm_link6" content_type="model/stl" file="arm_link6.STL" />
+    <mesh name="gripper_link" content_type="model/stl" file="gripper_link.STL" />
+    <mesh name="gripper_finger_link1" content_type="model/stl" file="gripper_finger_link1.STL" />
+    <mesh name="gripper_finger_link2" content_type="model/stl" file="gripper_finger_link2.STL" />
+  </asset>
+  <worldbody>
+    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="base_link" />
+    <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="base_link" />
+    <body name="arm_link1" pos="0 0 0.08605">
+      <inertial pos="3.42079e-07 -0.00198629 0.0468866" quat="0.707103 -0.000485371 -0.000615255 0.70711" mass="0.839" diaginertia="0.000269809 0.000224145 0.000218727" />
+      <joint name="arm_joint1" pos="0 0 0" axis="0 0 1" range="-2.8798 2.8798" actuatorfrcrange="-27 27" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link1" />
+      <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link1" />
+      <body name="arm_link2" pos="0 0.03075 0.04925">
+        <inertial pos="-0.122675 -0.0295384 0.0036503" quat="0.00844531 0.708266 0.0150147 0.705736" mass="1.09" diaginertia="0.00278019 0.00274654 0.000388008" />
+        <joint name="arm_joint2" pos="0 0 0" axis="0 1 0" range="0 3.1416" actuatorfrcrange="-50 50" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link2" />
+        <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link2" />
+        <body name="arm_link3" pos="-0.3 0.00025004 0">
+          <inertial pos="0.0566625 -0.0291316 0.0568019" quat="0.6282 0.37327 0.426082 0.533375" mass="0.739" diaginertia="0.000673173 0.000598929 0.00020721" />
+          <joint name="arm_joint3" pos="0 0 0" axis="0 1 0" range="-3.3161 0" actuatorfrcrange="-27 27" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link3" />
+          <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link3" />
+          <body name="arm_link4" pos="0.1747 0.00049739 0.075485">
+            <inertial pos="0.069984 -0.0287505 0.0541968" quat="0.359527 0.606925 0.362734 0.608938" mass="0.419" diaginertia="6.83544e-05 6.65029e-05 6.62006e-05" />
+            <joint name="arm_joint4" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708" actuatorfrcrange="-14 14" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link4" />
+            <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link4" />
+            <body name="arm_link5" pos="0.08 -0.031498 0.0405">
+              <inertial pos="-0.000803199 -2.29029e-07 -0.0402656" quat="1 -2.27182e-05 0 0" mass="0.054" diaginertia="5.80421e-05 5.76398e-05 5.68558e-05" />
+              <joint name="arm_joint5" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" actuatorfrcrange="-14 14" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link5" />
+              <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link5" />
+              <body name="arm_link6" pos="0.022503 0 -0.0405">
+                <inertial pos="0.0484219 6.46153e-09 2.03807e-06" quat="0.499375 0.499989 -0.500627 0.500009" mass="0.635" diaginertia="0.00022259 0.000179327 0.000156114" />
+                <joint name="arm_joint6" pos="0 0 0" axis="1 0 0" range="-2.8798 2.8798" actuatorfrcrange="-14 14" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link6" />
+                <geom type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="arm_link6" />
+                <geom pos="0.08165 0 0" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="gripper_link" />
+                <geom pos="0.08165 0 0" quat="1 0 0 0" type="mesh" rgba="0.807843 0.843137 0.905882 1" mesh="gripper_link" />
+                <body name="gripper_finger_link1" pos="0.11854 0.013453 0.00012059">
+                  <inertial pos="-0.0195896 -0.0151137 0.00542254" quat="0.0737604 0.710766 -0.00936884 0.699488" mass="0.027" diaginertia="6.49151e-06 5.75205e-06 2.35775e-06" />
+                  <joint name="gripper_finger_joint1" pos="0 0 0" axis="0 1 0" type="slide" range="0 0.05" actuatorfrcrange="-100 100" />
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="gripper_finger_link1" />
+                  <geom name="pad1" type="box" pos="-0.0024 -0.016 -0.006" size="0.0169 0.01 0.03" condim="6" friction="1.5 0.05 0.005" solimp="0.97 0.99 0.001" solref="0.004 1" rgba="0.2 0.2 0.2 1" />
+                </body>
+                <body name="gripper_finger_link2" pos="0.11854 -0.013453 -0.00012059">
+                  <inertial pos="-0.0195896 0.0151137 -0.00542254" quat="-0.00936875 0.699488 0.0737603 0.710766" mass="0.027" diaginertia="6.49151e-06 5.75205e-06 2.35775e-06" />
+                  <joint name="gripper_finger_joint2" pos="0 0 0" axis="0 1 0" type="slide" range="-0.05 0" actuatorfrcrange="-100 100" />
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.807843 0.843137 0.905882 1" mesh="gripper_finger_link2" />
+                  <geom name="pad2" type="box" pos="-0.0024 0.016 -0.006" size="0.0169 0.01 0.03" condim="6" friction="1.5 0.05 0.005" solimp="0.97 0.99 0.001" solref="0.004 1" rgba="0.2 0.2 0.2 1" />
+                </body>
+                <site name="tcp" pos="0.119 0.0 0.003" size="0.005" group="3" rgba="0 1 0 0.6" />
+                <camera name="wrist" pos="0.02 0.0 0.1" mode="fixed" fovy="70" xyaxes="0 -1 0  0 0 1" />
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

@@ -1,0 +1,36 @@
+# Tuning for arm-to-arm teleoperation. Values here are the gentle defaults --
+# raise kp only once the mapping is confirmed to behave.
+/**/a1x_teleop:
+  ros__parameters:
+    rate: 100.0
+    kp: 25.0                  # gravity-loaded J2/J3 will sag a little at this
+    kd: 3.0
+    gain_ramp_time: 3.0
+    max_speed: 1.5708         # rad/s == 90 deg/s
+    limit_margin: 0.05        # slack on the URDF limits for the zero offsets
+    leader_filter_alpha: 0.4  # low-pass on the leader; 1.0 disables
+    velocity_feedforward: true
+    stale_timeout: 0.25
+    freeze_frames: 400        # 2 s at 200 Hz
+
+    auto_enable: true
+    enable_code: 1            # 1 and 6 energise; 2/3/4 release; 5 clears errors
+    clear_errors_on_engage: true
+    clear_code: 5
+    release_on_disengage: false
+    # Energising the follower interrupts its feedback for a few hundred ms and
+    # the payload can briefly read zero on some joints. Wait the stream out
+    # rather than sampling the reference pose during it.
+    engage_settle_time: 0.4
+    engage_settle_timeout: 5.0
+    engage_pose_tolerance: 0.15   # rad; a larger pre/post shift aborts engage
+    fault_debounce: 0.5           # s of stale feedback before disengaging
+
+    enable_gripper: false     # confirm the travel range before turning this on
+    gripper_speed: 0.6
+    gripper_effort_limit: 1.2
+    gripper_kp: 20.0
+    gripper_kd: 2.0
+
+    keyboard: true
+    auto_engage: false

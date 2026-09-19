@@ -7,6 +7,7 @@
 | 2026-09-19 | Panel A1X, tracking, uruchomienie G0.5 na DGX, próby dojścia i chwytu, poprawa po montażu kamery nadgarstkowej. | `source/docs/knowledge/d7ea01b3.md`, `source/docs/PICK-STATE-OF-PLAY.md` |
 | 2026-09-19 21:37:49 +02:00 | Utworzenie jedynego źródłowego commita zbierającego materiały. | commit `fd5fe08f24ae35fe37c8053086327fdc1a14363a` |
 | 2026-09-19 22:54 +02:00 | Import materiału dowodowego do `openmercato_garbagekind`, bez modyfikowania zawartości plików pod `source/`. | `SOURCE.json`, `MANIFEST.sha256` |
+| 2026-09-20 | Audyt całego drzewa tego samego commita, import pominiętego kodu wykonawczego i uruchomienie testów bridge'a: 56/56, 84% pokrycia. | `source/bridge/`, `source/robot/`, `source/src/modules/robotics/`, `SOURCE.json` |
 
 ## Granice osi czasu
 

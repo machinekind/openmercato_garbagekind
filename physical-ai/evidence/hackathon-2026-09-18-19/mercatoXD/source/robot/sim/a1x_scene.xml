@@ -1,0 +1,112 @@
+<mujoco model="a1x_scene">
+  <!-- The A1X digital twin: the arm from the URDF, on a table, with a graspable
+       object and a placement target.
+
+       Two things here mirror measured hardware behaviour rather than a generic
+       sim setup, and changing them makes the twin diverge from the real arm:
+
+       * timestep 0.002 (500 Hz). Same physics rate the LEGS paper runs, and far
+         above the arm's 200 Hz CAN feedback, so a control step is 2-3 substeps.
+       * position actuators only. The A1X ignores t_ff, kp and kd on the wire
+         (docs/PROTOCOL.md); p_des is the only field with any effect. Torque or
+         velocity actuators here would train a policy for compliance the real
+         arm cannot deliver. -->
+
+  <compiler angle="radian"/>
+  <option timestep="0.002" integrator="implicitfast"/>
+
+  <include file="a1x_arm.xml"/>
+
+  <default>
+    <!-- Armature stands in for the gearbox inertia the URDF omits; without it
+         the position servos ring at this timestep. Gains are stiff on purpose. README measures the real arm mirroring its leader at
+         98-100%, so a twin whose servos sag 12 mm under gravity is the wrong
+         model -- the generator would spend every episode correcting for droop
+         the hardware does not have. Joint torque stays bounded by the URDF's
+         own actuatorfrcrange, so this cannot pull harder than the real motors. -->
+    <default class="a1x_joint">
+      <joint armature="0.01" damping="2.0"/>
+      <position kp="2000" kv="80"/>
+    </default>
+    <!-- The jaw has to traverse its whole 37 mm of travel inside one Close, so
+         it is geared to close in ~0.2 s. At the original kp=200/damping=5 it
+         crept 2 mm per grip and the lift began before the grasp existed. -->
+    <default class="a1x_finger">
+      <joint armature="0.001" damping="1.0"/>
+      <position kp="800" kv="30" forcerange="-100 100"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.2 0.2 0.25"
+             rgb2="0.3 0.3 0.35" width="300" height="300"/>
+    <material name="grid" texture="grid" texrepeat="6 6" reflectance="0.05"/>
+    <material name="table" rgba="0.72 0.55 0.35 1" reflectance="0.05"/>
+    <material name="orange" rgba="0.95 0.5 0.1 1"/>
+    <material name="plate" rgba="0.95 0.95 0.92 1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0.4 0 1.6" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <light pos="-0.3 0.6 1.2" dir="0.3 -0.5 -1" diffuse="0.3 0.3 0.3"/>
+
+    <geom name="floor" type="plane" pos="0 0 -0.75" size="3 3 0.05" material="grid"/>
+    <!-- Table top face at z=0, so the arm base sits on the table and every
+         object z in this file is a height above the work surface. -->
+    <geom name="table" type="box" pos="0.25 0 -0.02" size="0.5 0.45 0.02" material="table"/>
+
+    <!-- Third-person views, named to match record_a1x.py --cameras. Aimed at a
+         fixed point rather than by xyaxes, so the scene stays framed if the
+         workspace layout below moves; targetbody on a moving object would make
+         the camera track it, which no bolted-down real camera does. -->
+    <body name="look_at" pos="0.35 0 0.12" mocap="true"/>
+    <camera name="top" pos="0.95 0 0.75" mode="targetbody" target="look_at"/>
+    <camera name="front" pos="0.55 -0.95 0.45" mode="targetbody" target="look_at"/>
+
+    <!-- 50 mm, not the 70 mm of a real orange. The A1X jaw opens to 75 mm, so a
+         70 mm ball leaves 2.5 mm of total clearance and the pads knock it off
+         the table on the way down. Sized to the gripper, not to the fruit. -->
+    <body name="object" pos="0.38 0.05 0.025">
+      <freejoint name="object_free"/>
+      <!-- Rolling friction matters more than it looks: MuJoCo's default third
+           coefficient lets a perfect sphere roll off the grasp point from
+           solver noise alone, so the jaw chases a moving object all episode.
+           Real fruit has flats, a stem and a soft skin; this is that. -->
+      <geom name="object" type="sphere" size="0.025" mass="0.15" material="orange"
+            condim="6" friction="1.2 0.05 0.02"
+            solimp="0.95 0.99 0.001" solref="0.004 1"/>
+    </body>
+
+    <body name="target" pos="0.38 -0.18 0.008">
+      <freejoint name="target_free"/>
+      <geom name="target" type="cylinder" size="0.08 0.008" mass="0.4" material="plate"
+            friction="0.9 0.02 0.001"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position class="a1x_joint" name="j1" joint="arm_joint1" ctrlrange="-2.8798 2.8798"/>
+    <position class="a1x_joint" name="j2" joint="arm_joint2" ctrlrange="0 3.1416"/>
+    <position class="a1x_joint" name="j3" joint="arm_joint3" ctrlrange="-3.3161 0"/>
+    <position class="a1x_joint" name="j4" joint="arm_joint4" ctrlrange="-1.5708 1.5708"/>
+    <position class="a1x_joint" name="j5" joint="arm_joint5" ctrlrange="-1.5708 1.5708"/>
+    <position class="a1x_joint" name="j6" joint="arm_joint6" ctrlrange="-2.8798 2.8798"/>
+    <!-- The A1X exposes one grip scalar and the two fingers travel on opposite
+         axes, so both are driven from it in lockstep by env.py. An equality
+         constraint with only finger1 actuated was tried first and is wrong:
+         finger2 then hangs off a soft constraint, sags under its own weight and
+         drags the jaw shut with 12 N while it is commanded fully open. -->
+    <position class="a1x_finger" name="grip" joint="gripper_finger_joint1" ctrlrange="0 0.05"/>
+    <position class="a1x_finger" name="grip2" joint="gripper_finger_joint2" ctrlrange="-0.05 0"/>
+  </actuator>
+
+  <keyframe>
+    <!-- record_a1x.py --home "0,60,-90,0,0,0", in radians, gripper open. Note
+         arm_joint2's range starts at 0, so the all-zeros pose is on a limit. -->
+    <key name="home"
+         qpos="0 1.0472 -1.5708 0 0 0 0.05 -0.05
+               0.38 0.05 0.025 1 0 0 0
+               0.38 -0.18 0.008 1 0 0 0"
+         ctrl="0 1.0472 -1.5708 0 0 0 0.05 -0.05"/>
+  </keyframe>
+</mujoco>

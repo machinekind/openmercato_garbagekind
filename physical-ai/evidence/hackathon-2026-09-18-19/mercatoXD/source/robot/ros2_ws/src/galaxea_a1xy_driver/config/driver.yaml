@@ -1,0 +1,12 @@
+a1xy_driver:
+  ros__parameters:
+    can_interface: "can0"
+    # -1 keeps the driver READ-ONLY. The A1X command CAN id is not published by
+    # Galaxea and is not present in the aarch64 SDK (it lives in the Fernet-
+    # encrypted module_config/hdas.yaml.enc). Set it only once you know it.
+    command_can_id: -1
+    publish_gripper: true
+    # Subtracted from each raw joint reading. arm_joint3 sits ~1.5 deg outside
+    # its URDF limit at rest; mapping was confirmed by a push test, so this is
+    # calibration, not a decode error. Measure your own before trusting it.
+    joint_offsets: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

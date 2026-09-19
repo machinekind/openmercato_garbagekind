@@ -20,7 +20,25 @@
     "robot/webpanel/presets.json",
     "robot/so101/so101_new_calib.urdf"
   ],
-  "content_transform": "path relocation only; source file contents unchanged",
+  "supplemental_import": {
+    "date": "2026-09-20",
+    "source_commit_revalidated": "fd5fe08f24ae35fe37c8053086327fdc1a14363a",
+    "copied_tracked_files": 214,
+    "excluded": [
+      "robot/.env",
+      "robot/ros2_ws/src/galaxea_a1xy_description/meshes/*.STL (11 files)"
+    ],
+    "reason_for_exclusion": "environment file excluded defensively; vendor meshes are not team-produced evidence and carry separate upstream terms",
+    "secret_scan": "no private-key markers or long credential assignments found outside excluded robot/.env",
+    "bridge_verification": {
+      "python": "3.12.10",
+      "tests": 56,
+      "passed": 56,
+      "statement_coverage_percent": 84,
+      "hardware_used": false
+    }
+  },
+  "content_transform": "source files copied byte-for-byte; the initial import also retained two relocated convenience copies",
   "raw_capture_status": "not present in source commit",
   "primary_hardware": "Galaxea A1X/A1XY",
   "secondary_hardware": "LeRobot SO-101",

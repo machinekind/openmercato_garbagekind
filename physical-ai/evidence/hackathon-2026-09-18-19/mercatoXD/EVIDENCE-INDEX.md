@@ -32,6 +32,24 @@
 - `source/robot/presets.json` — operacyjne okno stawów i pozy startowe używane
   w źródłowym panelu.
 
+## Kod wykonawczy i integracyjny
+
+- `source/bridge/` — przetestowany proces kolejka ERP → panel A1X → raport
+  wyniku. 20 września 2026 r. jego źródłowe testy przeszły 56/56 przy 84%
+  pokrycia; testy korzystają z atrap i nie dowodzą ruchu sprzętu.
+- `source/robot/dgx-agent/` — agent kamer, detektorów, trackingu, G0.5 i klienta
+  panelu uruchamiany na DGX.
+- `source/robot/webpanel/` — pojedynczy właściciel zapisu CAN, brama engage,
+  okna stawów, ograniczenie szybkości i transmisja kamer.
+- `source/robot/ros2_ws/` — źródła sterownika CAN, komunikatów, teleoperacji i
+  prób; siatki STL producenta zostały świadomie wyłączone z importu.
+- `source/robot/record_a1x.py` i `source/robot/ros2_ws/to_lerobot.py` — ścieżka
+  rejestracji oraz konwersji danych do formatu LeRobot.
+- `source/src/modules/robotics/` — źródłowy moduł kolejki pick. Jest materiałem
+  porównawczym, a nie aktywnym modułem ERP: dubluje obecne `fleet`, `edge`,
+  `episodes` i `deployment`, a bridge uwierzytelnia się statycznym API key
+  zamiast aktualnym kontraktem Ed25519.
+
 ## Brakujące artefakty źródłowe
 
 Raport wymienia surowe przechwycenia `E0_can1_handmove.log`,
@@ -40,6 +58,10 @@ Raport wymienia surowe przechwycenia `E0_can1_handmove.log`,
 w commicie źródłowym — wzorce `.log`, `.raw` i `.csv` zostały wykluczone przez
 jego `.gitignore`. Brak jest jawny; raportu nie traktujemy jako substytutu
 surowych ramek przy późniejszej certyfikacji lub analizie incydentu.
+
+Repo nie zawiera także wytrenowanych wag, wersjonowanego datasetu, skrótów
+artefaktów polityki ani wyników zestawów ewaluacyjnych. Kod agenta i rejestracji
+nie może zostać użyty jako substytut tych dowodów.
 
 ## Najważniejsze ograniczenia bezpieczeństwa
 
