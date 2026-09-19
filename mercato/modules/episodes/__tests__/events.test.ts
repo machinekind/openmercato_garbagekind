@@ -75,7 +75,7 @@ const epizod = {
 const interwencja = {
   ...scope,
   robotId: ROBOT_ID,
-  reasonCategory: 'chwyt',
+  reasonCategory: 'grasp_failure',
   reason: 'obiekt wypadł z chwytaka',
   occurredAt: new Date('2026-09-18T06:00:30Z'),
 }

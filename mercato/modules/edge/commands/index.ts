@@ -1,1 +1,2 @@
 import './agents'
+import './telemetry'

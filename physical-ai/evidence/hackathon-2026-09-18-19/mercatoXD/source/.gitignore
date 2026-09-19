@@ -1,0 +1,38 @@
+# --- python -------------------------------------------------------------------
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# --- node ---------------------------------------------------------------------
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+
+# --- robot: build output ------------------------------------------------------
+robot/ros2_ws/build/
+robot/ros2_ws/install/
+robot/ros2_ws/log/
+
+# --- robot: vendor SDKs (Galaxea's to distribute, ~1.2 GB) --------------------
+robot/a1xy/atc_host_install/
+robot/a1xy/a1_driver_sdk/
+robot/a1xy/*.tar.gz
+robot/a1xy/*.run
+
+# --- robot: captured data -----------------------------------------------------
+robot/a1xy/recordings/
+robot/a1xy/lerobot/
+*.mcap
+robot/diag/*.raw
+robot/diag/*.log
+robot/diag/*.csv
+
+# --- local env ----------------------------------------------------------------
+.env.local
+
+# --- tooling caches ---------------------------------------------------------
+.coverage
+.pytest_cache/

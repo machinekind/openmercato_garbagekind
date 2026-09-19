@@ -1,0 +1,1304 @@
+{
+  "version": 1,
+  "id": "scene-7",
+  "name": "Scene 7",
+  "units": "m",
+  "modelUrl": "/api/digital_twins/assets/room.glb",
+  "posterUrl": "/api/digital_twins/assets/poster.webp",
+  "bounds": {
+    "min": [
+      -0.1,
+      -0.2,
+      -15.7
+    ],
+    "max": [
+      20.12468,
+      3.375,
+      0.1
+    ]
+  },
+  "stats": {
+    "sourceBytes": 56524816,
+    "modelBytes": 3368608,
+    "sourceObjects": 1102,
+    "meshCount": 60,
+    "triangles": 82232,
+    "materials": 14
+  },
+  "provenance": {
+    "source": "LiDAR + video",
+    "controlPoints": 318,
+    "geometricOnly": true,
+    "scaleVerified": false
+  },
+  "layers": [
+    {
+      "id": "architecture",
+      "label": "Architektura",
+      "defaultVisible": true,
+      "objectCount": 2
+    },
+    {
+      "id": "windows",
+      "label": "Okna",
+      "defaultVisible": true,
+      "objectCount": 1
+    },
+    {
+      "id": "curtains",
+      "label": "Zasłony",
+      "defaultVisible": true,
+      "objectCount": 11
+    },
+    {
+      "id": "partitions",
+      "label": "Przegrody i szafki",
+      "defaultVisible": true,
+      "objectCount": 1
+    },
+    {
+      "id": "tables",
+      "label": "Stoły",
+      "defaultVisible": true,
+      "objectCount": 7
+    },
+    {
+      "id": "kitchen",
+      "label": "Aneks kuchenny",
+      "defaultVisible": true,
+      "objectCount": 2
+    },
+    {
+      "id": "stage",
+      "label": "Scena",
+      "defaultVisible": true,
+      "objectCount": 1
+    },
+    {
+      "id": "chairs",
+      "label": "Krzesła",
+      "defaultVisible": true,
+      "objectCount": 26
+    },
+    {
+      "id": "plants",
+      "label": "Rośliny",
+      "defaultVisible": true,
+      "objectCount": 7
+    },
+    {
+      "id": "services",
+      "label": "Instalacje",
+      "defaultVisible": true,
+      "objectCount": 1
+    },
+    {
+      "id": "roof",
+      "label": "Sufit",
+      "defaultVisible": false,
+      "objectCount": 1
+    }
+  ],
+  "elements": [
+    {
+      "id": "architecture-01",
+      "label": "Architektura",
+      "layerId": "architecture",
+      "nodeName": "architecture-01",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          -0.1,
+          -0.2,
+          -15.7
+        ],
+        "max": [
+          20.1,
+          0.006,
+          0.1
+        ]
+      },
+      "sourceObjectCount": 35
+    },
+    {
+      "id": "architecture-02",
+      "label": "Ściana północna",
+      "layerId": "architecture",
+      "nodeName": "architecture-02",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          8.0,
+          0.0,
+          -15.67636
+        ],
+        "max": [
+          20.0,
+          3.2,
+          -15.52636
+        ]
+      },
+      "sourceObjectCount": 1
+    },
+    {
+      "id": "windows-03",
+      "label": "Okna",
+      "layerId": "windows",
+      "nodeName": "windows-03",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.04,
+          0.025,
+          -15.66
+        ],
+        "max": [
+          20.12468,
+          3.175,
+          0.0268
+        ]
+      },
+      "sourceObjectCount": 51
+    },
+    {
+      "id": "curtains-04",
+      "label": "Zasłona W1",
+      "layerId": "curtains",
+      "nodeName": "curtains-04",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.10279,
+          0.12,
+          -9.77
+        ],
+        "max": [
+          0.23066,
+          3.008,
+          -6.92
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-05",
+      "label": "Zasłona W2",
+      "layerId": "curtains",
+      "nodeName": "curtains-05",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.12816,
+          0.12,
+          -4.8
+        ],
+        "max": [
+          0.25533,
+          3.008,
+          -4.25
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-06",
+      "label": "Zasłona W3",
+      "layerId": "curtains",
+      "nodeName": "curtains-06",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.11823,
+          0.12,
+          -11.64
+        ],
+        "max": [
+          0.24552,
+          3.008,
+          -11.2
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-07",
+      "label": "Zasłona E1",
+      "layerId": "curtains",
+      "nodeName": "curtains-07",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          19.76572,
+          0.12,
+          -15.3
+        ],
+        "max": [
+          19.89358,
+          3.008,
+          -12.7
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-08",
+      "label": "Zasłona E2",
+      "layerId": "curtains",
+      "nodeName": "curtains-08",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          19.87086,
+          0.12,
+          -5.9
+        ],
+        "max": [
+          19.998,
+          3.008,
+          -5.4
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-09",
+      "label": "Zasłona E3",
+      "layerId": "curtains",
+      "nodeName": "curtains-09",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          19.8707,
+          0.12,
+          -4.45
+        ],
+        "max": [
+          19.99865,
+          3.008,
+          -0.35
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-10",
+      "label": "Zasłona S1",
+      "layerId": "curtains",
+      "nodeName": "curtains-10",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.6,
+          0.12,
+          -0.19854
+        ],
+        "max": [
+          9.7,
+          3.008,
+          -0.07063
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-11",
+      "label": "Zasłona S2",
+      "layerId": "curtains",
+      "nodeName": "curtains-11",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          3.4,
+          0.12,
+          -0.21717
+        ],
+        "max": [
+          4.75,
+          3.008,
+          -0.08921
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-12",
+      "label": "Zasłona S3",
+      "layerId": "curtains",
+      "nodeName": "curtains-12",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          18.8,
+          0.12,
+          -0.19697
+        ],
+        "max": [
+          19.65,
+          3.008,
+          -0.06949
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-13",
+      "label": "Zasłona S4",
+      "layerId": "curtains",
+      "nodeName": "curtains-13",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          11.8,
+          0.12,
+          -0.20715
+        ],
+        "max": [
+          12.8,
+          3.008,
+          -0.07939
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "curtains-14",
+      "label": "Zasłona B1_wewnetrzna",
+      "layerId": "curtains",
+      "nodeName": "curtains-14",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.12,
+          0.12,
+          -10.06332
+        ],
+        "max": [
+          6.62,
+          2.768,
+          -9.93619
+        ]
+      },
+      "sourceObjectCount": 2
+    },
+    {
+      "id": "partitions-15",
+      "label": "Przegrody i szafki",
+      "layerId": "partitions",
+      "nodeName": "partitions-15",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.09,
+          0.0,
+          -15.65136
+        ],
+        "max": [
+          12.8575,
+          3.095,
+          -2.6025
+        ]
+      },
+      "sourceObjectCount": 207
+    },
+    {
+      "id": "roof-16",
+      "label": "Sufit",
+      "layerId": "roof",
+      "nodeName": "roof-16",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.0,
+          3.225,
+          -15.6
+        ],
+        "max": [
+          20.0,
+          3.375,
+          -0.0
+        ]
+      },
+      "sourceObjectCount": 1
+    },
+    {
+      "id": "tables-17",
+      "label": "T01_west_long",
+      "layerId": "tables",
+      "nodeName": "tables-17",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          1.19291,
+          0.0,
+          -9.85409
+        ],
+        "max": [
+          2.42224,
+          0.74825,
+          -7.11884
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "tables-18",
+      "label": "T02_east_south",
+      "layerId": "tables",
+      "nodeName": "tables-18",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          15.31843,
+          0.0,
+          -4.75359
+        ],
+        "max": [
+          16.8299,
+          0.82569,
+          -1.57261
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "tables-19",
+      "label": "T03_east_mid",
+      "layerId": "tables",
+      "nodeName": "tables-19",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          14.98457,
+          0.0,
+          -8.6965
+        ],
+        "max": [
+          16.11886,
+          0.75198,
+          -7.44402
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "tables-20",
+      "label": "T04_east_north",
+      "layerId": "tables",
+      "nodeName": "tables-20",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          15.8615,
+          0.0,
+          -10.9452
+        ],
+        "max": [
+          17.01406,
+          0.76083,
+          -9.42324
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "tables-21",
+      "label": "T05_east_wall",
+      "layerId": "tables",
+      "nodeName": "tables-21",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          19.00535,
+          0.0,
+          -7.11876
+        ],
+        "max": [
+          19.67455,
+          0.78446,
+          -4.73561
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "tables-22",
+      "label": "T06_center",
+      "layerId": "tables",
+      "nodeName": "tables-22",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          6.17068,
+          0.0,
+          -7.6057
+        ],
+        "max": [
+          7.58513,
+          0.819,
+          -6.51669
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "tables-23",
+      "label": "T07_north_west",
+      "layerId": "tables",
+      "nodeName": "tables-23",
+      "confidence": "measured",
+      "bounds": {
+        "min": [
+          4.51952,
+          0.0,
+          -13.31765
+        ],
+        "max": [
+          6.87267,
+          0.70008,
+          -11.91923
+        ]
+      },
+      "sourceObjectCount": 5
+    },
+    {
+      "id": "kitchen-24",
+      "label": "Aneks kuchenny",
+      "layerId": "kitchen",
+      "nodeName": "kitchen-24",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          7.33,
+          0.0,
+          -15.62808
+        ],
+        "max": [
+          12.1,
+          2.48,
+          -14.83808
+        ]
+      },
+      "sourceObjectCount": 31
+    },
+    {
+      "id": "kitchen-25",
+      "label": "Wyspa kuchenna",
+      "layerId": "kitchen",
+      "nodeName": "kitchen-25",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          8.675,
+          0.0,
+          -13.705
+        ],
+        "max": [
+          11.825,
+          1.205,
+          -12.755
+        ]
+      },
+      "sourceObjectCount": 9
+    },
+    {
+      "id": "stage-26",
+      "label": "Scena",
+      "layerId": "stage",
+      "nodeName": "stage-26",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          13.8877,
+          0.0,
+          -15.4
+        ],
+        "max": [
+          19.3123,
+          3.06,
+          -13.25
+        ]
+      },
+      "sourceObjectCount": 19
+    },
+    {
+      "id": "chairs-27",
+      "label": "Krzesło 01",
+      "layerId": "chairs",
+      "nodeName": "chairs-27",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.49612,
+          0.0225,
+          -7.82884
+        ],
+        "max": [
+          1.08969,
+          1.01,
+          -7.21384
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-28",
+      "label": "Krzesło 02",
+      "layerId": "chairs",
+      "nodeName": "chairs-28",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          2.52545,
+          0.0225,
+          -7.82384
+        ],
+        "max": [
+          3.11902,
+          1.01,
+          -7.20884
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-29",
+      "label": "Krzesło 03",
+      "layerId": "chairs",
+      "nodeName": "chairs-29",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.49612,
+          0.0225,
+          -9.76409
+        ],
+        "max": [
+          1.08969,
+          1.01,
+          -9.14909
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-30",
+      "label": "Krzesło 04",
+      "layerId": "chairs",
+      "nodeName": "chairs-30",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          2.52545,
+          0.0225,
+          -9.75909
+        ],
+        "max": [
+          3.11902,
+          1.01,
+          -9.14409
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-31",
+      "label": "Krzesło 05",
+      "layerId": "chairs",
+      "nodeName": "chairs-31",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          14.62165,
+          0.0225,
+          -2.28261
+        ],
+        "max": [
+          15.21522,
+          1.01,
+          -1.66761
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-32",
+      "label": "Krzesło 06",
+      "layerId": "chairs",
+      "nodeName": "chairs-32",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          16.93312,
+          0.0225,
+          -2.27761
+        ],
+        "max": [
+          17.52669,
+          1.01,
+          -1.66261
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-33",
+      "label": "Krzesło 07",
+      "layerId": "chairs",
+      "nodeName": "chairs-33",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          14.62165,
+          0.0225,
+          -4.66359
+        ],
+        "max": [
+          15.21522,
+          1.01,
+          -4.04859
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-34",
+      "label": "Krzesło 08",
+      "layerId": "chairs",
+      "nodeName": "chairs-34",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          16.93312,
+          0.0225,
+          -4.65859
+        ],
+        "max": [
+          17.52669,
+          1.01,
+          -4.04359
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-35",
+      "label": "Krzesło 09",
+      "layerId": "chairs",
+      "nodeName": "chairs-35",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          14.28778,
+          0.0225,
+          -8.11761
+        ],
+        "max": [
+          14.88136,
+          1.01,
+          -7.53902
+        ]
+      },
+      "sourceObjectCount": 16
+    },
+    {
+      "id": "chairs-36",
+      "label": "Krzesło 11",
+      "layerId": "chairs",
+      "nodeName": "chairs-36",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          14.28778,
+          0.0225,
+          -8.6065
+        ],
+        "max": [
+          14.88136,
+          1.01,
+          -8.03807
+        ]
+      },
+      "sourceObjectCount": 18
+    },
+    {
+      "id": "chairs-37",
+      "label": "Krzesło 10",
+      "layerId": "chairs",
+      "nodeName": "chairs-37",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          16.22208,
+          0.0225,
+          -8.10245
+        ],
+        "max": [
+          16.81565,
+          1.01,
+          -7.53402
+        ]
+      },
+      "sourceObjectCount": 18
+    },
+    {
+      "id": "chairs-38",
+      "label": "Krzesło 12",
+      "layerId": "chairs",
+      "nodeName": "chairs-38",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          16.22208,
+          0.0225,
+          -8.6015
+        ],
+        "max": [
+          16.81565,
+          1.01,
+          -8.02291
+        ]
+      },
+      "sourceObjectCount": 16
+    },
+    {
+      "id": "chairs-39",
+      "label": "Krzesło 13",
+      "layerId": "chairs",
+      "nodeName": "chairs-39",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          15.16472,
+          0.0225,
+          -10.13324
+        ],
+        "max": [
+          15.75829,
+          1.01,
+          -9.51824
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-40",
+      "label": "Krzesło 14",
+      "layerId": "chairs",
+      "nodeName": "chairs-40",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          17.11728,
+          0.0225,
+          -10.12824
+        ],
+        "max": [
+          17.71085,
+          1.01,
+          -9.51324
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-41",
+      "label": "Krzesło 15",
+      "layerId": "chairs",
+      "nodeName": "chairs-41",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          15.16472,
+          0.0225,
+          -10.8552
+        ],
+        "max": [
+          15.75829,
+          1.01,
+          -10.2402
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-42",
+      "label": "Krzesło 16",
+      "layerId": "chairs",
+      "nodeName": "chairs-42",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          17.11728,
+          0.0225,
+          -10.8502
+        ],
+        "max": [
+          17.71085,
+          1.01,
+          -10.2352
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-43",
+      "label": "Krzesło 17",
+      "layerId": "chairs",
+      "nodeName": "chairs-43",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          18.30857,
+          0.0225,
+          -5.44561
+        ],
+        "max": [
+          18.90214,
+          1.01,
+          -4.83061
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-44",
+      "label": "Krzesło 18",
+      "layerId": "chairs",
+      "nodeName": "chairs-44",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          18.30857,
+          0.0225,
+          -7.02876
+        ],
+        "max": [
+          18.90214,
+          1.01,
+          -6.41376
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-45",
+      "label": "Krzesło 19",
+      "layerId": "chairs",
+      "nodeName": "chairs-45",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.26068,
+          0.0225,
+          -6.41347
+        ],
+        "max": [
+          6.87568,
+          1.01,
+          -5.8199
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-46",
+      "label": "Krzesło 20",
+      "layerId": "chairs",
+      "nodeName": "chairs-46",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.26568,
+          0.0225,
+          -8.30249
+        ],
+        "max": [
+          6.88068,
+          1.01,
+          -7.70892
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-47",
+      "label": "Krzesło 21",
+      "layerId": "chairs",
+      "nodeName": "chairs-47",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.87513,
+          0.0225,
+          -6.41347
+        ],
+        "max": [
+          7.49013,
+          1.01,
+          -5.8199
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-48",
+      "label": "Krzesło 22",
+      "layerId": "chairs",
+      "nodeName": "chairs-48",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.88013,
+          0.0225,
+          -8.30249
+        ],
+        "max": [
+          7.49513,
+          1.01,
+          -7.70892
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-49",
+      "label": "Krzesło 23",
+      "layerId": "chairs",
+      "nodeName": "chairs-49",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          4.60952,
+          0.0225,
+          -11.81602
+        ],
+        "max": [
+          5.22452,
+          1.01,
+          -11.22244
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-50",
+      "label": "Krzesło 24",
+      "layerId": "chairs",
+      "nodeName": "chairs-50",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          4.61452,
+          0.0225,
+          -14.01443
+        ],
+        "max": [
+          5.22952,
+          1.01,
+          -13.42086
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-51",
+      "label": "Krzesło 25",
+      "layerId": "chairs",
+      "nodeName": "chairs-51",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.16267,
+          0.0225,
+          -11.81602
+        ],
+        "max": [
+          6.77767,
+          1.01,
+          -11.22244
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "chairs-52",
+      "label": "Krzesło 26",
+      "layerId": "chairs",
+      "nodeName": "chairs-52",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.16767,
+          0.0225,
+          -14.01443
+        ],
+        "max": [
+          6.78267,
+          1.01,
+          -13.42086
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "plants-53",
+      "label": "Roślina 01",
+      "layerId": "plants",
+      "nodeName": "plants-53",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          6.84764,
+          0.0,
+          -14.09265
+        ],
+        "max": [
+          7.86017,
+          1.29801,
+          -13.09178
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "plants-54",
+      "label": "Roślina 02",
+      "layerId": "plants",
+      "nodeName": "plants-54",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          12.94764,
+          0.0,
+          -15.38
+        ],
+        "max": [
+          13.96017,
+          3.1,
+          -14.29178
+        ]
+      },
+      "sourceObjectCount": 42
+    },
+    {
+      "id": "plants-55",
+      "label": "Roślina 03",
+      "layerId": "plants",
+      "nodeName": "plants-55",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          19.08771,
+          0.0,
+          -15.38
+        ],
+        "max": [
+          20.11017,
+          3.1,
+          -14.29178
+        ]
+      },
+      "sourceObjectCount": 42
+    },
+    {
+      "id": "plants-56",
+      "label": "Roślina 04",
+      "layerId": "plants",
+      "nodeName": "plants-56",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          12.14764,
+          0.0,
+          -11.79265
+        ],
+        "max": [
+          13.16017,
+          0.99801,
+          -10.79178
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "plants-57",
+      "label": "Roślina 05",
+      "layerId": "plants",
+      "nodeName": "plants-57",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          12.14764,
+          0.0,
+          -8.39265
+        ],
+        "max": [
+          13.16017,
+          0.99801,
+          -7.39178
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "plants-58",
+      "label": "Roślina 06",
+      "layerId": "plants",
+      "nodeName": "plants-58",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          5.54764,
+          0.0,
+          -9.29265
+        ],
+        "max": [
+          6.56017,
+          0.99801,
+          -8.29178
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "plants-59",
+      "label": "Roślina 07",
+      "layerId": "plants",
+      "nodeName": "plants-59",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          4.29764,
+          0.0,
+          -14.04265
+        ],
+        "max": [
+          5.31017,
+          1.11801,
+          -13.04178
+        ]
+      },
+      "sourceObjectCount": 17
+    },
+    {
+      "id": "services-60",
+      "label": "Instalacje",
+      "layerId": "services",
+      "nodeName": "services-60",
+      "confidence": "approximate",
+      "bounds": {
+        "min": [
+          0.3,
+          2.21,
+          -13.7
+        ],
+        "max": [
+          19.7,
+          3.15,
+          -2.67
+        ]
+      },
+      "sourceObjectCount": 80
+    }
+  ]
+}

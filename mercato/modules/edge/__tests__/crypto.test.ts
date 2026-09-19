@@ -1,6 +1,7 @@
 import { generateKeyPairSync, sign as signPayload } from 'node:crypto'
 import {
   assertSupportedPublicKey,
+  canonicalJson,
   fingerprintPublicKey,
   generateEnrollmentToken,
   hashEnrollmentToken,
@@ -58,6 +59,43 @@ describe('klucze', () => {
 })
 
 describe('podpisy', () => {
+  it('kanoniczny JSON nie zależy od kolejności kluczy obiektu', () => {
+    const a = { wynik: { b: 2, a: 1 }, klasy: ['person', 'robot'] }
+    const b = { klasy: ['person', 'robot'], wynik: { a: 1, b: 2 } }
+    expect(canonicalJson(a)).toBe(canonicalJson(b))
+    expect(payloads.telemetry('sesja-1', 1, '2026-09-19T10:00:00.000Z', 'episode', a)).toBe(
+      payloads.telemetry('sesja-1', 1, '2026-09-19T10:00:00.000Z', 'episode', b),
+    )
+  })
+
+  it('podpis telemetrii wiąże rodzaj i pełną treść rekordu', () => {
+    const agent = keypair()
+    const original = payloads.telemetry(
+      'sesja-1',
+      7,
+      '2026-09-19T10:00:00.000Z',
+      'episode',
+      { outcome: 'success', metrics: { pieces: 4 } },
+    )
+    const changedKind = payloads.telemetry(
+      'sesja-1',
+      7,
+      '2026-09-19T10:00:00.000Z',
+      'intervention',
+      { outcome: 'success', metrics: { pieces: 4 } },
+    )
+    const changedBody = payloads.telemetry(
+      'sesja-1',
+      7,
+      '2026-09-19T10:00:00.000Z',
+      'episode',
+      { outcome: 'success', metrics: { pieces: 5 } },
+    )
+    const signature = agent.sign(original)
+    expect(verifyPayloadSignature(changedKind, signature, agent.publicKeyPem)).toBe(false)
+    expect(verifyPayloadSignature(changedBody, signature, agent.publicKeyPem)).toBe(false)
+  })
+
   it('poprawny podpis przechodzi, cudzy nie', () => {
     const alice = keypair()
     const mallory = keypair()

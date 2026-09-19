@@ -1,0 +1,28 @@
+# --- build output -------------------------------------------------------------
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+__pycache__/
+*.pyc
+
+# --- vendor SDKs: NOT redistributed here --------------------------------------
+# Galaxea's prebuilt binaries are ~1.2 GB and are theirs to distribute, not
+# ours. tools/fetch_vendor_sdk.sh downloads them into these paths; see
+# docs/VENDOR_SDK.md. Nothing in this repo requires them -- the driver in
+# ros2_ws/src/ and the scripts at the top level talk to the arm directly.
+a1xy/atc_host_install/
+a1xy/a1_driver_sdk/
+a1xy/*.tar.gz
+a1xy/*.run
+
+# --- captured data ------------------------------------------------------------
+# Teleop recordings and LeRobot datasets. Regenerate with record_a1x.py.
+a1xy/recordings/
+a1xy/lerobot/
+*.mcap
+
+# --- raw CAN captures ---------------------------------------------------------
+# The .raw/.log dumps behind diag/REPORT.md. The report keeps the conclusions.
+diag/*.raw
+diag/*.log
+diag/*.csv

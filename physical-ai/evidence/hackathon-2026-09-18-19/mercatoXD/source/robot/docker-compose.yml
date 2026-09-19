@@ -1,0 +1,108 @@
+services:
+  ros2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-osrf/ros:humble-desktop-full}
+        USERNAME: ${CONTAINER_USER:-ros}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+    image: galaxeo/ros2-humble:latest
+    container_name: galaxeo-ros2
+    hostname: galaxeo
+
+    # host networking gives DDS multicast discovery to other machines on the LAN
+    # and lets the container reach the host X server without extra plumbing.
+    network_mode: host
+    ipc: host
+
+    environment:
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: 1
+      XDG_RUNTIME_DIR: /tmp/runtime-ros
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      ROS_LOCALHOST_ONLY: ${ROS_LOCALHOST_ONLY:-0}
+      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+      # Honoured only when the NVIDIA container runtime is present.
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+
+    volumes:
+      - ./ros2_ws:/home/${CONTAINER_USER:-ros}/ros2_ws:rw
+      # Galaxea ATC host SDK (x86_64) -- the real HDAS/ARM_APP for the A1XY.
+      - ./a1xy:/home/${CONTAINER_USER:-ros}/a1xy:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev/dri:/dev/dri:rw
+      # Persist apt/rosdep/colcon caches across container rebuilds.
+      - ros-home:/home/${CONTAINER_USER:-ros}/.ros
+
+    # Serial devices, cameras, USB. Uncomment the ones you actually need,
+    # or flip `privileged: true` while bringing up new hardware.
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    #   - /dev/video0:/dev/video0
+    # privileged: true
+    # volumes (extra):
+    #   - /dev/bus/usb:/dev/bus/usb
+
+    # Host GIDs for device access (serial, camera, GPU render node).
+    group_add:
+      - "${DIALOUT_GID:-20}"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-992}"
+
+    # NET_ADMIN lets the container configure SocketCAN (`ip link set can0 up ...`).
+    # can0/can1 are visible already because of network_mode: host.
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    # PID 1 is `sleep infinity`, which never reaps orphaned children;
+    # docker-init does, so killed nodes do not pile up as zombies.
+    init: true
+    # Keep the container alive so `ros2.sh shell` can attach repeatedly.
+    command: ["sleep", "infinity"]
+
+  # ROS 1 Noetic / Ubuntu 20.04 -- the environment the Galaxea A1XY SDK needs.
+  # Not started by default; use `./ros2.sh --noetic up`.
+  noetic:
+    profiles: ["noetic"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.noetic
+      args:
+        USERNAME: ${CONTAINER_USER:-ros}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+    image: galaxeo/ros1-noetic:latest
+    container_name: galaxeo-noetic
+    network_mode: host
+    ipc: host
+    environment:
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: 1
+      XDG_RUNTIME_DIR: /tmp/runtime-ros
+    volumes:
+      - ./a1xy:/home/${CONTAINER_USER:-ros}/a1xy:rw
+      - ./ros2_ws:/home/${CONTAINER_USER:-ros}/ros2_ws:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev/dri:/dev/dri:rw
+      # The A1 serial driver talks to /dev/ttyACM0, which only appears when the
+      # arm's USB cable is plugged in. A `devices:` entry would make compose fail
+      # whenever it is unplugged, so bind /dev instead: the node picks the port up
+      # whenever it appears, and unplugging costs nothing.
+      - /dev:/dev
+    group_add:
+      - "${DIALOUT_GID:-20}"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-992}"
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    init: true
+    command: ["sleep", "infinity"]
+
+volumes:
+  ros-home:

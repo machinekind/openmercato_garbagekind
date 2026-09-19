@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { registerCommand, type CommandBus, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { mayRunPolicy } from '../../fleet/lib/lifecycle'
 import { mayBeDeployed } from '../../policy_registry/lib/compatibility'
-import { Assignment, Lease, StateReport, type DesiredState } from '../data/entities'
+import { Assignment, Lease, StateReport, type DesiredState, type LeaseExpiryBehavior } from '../data/entities'
 import { leaseSecondsFor, reconcile, renewAfterSeconds } from '../lib/lease'
 import { leasePayload } from '../lib/protocol'
 import { selectUsableKeys, verifyPayloadSignature } from '../../edge/lib/crypto'
@@ -102,11 +102,12 @@ type VersionRow = {
   embodiment_revision_id: string
   policy_key: string
   version: number
+  lease_expiry_behavior: LeaseExpiryBehavior | null
 }
 
 async function loadVersion(em: EntityManager, versionId: string, tenantId: string): Promise<VersionRow | null> {
   const rows = await em.getConnection().execute<VersionRow[]>(
-    `select v.id, v.status, v.content_digest, v.embodiment_revision_id, p.policy_key, v.version
+    `select v.id, v.status, v.content_digest, v.embodiment_revision_id, v.lease_expiry_behavior, p.policy_key, v.version
        from policy_registry_policy_versions v
        join policy_registry_policies p on p.id = v.policy_id
       where v.id = ? and v.tenant_id = ?
@@ -139,6 +140,11 @@ const assignCommand: CommandHandler<
     if (!mayBeDeployed(version.status)) {
       throw new Error(
         `Wersja ${version.policy_key} v${version.version} ma status ${version.status} — wdrożyć da się wyłącznie wersję wypuszczoną.`,
+      )
+    }
+    if (!version.lease_expiry_behavior) {
+      throw new Error(
+        `Wersja ${version.policy_key} v${version.version} nie deklaruje zachowania po wygaśnięciu dzierżawy.`,
       )
     }
 
@@ -236,6 +242,7 @@ const assignCommand: CommandHandler<
       cellId: robot.cell_id,
       riskClass,
       leaseSeconds,
+      leaseExpiryBehavior: version.lease_expiry_behavior,
       desiredState: input.desiredState as DesiredState,
       reason: input.reason,
       assignedBy: ctx.auth?.sub ?? null,
@@ -255,6 +262,7 @@ const assignCommand: CommandHandler<
       desiredState: input.desiredState,
       riskClass,
       leaseSeconds,
+      leaseExpiryBehavior: version.lease_expiry_behavior,
       supersededId: previous?.id ?? null,
       reason: input.reason,
     })
@@ -346,6 +354,7 @@ const issueLeaseCommand: CommandHandler<
     expiresAt: string
     renewAfterSeconds: number
     riskClass: string | null
+    leaseExpiryBehavior: LeaseExpiryBehavior | null
   }
 > = {
   id: 'deployment.leases.issue',
@@ -418,6 +427,7 @@ const issueLeaseCommand: CommandHandler<
       desiredState: DesiredState
       riskClass: string
       leaseSeconds: number
+      leaseExpiryBehavior: LeaseExpiryBehavior
     } | null
 
     if (!assignment) {
@@ -437,6 +447,7 @@ const issueLeaseCommand: CommandHandler<
         expiresAt: new Date().toISOString(),
         renewAfterSeconds: 30,
         riskClass: null,
+        leaseExpiryBehavior: null,
       }
     }
 
@@ -466,6 +477,7 @@ const issueLeaseCommand: CommandHandler<
       expiresAt: expiresAt.toISOString(),
       renewAfterSeconds: renewAfterSeconds(assignment.leaseSeconds),
       riskClass: assignment.riskClass,
+      leaseExpiryBehavior: assignment.leaseExpiryBehavior,
     }
   },
 }

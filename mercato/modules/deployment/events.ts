@@ -35,6 +35,7 @@ const events = [
         { path: 'desiredState', type: 'select' },
         { path: 'riskClass', type: 'text' },
         { path: 'leaseSeconds', type: 'number' },
+        { path: 'leaseExpiryBehavior', type: 'select' },
         { path: 'supersededId', type: 'text', optional: true },
         { path: 'reason', type: 'text' },
       ],

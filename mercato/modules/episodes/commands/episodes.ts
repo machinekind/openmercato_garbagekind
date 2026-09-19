@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { registerCommand, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { Episode, Intervention, type EpisodeOutcome, type InterventionKind } from '../data/entities'
 import { emitEpisodesEvent } from '../events'
+import { interventionReasonCategorySchema } from '../lib/interventionReasons'
 
 /**
  * Komendy księgi epizodów.
@@ -50,7 +51,7 @@ export const interventionRecordSchema = scoped.extend({
   episodeId: z.string().uuid().nullable().optional(),
   kind: z.enum(kinds),
   stage: z.string().trim().max(120).optional(),
-  reasonCategory: z.string().trim().min(1).max(120),
+  reasonCategory: interventionReasonCategorySchema,
   reason: z.string().trim().min(1).max(500),
   occurredAt: z.coerce.date(),
   recoverySeconds: z.number().int().nonnegative().optional(),

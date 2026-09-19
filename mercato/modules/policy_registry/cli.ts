@@ -3,6 +3,7 @@ import type { ModuleCli } from '@open-mercato/shared/modules/registry'
 import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 import type { EntityManager } from '@mikro-orm/postgresql'
 import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
+import { demoJointContract } from './lib/vectorContract'
 import { Policy } from './data/entities'
 
 /**
@@ -156,7 +157,7 @@ const seedCommand: ModuleCli = {
             policyId,
             embodimentRevisionId: revision.id,
             declaredSpecDigest: revision.spec_digest,
-            trainedDofCount: revision.dof_count ?? undefined,
+            ...demoJointContract(revision.dof_count ?? 6),
             artifacts: [
               { role: 'weights', digest: weights, uri: `s3://policies/${entry.policyKey}/${label}/weights.safetensors`, mediaType: 'application/octet-stream' },
               { role: 'config', digest: config, uri: `s3://policies/${entry.policyKey}/${label}/config.json`, mediaType: 'application/json' },
@@ -273,6 +274,7 @@ const proveCommand: ModuleCli = {
       organizationId: scope.organizationId,
       tenantId: scope.tenantId,
       policyId: policy.id,
+      ...demoJointContract(target.dof_count ?? 6),
     }
 
     console.log('DOWÓD FAZY 1 — rejestr polityk\n')

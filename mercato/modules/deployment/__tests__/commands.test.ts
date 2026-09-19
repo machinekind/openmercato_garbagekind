@@ -42,6 +42,7 @@ const VERSION = {
   embodiment_revision_id: REVISION_ID,
   policy_key: 'pick-bin-ur10e',
   version: 1,
+  lease_expiry_behavior: 'hold_position',
 }
 
 function makeCtx(options: {
@@ -154,6 +155,13 @@ const assignInput = {
 }
 
 describe('deployment.assignments.assign — bramki wstępne', () => {
+  it('odmawia wersji historycznej bez zachowania po wygaśnięciu dzierżawy', async () => {
+    const { lease_expiry_behavior: _missing, ...legacyVersion } = VERSION
+    const { ctx, commands } = makeCtx({ version: legacyVersion })
+    await expect(assignCommand.execute(assignInput, ctx)).rejects.toThrow(/nie deklaruje zachowania/)
+    expect(commands).not.toContain('safety.clearance.check')
+  })
+
   it('przypisuje politykę robotowi w ruchu i bierze dzierżawę z klasy ryzyka celi', async () => {
     const { ctx, persisted } = makeCtx()
     const result = await assignCommand.execute(assignInput, ctx)
@@ -163,6 +171,7 @@ describe('deployment.assignments.assign — bramki wstępne', () => {
     // Skrót treści jest kopiowany do przypisania, żeby robot mógł porównać go
     // z tym, co faktycznie załadował, bez dodatkowego zapytania.
     expect(assignment.policyContentDigest).toBe(VERSION.content_digest)
+    expect(assignment.leaseExpiryBehavior).toBe('hold_position')
   })
 
   it('cela publiczna daje dzierżawę w minutach, nie w dniach', async () => {
@@ -276,6 +285,7 @@ describe('deployment.leases.issue — uwierzytelnienie i termin', () => {
     desiredState: 'running',
     riskClass: 'public',
     leaseSeconds: LEASE_SECONDS.public,
+    leaseExpiryBehavior: 'hold_position',
   }
 
   it('wydaje dzierżawę na podstawie prawdziwego podpisu agenta', async () => {
@@ -285,6 +295,7 @@ describe('deployment.leases.issue — uwierzytelnienie i termin', () => {
 
     expect(result.desiredState).toBe('running')
     expect(result.leaseSeconds).toBe(LEASE_SECONDS.public)
+    expect(result.leaseExpiryBehavior).toBe('hold_position')
     const lease = persisted.find((r) => r.__table === 'Lease')!
     const issued = lease.issuedAt as Date
     const expires = lease.expiresAt as Date

@@ -72,10 +72,10 @@ function makeRandom(seed: number): () => number {
 
 const ETAPY = ['podejście', 'chwyt', 'przeniesienie', 'odłożenie', 'wycofanie']
 const PRZYCZYNY = [
-  { category: 'chwyt', reason: 'Chwytak zsunął się z detalu', kinds: ['manual_reset', 'teleop_takeover'] },
-  { category: 'percepcja', reason: 'Detal nierozpoznany w pojemniku', kinds: ['adjust', 'abort'] },
-  { category: 'otoczenie', reason: 'Pojemnik przesunięty poza zasięg', kinds: ['adjust'] },
-  { category: 'bezpieczeństwo', reason: 'Człowiek wszedł w obszar roboczy', kinds: ['estop'] },
+  { category: 'grasp_failure', reason: 'Chwytak zsunął się z detalu', kinds: ['manual_reset', 'teleop_takeover'] },
+  { category: 'object_not_detected', reason: 'Detal nierozpoznany w pojemniku', kinds: ['adjust', 'abort'] },
+  { category: 'workspace_obstruction', reason: 'Pojemnik przesunięty poza zasięg', kinds: ['adjust'] },
+  { category: 'person_in_safety_zone', reason: 'Człowiek wszedł w obszar roboczy', kinds: ['estop'] },
 ] as const
 
 const simulateCommand: ModuleCli = {

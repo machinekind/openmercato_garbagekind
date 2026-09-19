@@ -1,0 +1,46 @@
+{
+  "provenance": "hardware evidence acquired during hackathon work",
+  "hackathon_period": {
+    "start": "2026-09-18",
+    "end": "2026-09-19",
+    "timezone": "Europe/Warsaw"
+  },
+  "source_repository": "https://github.com/Bukareszt/mercatoXD.git",
+  "source_commit": "fd5fe08f24ae35fe37c8053086327fdc1a14363a",
+  "source_author": "Greg <piotrowskigrzegorz2000@gmail.com>",
+  "source_authored_at": "2026-09-19T21:37:49+02:00",
+  "source_committed_at": "2026-09-19T21:37:49+02:00",
+  "imported_at": "2026-09-19T22:54:00+02:00",
+  "imported_content": [
+    "docs/knowledge",
+    "docs/PICK-STATE-OF-PLAY.md",
+    "docs/ROBOT-STACK.md",
+    "robot/diag",
+    "robot/docs",
+    "robot/webpanel/presets.json",
+    "robot/so101/so101_new_calib.urdf"
+  ],
+  "supplemental_import": {
+    "date": "2026-09-20",
+    "source_commit_revalidated": "fd5fe08f24ae35fe37c8053086327fdc1a14363a",
+    "copied_tracked_files": 214,
+    "excluded": [
+      "robot/.env",
+      "robot/ros2_ws/src/galaxea_a1xy_description/meshes/*.STL (11 files)"
+    ],
+    "reason_for_exclusion": "environment file excluded defensively; vendor meshes are not team-produced evidence and carry separate upstream terms",
+    "secret_scan": "no private-key markers or long credential assignments found outside excluded robot/.env",
+    "bridge_verification": {
+      "python": "3.12.10",
+      "tests": 56,
+      "passed": 56,
+      "statement_coverage_percent": 84,
+      "hardware_used": false
+    }
+  },
+  "content_transform": "source files copied byte-for-byte; the initial import also retained two relocated convenience copies",
+  "raw_capture_status": "not present in source commit",
+  "primary_hardware": "Galaxea A1X/A1XY",
+  "secondary_hardware": "LeRobot SO-101",
+  "license_note": "Source README declares MIT for repository-owned code and separate upstream licensing for robot assets; verify upstream terms before redistribution beyond this project."
+}

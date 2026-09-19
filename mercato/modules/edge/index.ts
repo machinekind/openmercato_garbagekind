@@ -4,7 +4,7 @@ export const metadata: ModuleInfo = {
   name: 'edge',
   title: 'Kanał brzegowy',
   version: '0.1.0',
-  description: 'Tożsamość kryptograficzna agenta na robocie, sesje łączności i uderzenia serca.',
+  description: 'Tożsamość kryptograficzna agenta, sesje łączności i podpisany kanał telemetrii.',
   author: 'machinekind',
   license: 'MIT',
   /**
@@ -12,7 +12,7 @@ export const metadata: ModuleInfo = {
    * sensu, robot bez agenta owszem — flota inwentaryzowana ręcznie to
    * najczęstszy punkt wyjścia każdego wdrożenia.
    */
-  requires: ['fleet'],
+  requires: ['fleet', 'episodes', 'vision'],
   ejectable: true,
 }
 

@@ -1,5 +1,6 @@
 import { setGlobalEventBus } from '@open-mercato/shared/modules/events'
 import { registerVersionCommand, transitionVersionCommand } from '../commands/policies'
+import { demoJointContract } from '../lib/vectorContract'
 
 /**
  * Testy emisji zdarzeń rejestru polityk.
@@ -82,6 +83,7 @@ const rejestracja = {
     { role: 'weights' as const, digest: WEIGHTS, uri: 's3://p/w.safetensors' },
     { role: 'config' as const, digest: CONFIG, uri: 's3://p/c.json' },
   ],
+  ...demoJointContract(6),
 }
 
 describe('emisja zdarzeń rejestru polityk', () => {
@@ -96,7 +98,7 @@ describe('emisja zdarzeń rejestru polityk', () => {
     const seen = captureEvents()
     const result = (await registerVersionCommand.execute(
       rejestracja,
-      makeCtx({ duplicate: { id: VERSION_ID, version: 2 } }),
+      makeCtx({ duplicate: { id: VERSION_ID, version: 2, ...demoJointContract(6) } }),
     )) as { deduplicated: boolean }
     expect(result.deduplicated).toBe(true)
     expect(seen).toEqual([])

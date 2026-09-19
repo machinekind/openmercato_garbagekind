@@ -144,24 +144,34 @@ export function legacyOutDir(): string {
   return process.env.SORTOWNIA_LEGACY_OUT ?? path.resolve(process.cwd(), '../../out')
 }
 
+function legacyFile(name: string): string {
+  const directory = legacyOutDir()
+  // Konfiguracja trafia także do kontenera Linux, nawet gdy test lub CLI
+  // uruchamiamy na Windows. `path.join` używa separatora hosta i zamieniał
+  // poprawne `/dane/...` na `\dane\...`; styl jawnie podanej ścieżki ma
+  // pierwszeństwo przed systemem, na którym działa proces sterujący.
+  const join = directory.startsWith('/') && !directory.includes('\\') ? path.posix.join : path.join
+  return join(directory, name)
+}
+
 export function movementsFile(): string {
-  return path.join(legacyOutDir(), 'ruchy.csv')
+  return legacyFile('ruchy.csv')
 }
 
 export function fractionsFile(): string {
-  return path.join(legacyOutDir(), 'frakcje.csv')
+  return legacyFile('frakcje.csv')
 }
 
 export function customersFile(): string {
-  return path.join(legacyOutDir(), 'kontrahenci.csv')
+  return legacyFile('kontrahenci.csv')
 }
 
 export function ordersFile(): string {
-  return path.join(legacyOutDir(), 'zamowienia.csv')
+  return legacyFile('zamowienia.csv')
 }
 
 export function paymentsFile(): string {
-  return path.join(legacyOutDir(), 'zaplaty.csv')
+  return legacyFile('zaplaty.csv')
 }
 
 export async function* readMovements(filePath: string): AsyncGenerator<LegacyMovementRow> {

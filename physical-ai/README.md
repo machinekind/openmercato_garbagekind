@@ -1,5 +1,21 @@
 # Physical AI — wdrażanie robotów uczonych RL
 
+> **Dowody sprzętowe z hackathonu (18–19.09.2026):** raporty, notatki sesyjne,
+> skrypty diagnostyczne i manifest pochodzenia z repozytorium `mercatoXD` są
+> zachowane w [`evidence/hackathon-2026-09-18-19/mercatoXD/`](evidence/hackathon-2026-09-18-19/mercatoXD/README.md).
+> Materiał dotyczy głównie Galaxea A1X/A1XY; nie zastępuje odbioru SO-101.
+
+Aktualna lista prób i artefaktów do zebrania przez zespół physical:
+[`PHYSICAL-VALIDATION-BACKLOG.md`](PHYSICAL-VALIDATION-BACKLOG.md).
+Ostatni zweryfikowany stan programu i jawne blokady sprzętowe:
+[`VERIFICATION-STATUS.md`](VERIFICATION-STATUS.md).
+Kontrakt paczki dowodowej i jej kontrola integralności:
+[`EVIDENCE-BUNDLE.md`](EVIDENCE-BUNDLE.md).
+Ocena wyników i kodu dostarczonego przez zespół physical:
+[`PHYSICAL-RESULTS-ASSESSMENT.md`](PHYSICAL-RESULTS-ASSESSMENT.md).
+Procedura odbioru podłączonego SO-101 znajduje się w
+[`mercato/hardware/so101/README.md`](../mercato/hardware/so101/README.md).
+
 Ten katalog jest miejscem na nowy kierunek: platformę operacyjną dla flot
 robotów, których polityki sterowania uczone są metodami RL (oraz IL, offline
 RL i modelami VLA).

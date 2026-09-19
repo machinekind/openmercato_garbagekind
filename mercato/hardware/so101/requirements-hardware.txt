@@ -1,0 +1,2 @@
+# Runtime pinned to the API used and physically evidenced by validate.py.
+lerobot[feetech]==0.6.1

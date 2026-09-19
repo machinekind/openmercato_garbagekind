@@ -22,6 +22,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  */
 
 export type DesiredState = 'running' | 'stopped'
+export type LeaseExpiryBehavior = 'hold_position' | 'complete_grasp_then_hold' | 'return_home'
 
 /**
  * Deklaracja centrali wobec jednego robota.
@@ -71,6 +72,10 @@ export class Assignment {
   /** Długość dzierżawy wyliczona z klasy ryzyka i zamrożona przy przypisaniu. */
   @Property({ name: 'lease_seconds', type: 'int' })
   leaseSeconds!: number
+
+  /** Kopia kontraktu polityki — agent dostaje ją z każdym odnowieniem mandatu. */
+  @Property({ name: 'lease_expiry_behavior', type: 'text' })
+  leaseExpiryBehavior!: LeaseExpiryBehavior
 
   @Property({ name: 'desired_state', type: 'text', default: 'running' })
   desiredState: DesiredState = 'running'
