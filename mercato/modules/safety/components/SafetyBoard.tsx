@@ -3,6 +3,8 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
+import { IncidentDialog } from './IncidentDialog'
 
 /**
  * Macierz dopuszczeń na ekranie.
@@ -55,18 +57,18 @@ type Payload = {
   incidents: IncidentRow[]
 }
 
-const RISK_LABEL: Record<string, string> = {
-  fenced: 'ogrodzona',
-  shared: 'dzielona',
-  public: 'publiczna',
+const RISK_LABEL: Record<string, [string, string]> = {
+  fenced: ['safety.label.risk.fenced', "ogrodzona"],
+  shared: ['safety.label.risk.shared', "dzielona"],
+  public: ['safety.label.risk.public', "publiczna"],
 }
 
-const HARM_LABEL: Record<string, string> = {
-  none: 'bez skutku',
-  near_miss: 'potencjalnie wypadkowe',
-  first_aid: 'pierwsza pomoc',
-  lost_time: 'niezdolność do pracy',
-  serious: 'ciężkie',
+const HARM_LABEL: Record<string, [string, string]> = {
+  none: ['safety.label.harm.none', "bez skutku"],
+  near_miss: ['safety.label.harm.near_miss', "potencjalnie wypadkowe"],
+  first_aid: ['safety.label.harm.first_aid', "pierwsza pomoc"],
+  lost_time: ['safety.label.harm.lost_time', "niezdolność do pracy"],
+  serious: ['safety.label.harm.serious', "ciężkie"],
 }
 
 const PRIORITY_TONE: Record<string, string> = {
@@ -76,8 +78,8 @@ const PRIORITY_TONE: Record<string, string> = {
   wstrzymanie_wdrożenia: 'text-red-600',
 }
 
-function formatMoment(value: string): string {
-  return new Date(value).toLocaleString('pl-PL', {
+function formatMoment(locale: string, value: string): string {
+  return new Date(value).toLocaleString(locale, {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -86,6 +88,19 @@ function formatMoment(value: string): string {
 }
 
 export default function SafetyBoard() {
+  const t = useT()
+  // Lista maszyn do wyboru w zgłoszeniu. Osobne pobranie, bo panel
+  // bezpieczeństwa nie potrzebuje rejestru floty do niczego innego.
+  const [roboty, setRoboty] = React.useState<Array<{ id: string; serialNumber: string }>>([])
+  React.useEffect(() => {
+    void (async () => {
+      const r = await apiFetch('/api/fleet/robots')
+      if (!r.ok) return
+      const d = (await r.json()) as { robots?: Array<{ id: string; serialNumber: string }> }
+      setRoboty((d.robots ?? []).map((x) => ({ id: x.id, serialNumber: x.serialNumber })))
+    })()
+  }, [])
+  const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -95,7 +110,7 @@ export default function SafetyBoard() {
       const response = await apiFetch('/api/safety/clearance')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('safety.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -115,6 +130,10 @@ export default function SafetyBoard() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex justify-end">
+        <IncidentDialog robots={roboty} onDone={load} />
+      </div>
+
       {error ? (
         <div className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm">{error}</div>
       ) : null}
@@ -124,57 +143,50 @@ export default function SafetyBoard() {
           <div className="font-medium">
             {totals.declaredAsSafetyFunction} uzasadnień deklaruje uczoną politykę jako funkcję bezpieczeństwa
           </div>
-          <div className="mt-1 text-xs">
-            To wpycha maszynę w Annex I część A rozporządzenia (UE) 2023/1230, czyli w obowiązkową ocenę
-            przez jednostkę notyfikowaną, dla której nie istnieje ustalona metoda wykazania zgodności.
-            Bezpieczeństwo ma egzekwować osobna warstwa deterministyczna.
-          </div>
+          <div className="mt-1 text-xs">{t("safety.prose.1", "To wpycha maszynę w Annex I część A rozporządzenia (UE) 2023/1230, czyli w obowiązkową ocenę przez jednostkę notyfikowaną, dla której nie istnieje ustalona metoda wykazania zgodności. Bezpieczeństwo ma egzekwować osobna warstwa deterministyczna.")}</div>
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          title="Dopuszczone pary"
+          title={t('safety.ui.clearedPairs', "Dopuszczone pary")}
           value={totals?.cleared ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">wersja polityki × klasa celi</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('safety.ui.versionByCellClass', 'wersja polityki × klasa celi')}</span>}
         />
         <KpiCard
-          title="Zablokowane"
+          title={t('safety.ui.blocked', "Zablokowane")}
           value={totals?.blocked ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">każda z nazwanym powodem</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('safety.ui.eachWithNamedReason', "każda z nazwanym powodem")}</span>}
         />
         <KpiCard
-          title="Polityka jako funkcja bezp."
+          title={t('safety.ui.policyAsSafetyFn', "Polityka jako funkcja bezp.")}
           value={totals?.declaredAsSafetyFunction ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">w zdrowym systemie zero</span>}
+          footer={<span className="text-xs text-muted-foreground">{t("safety.h.wZdrowymSystemieZero", "w zdrowym systemie zero")}</span>}
         />
         <KpiCard
-          title="Incydenty wstrzymujące"
+          title={t('safety.ui.haltingIncidents', "Incydenty wstrzymujące")}
           value={totals?.openIncidents ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">wycofują uzasadnienie dla klasy celi</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('safety.ui.withdrawCaseForClass', "wycofują uzasadnienie dla klasy celi")}</span>}
         />
       </div>
 
       <div className="rounded-md border">
         <div className="border-b px-4 py-3">
-          <div className="font-medium">Macierz dopuszczeń</div>
-          <div className="text-xs text-muted-foreground">
-            dopuszczenie dotyczy klasy celi, nie pojedynczej celi — inaczej każda nowa cela wymagałaby
-            osobnego uzasadnienia dla niezmienionej konfiguracji
-          </div>
+          <div className="font-medium">{t('safety.ui.clearanceMatrix', "Macierz dopuszczeń")}</div>
+          <div className="text-xs text-muted-foreground">{t("safety.prose.2", "dopuszczenie dotyczy klasy celi, nie pojedynczej celi — inaczej każda nowa cela wymagałaby osobnego uzasadnienia dla niezmienionej konfiguracji")}</div>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-muted-foreground">
-              <th className="px-4 py-2 font-normal">wersja polityki</th>
-              <th className="px-4 py-2 font-normal">klasa celi</th>
-              <th className="px-4 py-2 font-normal">ryzyko</th>
-              <th className="px-4 py-2 font-normal">dopuszczenie</th>
-              <th className="px-4 py-2 font-normal">czego brakuje</th>
+              <th className="px-4 py-2 font-normal">{t("safety.h.wersjaPolityki", "wersja polityki")}</th>
+              <th className="px-4 py-2 font-normal">{t("safety.h.klasaCeli", "klasa celi")}</th>
+              <th className="px-4 py-2 font-normal">{t("safety.h.ryzyko", "ryzyko")}</th>
+              <th className="px-4 py-2 font-normal">{t("safety.h.dopuszczenie", "dopuszczenie")}</th>
+              <th className="px-4 py-2 font-normal">{t("safety.h.czegoBrakuje", "czego brakuje")}</th>
             </tr>
           </thead>
           <tbody>
@@ -183,7 +195,7 @@ export default function SafetyBoard() {
                 <td className="px-4 py-2">{row.policy}</td>
                 <td className="px-4 py-2">{row.cellClass}</td>
                 <td className="px-4 py-2 text-xs text-muted-foreground">
-                  {RISK_LABEL[row.riskClass] ?? row.riskClass}
+                  {RISK_LABEL[row.riskClass] ? t(...RISK_LABEL[row.riskClass]) : row.riskClass}
                 </td>
                 <td className={`px-4 py-2 ${row.cleared ? 'text-emerald-600' : 'text-red-600'}`}>
                   {row.cleared ? 'dopuszczona' : 'ZABLOKOWANA'}
@@ -200,11 +212,8 @@ export default function SafetyBoard() {
       {data?.suites.length ? (
         <div className="rounded-md border">
           <div className="border-b px-4 py-3">
-            <div className="font-medium">Zestawy ewaluacyjne</div>
-            <div className="text-xs text-muted-foreground">
-              limity siły i nacisku (ISO/TS 15066) mają sens tam, gdzie kontakt z człowiekiem jest możliwy —
-              wymaganie ich za płotem byłoby rytuałem
-            </div>
+            <div className="font-medium">{t("safety.h.zestawyEwaluacyjne", "Zestawy ewaluacyjne")}</div>
+            <div className="text-xs text-muted-foreground">{t("safety.prose.3", "limity siły i nacisku (ISO/TS 15066) mają sens tam, gdzie kontakt z człowiekiem jest możliwy — wymaganie ich za płotem byłoby rytuałem")}</div>
           </div>
           <table className="w-full text-sm">
             <tbody>
@@ -213,7 +222,7 @@ export default function SafetyBoard() {
                   <td className="px-4 py-2">{suite.name}</td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">{suite.suiteKey}</td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
-                    wymagany dla: {suite.requiredFor.map((r) => RISK_LABEL[r] ?? r).join(', ')}
+                    {t('safety.ui.requiredFor', 'wymagany dla:')} {suite.requiredFor.map((r) => RISK_LABEL[r] ? t(...RISK_LABEL[r]) : r).join(', ')}
                   </td>
                 </tr>
               ))}
@@ -225,30 +234,28 @@ export default function SafetyBoard() {
       {data?.incidents.length ? (
         <div className="rounded-md border">
           <div className="border-b px-4 py-3">
-            <div className="font-medium">Incydenty</div>
-            <div className="text-xs text-muted-foreground">
-              klasyfikacja dwuwymiarowa: czy ktoś ucierpiał i czy zadziałała warstwa bezpieczeństwa
-            </div>
+            <div className="font-medium">{t("safety.h.incydenty", "Incydenty")}</div>
+            <div className="text-xs text-muted-foreground">{t('safety.ui.twoAxisClassification', "klasyfikacja dwuwymiarowa: czy ktoś ucierpiał i czy zadziałała warstwa bezpieczeństwa")}</div>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
-                <th className="px-4 py-2 font-normal">kiedy</th>
-                <th className="px-4 py-2 font-normal">skutek</th>
+                <th className="px-4 py-2 font-normal">{t("safety.h.kiedy", "kiedy")}</th>
+                <th className="px-4 py-2 font-normal">{t("safety.h.skutek", "skutek")}</th>
                 <th className="px-4 py-2 font-normal">warstwa bezp.</th>
-                <th className="px-4 py-2 font-normal">priorytet</th>
-                <th className="px-4 py-2 font-normal">opis</th>
+                <th className="px-4 py-2 font-normal">{t("safety.h.priorytet", "priorytet")}</th>
+                <th className="px-4 py-2 font-normal">{t("safety.h.opis", "opis")}</th>
               </tr>
             </thead>
             <tbody>
               {data.incidents.map((incident) => (
                 <tr key={incident.id} className="border-t">
                   <td className="px-4 py-2 text-xs text-muted-foreground">
-                    {formatMoment(incident.occurredAt)}
+                    {formatMoment(locale, incident.occurredAt)}
                   </td>
-                  <td className="px-4 py-2">{HARM_LABEL[incident.harm] ?? incident.harm}</td>
+                  <td className="px-4 py-2">{HARM_LABEL[incident.harm] ? t(...HARM_LABEL[incident.harm]) : incident.harm}</td>
                   <td className="px-4 py-2 text-xs">
-                    {incident.safetyLayerEngaged ? 'zadziałała' : '—'}
+                    {incident.safetyLayerEngaged ? t('safety.ui.engaged', "zadziałała") : '—'}
                     {incident.policyImplicated ? ' / polityka zamieszana' : ''}
                   </td>
                   <td className={`px-4 py-2 ${PRIORITY_TONE[incident.priority] ?? ''}`}>

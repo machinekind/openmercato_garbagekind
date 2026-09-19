@@ -148,7 +148,7 @@ flowchart LR
     subgraph SORT["moduł sortownia — TypeScript"]
         RPC["lib/legacyRpc.ts"]
         FILES["lib/legacyFiles.ts"]
-        MAP["lib/topology, fractions, customers,<br/>salesOrders, transferCards, payments,<br/>lots, movements, reservations"]
+        MAP["lib/topology, fractions, customers,<br/>salesOrders, transferCards, payments,<br/>lots, movements, reservations, crm"]
         DSYNC["integration.ts + lib/adapter.ts<br/>konektor Data Sync"]
         DASH["api/dashboard"]
     end
@@ -174,7 +174,7 @@ flowchart LR
     HUB --> DSYNC --> MAP
     MAP -->|"wms.lots.create<br/>wms.inventory.receive / move / adjust / reserve"| WMS
     MAP -->|"produkt i wariant"| CAT
-    MAP -->|"customers.companies.create"| CRM
+    MAP -->|"customers.companies.create / update<br/>customers.deals.create / update / delete"| CRM
     MAP -->|"sales.orders / invoices /<br/>shipments / payments .create"| SALES
     DASH -.->|"salda, partie, ruchy, rezerwacje"| WMS
     DASH -.->|"zamówienia, faktury, wpłaty"| SALES
@@ -191,25 +191,33 @@ z księgowości. Żadnych wymyślonych metod. Klient w Pythonie czyta te same dw
 | --- | --- | --- |
 | `locations` | wms: magazyn, strefy, lokalizacje | pojemność boksu w kg |
 | `stockmaster` | catalog: produkt i wariant | kod odpadu jako SKU, kod procesu odzysku R1–R5, próg wysyłki |
-| `debtorsmaster` | customers: firma (`customers.companies.create`) | rola DOS/ODB, NIP i BDO w opisie, klucz idempotencji w polu `source` |
+| `debtorsmaster` | customers: firma (`customers.companies.create`) | rola DOS/ODB jako etap cyklu życia (`supplier` / `customer`), NIP i BDO w opisie, klucz idempotencji w polu `source` |
 | `stockmoves` PZ / SORT / WZ | `wms.inventory.receive` / `transfer` / `issue` | partia dostawcy przy przyjęciu, para SORT jako jeden transfer, rozkład na partie FIFO, `stkmoveno` jako `referenceId` |
 | `salesorders` | sales: zamówienie, faktura, wysyłka | VAT 23 %, numer faktury z generatora platformy, karta przekazania odpadu dla zrealizowanych wydań |
 | `debtortrans` | sales: wpłata i rozliczenie faktury | wiek należności; rozjazd kwoty raportowany, nie nadpisywany |
+| — | customers: szansa sprzedaży (`customers.deals.create`) | każdy odbiorca ma szansę `win` z wartością równą sumie brutto zamówień; dostawca nie ma żadnej |
 
 Kolejność importu wynika z zależności i nie jest kosmetyczna:
 
 ```
 topologia → frakcje → kontrahenci → zamówienia (+faktury)
-          → karty przekazania → wpłaty → partie → księga ruchów → rezerwacje
+          → karty przekazania → wpłaty → partie → księga ruchów → rezerwacje → CRM
 ```
 
 Rezerwacje idą po księdze, bo przed ruchami magazyn jest pusty i WMS odmówiłby
 każdej. Import jest idempotentny: drugie uruchomienie raportuje same duplikaty
 i nie dopisuje ani jednego ruchu.
 
+Krok CRM (`lib/crm.ts`, także osobno: `yarn mercato sortownia sync-crm`)
+pilnuje, żeby zakładki „Firmy" i „Szanse sprzedaży" mówiły to samo:
+`customer` → szansa `win`, `prospect` → `open`, `supplier` → żadnej; w drugą
+stronę firma bez etapu dostaje go ze statusu szansy, a wygrana szansa
+awansuje potencjalnego klienta na klienta.
+
 Pulpit `/backend/sortownia` liczy masy z encji WMS, więc magazyn i ekran
-zawsze mówią to samo. `integration.ts` rejestruje system legacy jako konektor
-w hubie Data Sync (kursor po numerze ruchu, przebieg próbny).
+zawsze mówią to samo; magazyn liczy w kilogramach, ekran pokazuje tony.
+`integration.ts` rejestruje system legacy jako konektor w hubie Data Sync
+(kursor po numerze ruchu, przebieg próbny).
 
 Szczegóły, w tym dwa błędy, które wyszły dopiero na żywych danych:
 [`mercato/README.md`](mercato/README.md).
@@ -304,8 +312,8 @@ treningowego; przebieg udany bez wskazanej polityki jest odrzucany.
 
 | Moduł | Za co odpowiada | Tabele | Komendy | Zdarzenia | Testy | Ekran |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `fleet` | roboty, klasy sprzętowe, obiekty, cele, kalibracje z terminem ważności; właściciel osobno od operatora; geometria hali | 6 | 5 | 8 | 78 | `/backend/fleet`, `/backend/plant` |
-| `edge` | tożsamość Ed25519 agenta, bilet wpisowy, sesje, uderzenia serca; żywotność liczona przy odczycie z `last_seen_at` | 4 | 7 | 7 | 52 | `/backend/edge` |
+| `fleet` | roboty, klasy sprzętowe, obiekty, cele, kalibracje z terminem ważności; właściciel osobno od operatora; geometria hali | 6 | 5 | 8 | 88 | `/backend/fleet`, `/backend/fleet/<id>`, `/backend/plant` |
+| `edge` | tożsamość Ed25519 agenta, bilet wpisowy, sesje, uderzenia serca; żywotność liczona przy odczycie z `last_seen_at` | 4 | 7 | 7 | 55 | `/backend/edge` |
 | `policy_registry` | wersje polityk identyfikowane skrótem artefaktów, wiązane z rewizją embodimentu, nie z robotem; `release` osobno od `manage` | 4 | 3 | 5 | 45 | `/backend/policies` |
 | `safety` | uzasadnienie bezpieczeństwa per klasa celi, zestawy ewaluacyjne, incydenty; odmowa dla polityki zadeklarowanej jako funkcja bezpieczeństwa | 4 | 7 | 8 | 50 | `/backend/safety` |
 | `deployment` | przypisanie wersji do robota i dzierżawa: `fenced` 7 dni, `shared` 8 h, `public` 120 s; uzgodnienie stanu z trzecim werdyktem `unknown` | 3 | 4 | 4 | 45 | `/backend/deployment` |
@@ -320,7 +328,7 @@ każdego modułu na gałęzi `main`.
 
 | Moduł | Za co odpowiada | Tabele | Komendy | Zdarzenia | Testy | Ekran |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `sortownia` | most legacy → WMS, katalog, CRM, sprzedaż, KPO; pulpit; konektor Data Sync; bez własnych komend | 0 | 0 | 0 | 219 | `/backend/sortownia` |
+| `sortownia` | most legacy → WMS, katalog, CRM, sprzedaż, KPO; pulpit; konektor Data Sync; bez własnych komend | 0 | 0 | 0 | 245 | `/backend/sortownia` |
 | `work_orders` | most hala ↔ ERP: zlecenie, partia, masa z wagi kontra deklaracja robota; masy w gramach całkowitych | 3 | 4 | 5 | 28 | `/backend/work_orders` |
 | `vision` | kamery z celem ustawowym, detektory z progiem ufności, okna zliczeń, retencja 90 dni, triangulacja trzech świadków | 4 | 6 | 7 | 57 | `/backend/vision` |
 | `physical_management` | digital twin hali: warstwa wyłącznie odczytowa nad `fleet` i `vision` | 0 | 0 | 0 | 0 | `/backend/physical-management` |
@@ -565,8 +573,8 @@ Testy modułów:
 
 ```bash
 cd apps/mercato
-yarn jest src/modules/sortownia            # 219
-yarn jest src/modules                      # wszystkie moduły tego repozytorium: 741
+yarn jest src/modules/sortownia            # 245
+yarn jest src/modules/fleet                # i tak dalej: 14 modułów, razem 780 testów
 ```
 
 ## Czego projekt nie robi

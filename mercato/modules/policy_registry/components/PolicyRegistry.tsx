@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Rejestr polityk na ekranie.
@@ -77,8 +78,8 @@ function shortDigest(digest: string): string {
   return digest.slice(0, 12)
 }
 
-function formatMoment(value: string): string {
-  return new Date(value).toLocaleString('pl-PL', {
+function formatMoment(locale: string, value: string): string {
+  return new Date(value).toLocaleString(locale, {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -87,6 +88,8 @@ function formatMoment(value: string): string {
 }
 
 export default function PolicyRegistry() {
+  const t = useT()
+  const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -96,7 +99,7 @@ export default function PolicyRegistry() {
       const response = await apiFetch('/api/policy_registry/policies')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('policy_registry.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -123,35 +126,31 @@ export default function PolicyRegistry() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          title="Polityki"
+          title={t('policy_registry.ui.policies', "Polityki")}
           value={totals?.policies ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">każda z zadeklarowanym embodimentem</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('policy_registry.ui.eachWithEmbodiment', "każda z zadeklarowanym embodimentem")}</span>}
         />
         <KpiCard
-          title="Wersje"
+          title={t('policy_registry.ui.versions', "Wersje")}
           value={totals?.versions ?? null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">
-              tożsamością jest skrót artefaktów, nie numer
-            </span>
+            <span className="text-xs text-muted-foreground">{t('policy_registry.ui.identityIsDigest', "tożsamością jest skrót artefaktów, nie numer")}</span>
           }
         />
         <KpiCard
-          title="Wypuszczone"
+          title={t('policy_registry.ui.released', "Wypuszczone")}
           value={totals?.released ?? null}
           loading={loading}
-          footer={<span className="text-xs text-muted-foreground">tylko te da się wdrożyć</span>}
+          footer={<span className="text-xs text-muted-foreground">{t('policy_registry.ui.onlyTheseDeployable', "tylko te da się wdrożyć")}</span>}
         />
         <KpiCard
-          title="Rozjazd embodimentu"
+          title={t('policy_registry.ui.embodimentMismatch', "Rozjazd embodimentu")}
           value={totals ? totals.embodimentDrift + totals.orphanedEmbodiment : null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">
-              w zdrowym rejestrze zero — każda inna wartość jest awarią
-            </span>
+            <span className="text-xs text-muted-foreground">{t('policy_registry.ui.zeroInHealthy', "w zdrowym rejestrze zero — każda inna wartość jest awarią")}</span>
           }
         />
       </div>
@@ -169,7 +168,7 @@ export default function PolicyRegistry() {
               <div>
                 <div className="font-medium">{policy.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {policy.policyKey} · zadanie {policy.taskKey} ·{' '}
+                  {policy.policyKey} · {t('policy_registry.ui.task', 'zadanie')} {policy.taskKey} ·{' '}
                   {METHOD_LABEL[policy.learningMethod] ?? policy.learningMethod}
                 </div>
               </div>
@@ -180,10 +179,10 @@ export default function PolicyRegistry() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-muted-foreground">
-                    <th className="px-4 py-2 font-normal">wersja</th>
-                    <th className="px-4 py-2 font-normal">skrót treści</th>
-                    <th className="px-4 py-2 font-normal">sprzęt</th>
-                    <th className="px-4 py-2 font-normal">artefakty</th>
+                    <th className="px-4 py-2 font-normal">{t("policy_registry.h.wersja", "wersja")}</th>
+                    <th className="px-4 py-2 font-normal">{t('policy_registry.ui.contentDigest', "skrót treści")}</th>
+                    <th className="px-4 py-2 font-normal">{t('policy_registry.ui.hardware', "sprzęt")}</th>
+                    <th className="px-4 py-2 font-normal">{t("policy_registry.h.artefakty", "artefakty")}</th>
                     <th className="px-4 py-2 font-normal">status</th>
                     <th className="px-4 py-2 font-normal">zarejestrowana</th>
                   </tr>
@@ -200,7 +199,7 @@ export default function PolicyRegistry() {
                             {version.embodimentDrift ? ' — kontrakt się rozjechał' : ''}
                           </span>
                         ) : (
-                          <span className="text-red-600">rewizja zniknęła z rejestru floty</span>
+                          <span className="text-red-600">{t('policy_registry.ui.revisionGone', "rewizja zniknęła z rejestru floty")}</span>
                         )}
                       </td>
                       <td className="px-4 py-2 text-xs text-muted-foreground">
@@ -210,16 +209,14 @@ export default function PolicyRegistry() {
                         {STATUS_LABEL[version.status] ?? version.status}
                       </td>
                       <td className="px-4 py-2 text-xs text-muted-foreground">
-                        {formatMoment(version.createdAt)}
+                        {formatMoment(locale, version.createdAt)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <div className="px-4 py-3 text-sm text-muted-foreground">
-                Polityka bez żadnej wersji — zadeklarowany embodiment, brak wag.
-              </div>
+              <div className="px-4 py-3 text-sm text-muted-foreground">{t('policy_registry.ui.policyNoVersions', "Polityka bez żadnej wersji — zadeklarowany embodiment, brak wag.")}</div>
             )}
           </div>
         ))}

@@ -46,6 +46,19 @@ dowodowego.
 | `edge` | `edge-sessions-sweep` | 5 min | zamyka sesje agentów po progu ciszy |
 | `fleet` | `fleet-calibration-expiry` | 1 h | ogłasza wygaśnięcie kalibracji (dołożone razem ze zdarzeniami modułowymi — patrz `EVENTS.md`) |
 
+Komendy instalacyjne, które trzeba uruchomić po doinstalowaniu modułów do
+działającego systemu (platforma zasiewa te zasoby wyłącznie przy inicjalizacji
+tenanta):
+
+```
+mercato vision install-schedules
+mercato edge  install-schedules
+mercato fleet install-schedules
+mercato fleet install-widgets
+mercato edge  install-widgets
+mercato safety install-widgets
+```
+
 Plus komenda `vision.clips.confirm_deletion` i `mercato vision confirm`,
 którą woła proces kasujący bajty.
 
@@ -101,3 +114,48 @@ Wymuszenie przebiegu z wiersza poleceń (`scheduler run <id>`) kończy się
 `Could not resolve 'queueService'` — kontener CLI nie ma usługi kolejki.
 To ograniczenie środowiska, nie modułu: w działającej aplikacji workery są
 uzbrojone i harmonogram odpala je sam.
+
+## Druga luka tej samej klasy: lista dozwolonych widgetów
+
+Przy dokładaniu kafelków pulpitu (`fleet`, `edge`, `safety`) wyszła luka
+bliźniacza do tej z harmonogramami, ale groźniejsza w skutkach.
+
+`dashboard_role_widgets` trzyma **jawną listę dozwolonych widgetów na rolę**,
+zapisywaną przy inicjalizacji tenanta. Kod platformy czyta ją tak:
+
+```ts
+baseSet = allowedByRole.size > 0 ? allowedByRole : new Set(allWidgetIds)
+```
+
+Lista niepusta znaczy „wolno wyłącznie to, co na niej jest". Moduł
+doinstalowany później nie ma jak się na niej znaleźć — więc jego widget jest
+zarejestrowany w `modules.generated.ts`, ładowany bez błędu i **niewidoczny
+dla nikogo**, także w katalogu „Customize". Nie jest to awaria z komunikatem;
+to kod, którego nikt nigdy nie uruchomi.
+
+Diagnoza zajęła kilka fałszywych tropów, bo wszystkie oczywiste rzeczy się
+zgadzały: wpis w rejestrze, typecheck, brak błędów importu, 26 zarejestrowanych
+widgetów w pliku generowanym. W katalogu było 23 — różnica dokładnie nasza.
+
+Obejście, tym samym wzorcem co `install-schedules`:
+
+```
+mercato fleet install-widgets
+mercato edge install-widgets
+mercato safety install-widgets
+```
+
+Komenda dopisuje identyfikator widgetu wyłącznie do list tych ról, które już
+mają uprawnienie modułu (`fleet.view` albo `fleet.*`). Rola bez tego
+uprawnienia i tak odbiłaby się o kontrolę cech przy renderowaniu, a dopisanie
+jej widgetu byłoby cichą zmianą cudzej konfiguracji.
+
+Osobna obserwacja, bez obejścia: trasa pulpitu woła kontrolę uprawnień
+z zaszytym `isSuperAdmin: false`. Konto superadministratora **nie omija**
+kontroli cech — jeśli jego rola nie ma jawnie `fleet.view`, widgetu nie
+zobaczy, choć widzi wszystko inne. To zachowanie rdzenia, nie nasze.
+
+**Reguła wyniesiona z obu przypadków:** wszystko, co platforma zasiewa przy
+inicjalizacji tenanta — uprawnienia ról, harmonogramy, listy widgetów — jest
+dla modułu doinstalowanego później niedostępne. Każdy taki zasób wymaga własnej
+komendy instalacyjnej, a jej brak nie objawia się błędem, tylko ciszą.

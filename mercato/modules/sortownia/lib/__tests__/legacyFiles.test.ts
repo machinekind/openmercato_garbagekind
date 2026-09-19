@@ -160,8 +160,9 @@ describe('ścieżki zrzutu', () => {
   it('bierze katalog z konfiguracji środowiska', () => {
     process.env.SORTOWNIA_LEGACY_OUT = '/dane/legacy/out'
     expect(legacyOutDir()).toBe('/dane/legacy/out')
-    expect(movementsFile()).toBe('/dane/legacy/out/ruchy.csv')
-    expect(fractionsFile()).toBe('/dane/legacy/out/frakcje.csv')
+    // `path.join` składa ścieżkę separatorem platformy — test ma przejść i na Windows.
+    expect(movementsFile()).toBe(path.join('/dane/legacy/out', 'ruchy.csv'))
+    expect(fractionsFile()).toBe(path.join('/dane/legacy/out', 'frakcje.csv'))
   })
 
   it('rozpoznaje brak pliku zamiast wywracać się na odczycie', async () => {

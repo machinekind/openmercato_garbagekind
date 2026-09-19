@@ -3,8 +3,10 @@ import {
   describeRole,
   ensureCustomers,
   legacySource,
+  lifecycleStageForRole,
   LEGACY_SOURCE_PREFIX,
 } from '../customers'
+import { SUPPLIER_STAGE } from '../crm'
 import type { LegacyCustomerRow } from '../legacyFiles'
 
 /**
@@ -19,7 +21,7 @@ const scope = { organizationId: 'org-1', tenantId: 'ten-1' }
 function customer(overrides: Partial<LegacyCustomerRow> = {}): LegacyCustomerRow {
   return {
     debtorno: 'D005',
-    nazwa: 'Stora Papier Recykling',
+    nazwa: 'RecycleHub Sp. z o.o.',
     typ: 'ODB',
     miasto: 'Ostroleka',
     waluta: 'PLN',
@@ -29,7 +31,7 @@ function customer(overrides: Partial<LegacyCustomerRow> = {}): LegacyCustomerRow
   }
 }
 
-function makeCtx(existing: Array<{ id: string; source: string }> = []) {
+function makeCtx(existing: Array<{ id: string; source: string; lifecycleStage?: string | null }> = []) {
   const calls: Array<{ id: string; input: Record<string, unknown> }> = []
   let counter = 0
   return {
@@ -72,7 +74,39 @@ describe('describeRole', () => {
   })
 })
 
+describe('lifecycleStageForRole', () => {
+  it('odbiorca frakcji jest klientem, dostawca odpadu — dostawcą, reszta bez etapu', () => {
+    expect(lifecycleStageForRole('ODB')).toBe('customer')
+    expect(lifecycleStageForRole('DOS')).toBe(SUPPLIER_STAGE)
+    expect(lifecycleStageForRole('XXX')).toBeNull()
+  })
+})
+
 describe('ensureCustomers', () => {
+  it('nadaje etap cyklu życia z roli — odbiorca wchodzi do CRM jako klient', async () => {
+    const { ctx, calls } = makeCtx()
+    await ensureCustomers(ctx, [customer({ typ: 'ODB' }), customer({ debtorno: 'D001', typ: 'DOS' })])
+    expect(calls[0].input.lifecycleStage).toBe('customer')
+    expect(calls[1].input.lifecycleStage).toBe(SUPPLIER_STAGE)
+  })
+
+  it('firmie zaimportowanej wcześniej bez etapu uzupełnia go zamiast zakładać drugą', async () => {
+    const { ctx, calls } = makeCtx([{ id: 'ent-9', source: 'sortownia-legacy:D005', lifecycleStage: null }])
+    const result = await ensureCustomers(ctx, [customer({ typ: 'ODB' })])
+    expect(calls).toEqual([
+      { id: 'customers.companies.update', input: expect.objectContaining({ id: 'ent-9', lifecycleStage: 'customer' }) },
+    ])
+    expect(result.outcomes[0].action).toBe('update')
+    expect(result.index.get('D005')).toBe('ent-9')
+  })
+
+  it('nie nadpisuje etapu ustawionego ręcznie w CRM', async () => {
+    const { ctx, calls } = makeCtx([{ id: 'ent-9', source: 'sortownia-legacy:D005', lifecycleStage: 'churned' }])
+    const result = await ensureCustomers(ctx, [customer({ typ: 'ODB' })])
+    expect(calls).toHaveLength(0)
+    expect(result.outcomes[0].action).toBe('skip')
+  })
+
   it('zakłada firmę komendą CRM, a nie zapisem do encji — inaczej reszta platformy jej nie zobaczy', async () => {
     const { ctx, calls } = makeCtx()
     await ensureCustomers(ctx, [customer()])
@@ -105,7 +139,7 @@ describe('ensureCustomers', () => {
   })
 
   it('drugi przebieg nie zakłada firmy po raz drugi', async () => {
-    const { ctx, calls } = makeCtx([{ id: 'ent-9', source: 'sortownia-legacy:D005' }])
+    const { ctx, calls } = makeCtx([{ id: 'ent-9', source: 'sortownia-legacy:D005', lifecycleStage: 'customer' }])
     const result = await ensureCustomers(ctx, [customer()])
     expect(calls).toHaveLength(0)
     expect(result.outcomes[0].action).toBe('skip')

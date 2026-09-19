@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
+import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
 
 /**
  * Ekran łączności agentów.
@@ -37,11 +38,11 @@ type Payload = {
   agents: Agent[]
 }
 
-const STATE_LABEL: Record<LinkState, string> = {
-  online: 'Łączność',
-  late: 'Spóźniony',
-  lost: 'Utracony',
-  never_seen: 'Nigdy się nie odezwał',
+const STATE_LABEL: Record<LinkState, [string, string]> = {
+  online: ['edge.label.state.online', "Łączność"],
+  late: ['edge.label.state.late', "Spóźniony"],
+  lost: ['edge.label.state.lost', "Utracony"],
+  never_seen: ['edge.label.state.never_seen', "Nigdy się nie odezwał"],
 }
 
 const STATE_TONE: Record<LinkState, string> = {
@@ -52,6 +53,8 @@ const STATE_TONE: Record<LinkState, string> = {
 }
 
 export default function AgentLinkBoard() {
+  const t = useT()
+  const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -61,7 +64,7 @@ export default function AgentLinkBoard() {
       const response = await apiFetch('/api/edge/agents')
       if (!response.ok) {
         const body = (await response.json()) as { error?: string }
-        setError(body?.error ?? `Błąd ${response.status}`)
+        setError(body?.error ?? t('edge.err.http', 'Błąd {status}', { status: String(response.status) }))
         return
       }
       setData((await response.json()) as Payload)
@@ -91,27 +94,27 @@ export default function AgentLinkBoard() {
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard title="Agenci" value={totals?.agents ?? null} loading={loading}
-          footer={<span className="text-xs text-muted-foreground">{totals?.revoked ? `${totals.revoked} odwołanych` : 'żaden nieodwołany'}</span>} />
-        <KpiCard title="Odzywają się" value={totals?.online ?? null} loading={loading}
-          footer={<span className="text-xs text-muted-foreground">w oknie odstępu z tolerancją</span>} />
-        <KpiCard title="Spóźnieni" value={totals?.late ?? null} loading={loading}
-          footer={<span className="text-xs text-muted-foreground">zwykle sieć, nie zasilanie</span>} />
-        <KpiCard title="Utraceni" value={totals?.lost ?? null} loading={loading}
-          footer={<span className="text-xs text-muted-foreground">cisza dłuższa niż próg utraty</span>} />
+        <KpiCard title={t('edge.ui.agents', "Agenci")} value={totals?.agents ?? null} loading={loading}
+          footer={<span className="text-xs text-muted-foreground">{totals?.revoked ? `${totals.revoked} odwołanych` : t('edge.ui.noneRevoked', "żaden nieodwołany")}</span>} />
+        <KpiCard title={t('edge.ui.reporting', "Odzywają się")} value={totals?.online ?? null} loading={loading}
+          footer={<span className="text-xs text-muted-foreground">{t('edge.ui.withinInterval', "w oknie odstępu z tolerancją")}</span>} />
+        <KpiCard title={t('edge.ui.late', "Spóźnieni")} value={totals?.late ?? null} loading={loading}
+          footer={<span className="text-xs text-muted-foreground">{t('edge.ui.usuallyNetwork', "zwykle sieć, nie zasilanie")}</span>} />
+        <KpiCard title={t('edge.ui.lost', "Utraceni")} value={totals?.lost ?? null} loading={loading}
+          footer={<span className="text-xs text-muted-foreground">{t('edge.ui.silenceBeyondThreshold', "cisza dłuższa niż próg utraty")}</span>} />
       </div>
 
       <div className="rounded-lg border">
         <div className="flex items-center justify-between border-b px-4 py-2">
-          <span className="text-sm font-medium">Łączność agentów</span>
+          <span className="text-sm font-medium">{t('edge.ui.agentLink', "Łączność agentów")}</span>
           <span className="text-xs text-muted-foreground">
-            {data ? `stan na ${new Date(data.generatedAt).toLocaleTimeString('pl-PL')}` : ''}
+            {data ? t('edge.ui.asOf', 'stan na {t}', { t: new Date(data.generatedAt).toLocaleTimeString(locale) }) : ''}
           </span>
         </div>
 
         {agents.length === 0 && !loading ? (
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            Żaden agent nie jest wpisany. Wystaw bilet komendą{' '}
+            {t('edge.empty.agents', 'Żaden agent nie jest wpisany. Wystaw bilet komendą')}{' '}
             <code className="rounded bg-muted px-1">mercato edge issue --robot &lt;numer&gt;</code>.
           </div>
         ) : (
@@ -126,16 +129,14 @@ export default function AgentLinkBoard() {
                       <span className="text-xs text-muted-foreground">{agent.agentVersion}</span>
                     ) : null}
                     {agent.status === 'revoked' ? (
-                      <span className="rounded border px-1 text-[10px] uppercase tracking-wide text-muted-foreground">
-                        odwołany
-                      </span>
+                      <span className="rounded border px-1 text-[10px] uppercase tracking-wide text-muted-foreground">{t('edge.ui.revoked', "odwołany")}</span>
                     ) : null}
                   </div>
                   <div className="truncate text-xs text-muted-foreground">{agent.reason}</div>
                 </div>
 
                 <div className="w-40">
-                  <div className={`text-sm ${STATE_TONE[agent.state]}`}>{STATE_LABEL[agent.state]}</div>
+                  <div className={`text-sm ${STATE_TONE[agent.state]}`}>{t(...STATE_LABEL[agent.state])}</div>
                   <div className="text-xs text-muted-foreground">
                     {/* Liczba sesji na dobę rozdziela stabilne łącze od migoczącego —
                         w kolumnie „ostatnio widziany" wyglądają identycznie. */}
