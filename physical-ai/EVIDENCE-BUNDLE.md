@@ -80,6 +80,12 @@ Każdy wpis ma `result: passed|failed`, czas UTC, metodę oraz URI dowodu.
 Brak próby unieważnia paczkę. Wynik `failed` zachowuje ważność dowodową, ale
 blokuje wariant `--require-p0-pass`.
 
+Próba `zone/person_in_safety_zone` podaje dodatkowo
+`interventionExternalRef`. Walidator wymaga rekordu o tym identyfikatorze w
+`interventions.ndjson` i sprawdza, czy ma on dokładnie
+`reasonCategory: person_in_safety_zone`. Dzięki temu reakcja fizyczna i zapis
+alarmu w ERP są jednym dowodem, a nie dwiema niezależnymi deklaracjami.
+
 ## Logi NDJSON
 
 Każdy niepusty wiersz jest osobnym obiektem JSON:

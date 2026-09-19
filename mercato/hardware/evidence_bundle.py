@@ -198,7 +198,7 @@ def validate_calibrations(document: dict[str, Any], run_ref: str, robot_key: str
 
 def validate_safety(
     document: dict[str, Any], run_ref: str, robot_key: str
-) -> tuple[set[tuple[str, str]], list[tuple[str, str]]]:
+) -> tuple[set[tuple[str, str]], list[tuple[str, str]], set[str]]:
     validate_bound_document(document, "safety.json", run_ref, robot_key)
     layer = require_object(document.get("deterministicLayer"), "safety.json deterministicLayer")
     if layer.get("kind") not in SAFETY_LAYER_KINDS:
@@ -211,6 +211,7 @@ def validate_safety(
         raise EvidenceError("safety.json trials must be an array")
     observed: set[tuple[str, str]] = set()
     failed: list[tuple[str, str]] = []
+    intervention_refs: set[str] = set()
     for index, raw in enumerate(trials):
         trial = require_object(raw, f"safety.json trials[{index}]")
         key = (
@@ -228,16 +229,25 @@ def validate_safety(
         parse_utc(trial.get("occurredAt"), f"safety trial {key[0]}/{key[1]}.occurredAt")
         require_text(trial.get("method"), f"safety trial {key[0]}/{key[1]}.method")
         require_text(trial.get("evidenceUri"), f"safety trial {key[0]}/{key[1]}.evidenceUri")
+        if key == ("zone", "person_in_safety_zone"):
+            intervention_refs.add(
+                require_text(
+                    trial.get("interventionExternalRef"),
+                    "safety trial zone/person_in_safety_zone.interventionExternalRef",
+                )
+            )
     missing = REQUIRED_P0_TRIALS - observed
     if missing:
         formatted = ", ".join(f"{kind}/{scenario}" for kind, scenario in sorted(missing))
         raise EvidenceError(f"safety.json is missing P0 trials: {formatted}")
-    return observed, failed
+    return observed, failed, intervention_refs
 
 
-def validate_ndjson(path: Path, run_ref: str, interventions: bool) -> int:
+def validate_ndjson(
+    path: Path, run_ref: str, interventions: bool
+) -> tuple[int, dict[str, dict[str, Any]]]:
     count = 0
-    external_refs: set[str] = set()
+    records: dict[str, dict[str, Any]] = {}
     with path.open("r", encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
             if not line.strip():
@@ -251,9 +261,9 @@ def validate_ndjson(path: Path, run_ref: str, interventions: bool) -> int:
             timestamp_key = "occurredAt" if interventions else "timestamp"
             parse_utc(record.get(timestamp_key), f"{path.name}:{line_number} {timestamp_key}")
             external_ref = require_text(record.get("externalRef"), f"{path.name}:{line_number} externalRef")
-            if external_ref in external_refs:
+            if external_ref in records:
                 raise EvidenceError(f"{path.name} contains duplicate externalRef: {external_ref}")
-            external_refs.add(external_ref)
+            records[external_ref] = record
             if interventions:
                 if record.get("kind") not in INTERVENTION_KINDS:
                     raise EvidenceError(f"{path.name}:{line_number} kind is outside the closed vocabulary")
@@ -268,7 +278,7 @@ def validate_ndjson(path: Path, run_ref: str, interventions: bool) -> int:
                     raise EvidenceError(f"{path.name}:{line_number} sequence must be non-negative")
                 require_text(record.get("stream"), f"{path.name}:{line_number} stream")
             count += 1
-    return count
+    return count, records
 
 
 def validate_media(document: dict[str, Any], run_ref: str) -> int:
@@ -350,9 +360,27 @@ def verify_bundle(root: Path, require_p0_pass: bool = False) -> dict[str, Any]:
     run_ref, robot_key = validate_run(run)
     validate_hardware(read_json(root / "hardware.json"), run_ref, robot_key)
     validate_calibrations(read_json(root / "calibration.json"), run_ref, robot_key)
-    _, failed_trials = validate_safety(read_json(root / "safety.json"), run_ref, robot_key)
-    telemetry_count = validate_ndjson(root / "telemetry.ndjson", run_ref, interventions=False)
-    intervention_count = validate_ndjson(root / "interventions.ndjson", run_ref, interventions=True)
+    _, failed_trials, required_interventions = validate_safety(
+        read_json(root / "safety.json"), run_ref, robot_key
+    )
+    telemetry_count, _ = validate_ndjson(
+        root / "telemetry.ndjson", run_ref, interventions=False
+    )
+    intervention_count, interventions = validate_ndjson(
+        root / "interventions.ndjson", run_ref, interventions=True
+    )
+    for external_ref in required_interventions:
+        intervention = interventions.get(external_ref)
+        if intervention is None:
+            raise EvidenceError(
+                "Person-zone trial references a missing ERP intervention: "
+                f"{external_ref}"
+            )
+        if intervention.get("reasonCategory") != "person_in_safety_zone":
+            raise EvidenceError(
+                "Person-zone trial intervention must use reasonCategory "
+                f"person_in_safety_zone: {external_ref}"
+            )
     media_count = validate_media(read_json(root / "media-index.json"), run_ref)
     checksum_count = validate_checksums(root)
     if require_p0_pass and failed_trials:

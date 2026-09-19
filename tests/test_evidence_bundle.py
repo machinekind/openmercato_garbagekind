@@ -74,16 +74,17 @@ def build_bundle(root: Path, failed_trial=None):
     )
     trials = []
     for kind, scenario in sorted(validator.REQUIRED_P0_TRIALS):
-        trials.append(
-            {
-                "kind": kind,
-                "scenario": scenario,
-                "result": "failed" if (kind, scenario) == failed_trial else "passed",
-                "occurredAt": NOW,
-                "method": "controlled physical trial",
-                "evidenceUri": f"s3://evidence/{kind}-{scenario}.json",
-            }
-        )
+        trial = {
+            "kind": kind,
+            "scenario": scenario,
+            "result": "failed" if (kind, scenario) == failed_trial else "passed",
+            "occurredAt": NOW,
+            "method": "controlled physical trial",
+            "evidenceUri": f"s3://evidence/{kind}-{scenario}.json",
+        }
+        if (kind, scenario) == ("zone", "person_in_safety_zone"):
+            trial["interventionExternalRef"] = "intervention:1"
+        trials.append(trial)
     write_json(
         root / "safety.json",
         {
@@ -211,6 +212,17 @@ class EvidenceBundleTest(unittest.TestCase):
             media["entries"][0]["uri"] = "file:///operator/video.mp4"
             write_json(root / "media-index.json", media)
             with self.assertRaisesRegex(validator.EvidenceError, "non-local object storage"):
+                validator.verify_bundle(root)
+
+    def test_person_zone_trial_must_reference_matching_erp_intervention(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            build_bundle(root)
+            safety = json.loads((root / "safety.json").read_text(encoding="utf-8"))
+            zone = next(trial for trial in safety["trials"] if trial["kind"] == "zone")
+            zone["interventionExternalRef"] = "intervention:missing"
+            write_json(root / "safety.json", safety)
+            with self.assertRaisesRegex(validator.EvidenceError, "missing ERP intervention"):
                 validator.verify_bundle(root)
 
 
