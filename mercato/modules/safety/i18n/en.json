@@ -1,4 +1,5 @@
 {
+  "common.loading": "Loading…",
   "safety.case.approved": "Approved",
   "safety.case.draft": "Draft",
   "safety.case.expired": "Expired",
@@ -51,5 +52,8 @@
   "safety.ui.serious": "serious",
   "safety.ui.twoAxisClassification": "two-axis classification: whether anyone was harmed and whether the safety layer engaged",
   "safety.ui.versionByCellClass": "policy version × cell class",
-  "safety.ui.withdrawCaseForClass": "they withdraw the safety case for the cell class"
+  "safety.ui.withdrawCaseForClass": "they withdraw the safety case for the cell class",
+  "safety.widget.clearedPairs": "cleared policy × cell pairs",
+  "safety.widget.declaredAsFn": "policy as a safety function",
+  "safety.widget.error": "Could not load the clearance state."
 }

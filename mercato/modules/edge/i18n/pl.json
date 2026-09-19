@@ -1,4 +1,5 @@
 {
+  "common.loading": "Wczytywanie…",
   "edge.agents.empty": "Żaden agent nie jest wpisany. Wystaw bilet komendą mercato edge issue.",
   "edge.agents.subtitle": "Kto się odzywa, czym to udowadnia i kiedy odezwał się ostatnio",
   "edge.agents.title": "Łączność agentów",
@@ -27,5 +28,8 @@
   "edge.ui.stateNeverSeen": "Nigdy się nie odezwał",
   "edge.ui.stateOnline": "Łączność",
   "edge.ui.usuallyNetwork": "zwykle sieć, nie zasilanie",
-  "edge.ui.withinInterval": "w oknie odstępu z tolerancją"
+  "edge.ui.withinInterval": "w oknie odstępu z tolerancją",
+  "edge.widget.error": "Nie udało się pobrać stanu łączności.",
+  "edge.widget.reporting": "agentów się odzywa",
+  "edge.widget.silent": "milczy"
 }

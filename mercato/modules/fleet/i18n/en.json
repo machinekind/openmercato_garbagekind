@@ -1,4 +1,5 @@
 {
+  "common.loading": "Loading…",
   "fleet.calib.expiring": "calibration expires in {d} days",
   "fleet.calib.invalid": "calibration not valid",
   "fleet.calib.notRequired": "no calibration required",
@@ -64,5 +65,8 @@
   "fleet.ui.quarantined": "Quarantined",
   "fleet.ui.riskPublic": "public space",
   "fleet.ui.riskShared": "shared with people",
-  "fleet.ui.robotsInRegistry": "Robots in registry"
+  "fleet.ui.robotsInRegistry": "Robots in registry",
+  "fleet.widget.error": "Could not load the fleet state.",
+  "fleet.widget.expiring": "Calibration expiring",
+  "fleet.widget.readyOfTotal": "machines cleared to run"
 }

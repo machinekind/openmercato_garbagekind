@@ -1,4 +1,5 @@
 {
+  "common.loading": "Wczytywanie…",
   "safety.case.approved": "Zatwierdzone",
   "safety.case.draft": "Wersja robocza",
   "safety.case.expired": "Wygasłe",
@@ -51,5 +52,8 @@
   "safety.ui.serious": "ciężkie",
   "safety.ui.twoAxisClassification": "klasyfikacja dwuwymiarowa: czy ktoś ucierpiał i czy zadziałała warstwa bezpieczeństwa",
   "safety.ui.versionByCellClass": "wersja polityki × klasa celi",
-  "safety.ui.withdrawCaseForClass": "wycofują uzasadnienie dla klasy celi"
+  "safety.ui.withdrawCaseForClass": "wycofują uzasadnienie dla klasy celi",
+  "safety.widget.clearedPairs": "dopuszczonych par polityka × cela",
+  "safety.widget.declaredAsFn": "polityka jako funkcja bezp.",
+  "safety.widget.error": "Nie udało się pobrać stanu dopuszczeń."
 }

@@ -383,4 +383,59 @@ const proveCommand: ModuleCli = {
   },
 }
 
-export default [seedCommand, statusCommand, proveCommand] satisfies ModuleCli[]
+/**
+ * Dopisanie widgetu pulpitu do istniejących list ról.
+ *
+ * Obejście tej samej luki platformy, co `install-schedules`, tylko groźniejszej
+ * w skutkach. `dashboard_role_widgets` trzyma **jawną listę dozwolonych
+ * widgetów** na rolę, zapisaną przy inicjalizacji tenanta. Kod platformy czyta
+ * ją tak: lista niepusta znaczy „wolno wyłącznie to, co na niej jest".
+ *
+ * Moduł doinstalowany później nie ma jak się na tej liście znaleźć, więc jego
+ * widget nie pojawia się nawet w katalogu „Customize" — jest zarejestrowany,
+ * załadowany i niewidoczny dla nikogo. Bez tej komendy byłby martwym kodem.
+ *
+ * Dopisujemy wyłącznie do ról, które już mają uprawnienie `safety.view` —
+ * bezpośrednio albo przez wieloznacznik. Rola bez tego uprawnienia i tak
+ * odbiłaby się o kontrolę cech przy renderowaniu, a dopisanie jej widgetu
+ * byłoby cichą zmianą cudzej konfiguracji.
+ */
+const installWidgetsCommand: ModuleCli = {
+  command: 'install-widgets',
+  async run(_rest) {
+    const container = await createRequestContainer()
+    const em = container.resolve('em') as EntityManager
+
+    /*
+     * Surowy SQL, nie encja rdzenia. Import klasy encji z obcego modułu
+     * kończy się podwójną rejestracją metadanych MikroORM — to jest ta sama
+     * pułapka, którą opisuje komentarz w `deployment/commands/assignments.ts`.
+     */
+    const wynik = await em.getConnection().execute<Array<{ role_id: string }>>(
+      `update dashboard_role_widgets d
+          set widget_ids_json = d.widget_ids_json || '["safety.dashboard.clearance"]'::jsonb,
+              updated_at = now()
+        where d.deleted_at is null
+          and not (d.widget_ids_json @> '["safety.dashboard.clearance"]'::jsonb)
+          and exists (
+            select 1 from role_acls a
+             where a.role_id = d.role_id
+               and a.deleted_at is null
+               and (a.features_json @> '["safety.view"]'::jsonb
+                 or a.features_json @> '["safety.*"]'::jsonb)
+          )
+        returning d.role_id`,
+    )
+
+    const ile = Array.isArray(wynik) ? wynik.length : 0
+    if (ile === 0) {
+      console.log('Widget safety.dashboard.clearance: żadna lista nie wymagała zmiany.')
+      console.log('Albo jest już dopisany, albo żadna rola nie ma uprawnienia safety.view.')
+      return
+    }
+    console.log(`Widget safety.dashboard.clearance dopisany do list ról: ${ile}`)
+    console.log('Widoczny po odświeżeniu pulpitu, w katalogu „Customize".')
+  },
+}
+
+export default [seedCommand, statusCommand, proveCommand, installWidgetsCommand] satisfies ModuleCli[]

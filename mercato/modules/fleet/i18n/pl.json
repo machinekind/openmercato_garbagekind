@@ -1,4 +1,5 @@
 {
+  "common.loading": "Wczytywanie…",
   "fleet.calib.expiring": "kalibracja wygasa za {d} dni",
   "fleet.calib.invalid": "kalibracja nieważna",
   "fleet.calib.notRequired": "brak wymagań kalibracyjnych",
@@ -64,5 +65,8 @@
   "fleet.ui.quarantined": "W kwarantannie",
   "fleet.ui.riskPublic": "przestrzeń publiczna",
   "fleet.ui.riskShared": "dzielona z ludźmi",
-  "fleet.ui.robotsInRegistry": "Roboty w rejestrze"
+  "fleet.ui.robotsInRegistry": "Roboty w rejestrze",
+  "fleet.widget.error": "Nie udało się pobrać stanu floty.",
+  "fleet.widget.expiring": "Kalibracja wygasa",
+  "fleet.widget.readyOfTotal": "maszyn wolno uruchomić"
 }

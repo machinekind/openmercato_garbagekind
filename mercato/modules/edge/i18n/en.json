@@ -1,4 +1,5 @@
 {
+  "common.loading": "Loading…",
   "edge.agents.empty": "No agent is enrolled. Issue a token with mercato edge issue.",
   "edge.agents.subtitle": "Who is reporting in, what proves it and when they last spoke",
   "edge.agents.title": "Agent connectivity",
@@ -27,5 +28,8 @@
   "edge.ui.stateNeverSeen": "Never reported in",
   "edge.ui.stateOnline": "Online",
   "edge.ui.usuallyNetwork": "usually the network, not the power",
-  "edge.ui.withinInterval": "within the interval plus tolerance"
+  "edge.ui.withinInterval": "within the interval plus tolerance",
+  "edge.widget.error": "Could not load the link state.",
+  "edge.widget.reporting": "agents reporting in",
+  "edge.widget.silent": "silent"
 }
