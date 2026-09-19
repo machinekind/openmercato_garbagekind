@@ -1,0 +1,28 @@
+{
+  "provenance": "hardware evidence acquired during hackathon work",
+  "hackathon_period": {
+    "start": "2026-09-18",
+    "end": "2026-09-19",
+    "timezone": "Europe/Warsaw"
+  },
+  "source_repository": "https://github.com/Bukareszt/mercatoXD.git",
+  "source_commit": "fd5fe08f24ae35fe37c8053086327fdc1a14363a",
+  "source_author": "Greg <piotrowskigrzegorz2000@gmail.com>",
+  "source_authored_at": "2026-09-19T21:37:49+02:00",
+  "source_committed_at": "2026-09-19T21:37:49+02:00",
+  "imported_at": "2026-09-19T22:54:00+02:00",
+  "imported_content": [
+    "docs/knowledge",
+    "docs/PICK-STATE-OF-PLAY.md",
+    "docs/ROBOT-STACK.md",
+    "robot/diag",
+    "robot/docs",
+    "robot/webpanel/presets.json",
+    "robot/so101/so101_new_calib.urdf"
+  ],
+  "content_transform": "path relocation only; source file contents unchanged",
+  "raw_capture_status": "not present in source commit",
+  "primary_hardware": "Galaxea A1X/A1XY",
+  "secondary_hardware": "LeRobot SO-101",
+  "license_note": "Source README declares MIT for repository-owned code and separate upstream licensing for robot assets; verify upstream terms before redistribution beyond this project."
+}
