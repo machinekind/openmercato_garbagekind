@@ -9,6 +9,7 @@ import {
   warnings,
   type EpisodeCandidate,
 } from '../lib/lineage'
+import { emitDatasetsEvent } from '../events'
 
 /**
  * Komendy zbiorów danych.
@@ -102,7 +103,17 @@ const defineDatasetCommand: CommandHandler<DatasetDefineInput, { datasetId: stri
     } as never)
     em.persist(dataset)
     await em.flush()
-    return { datasetId: (dataset as unknown as { id: string }).id }
+    const datasetId = (dataset as unknown as { id: string }).id
+    await emitDatasetsEvent('datasets.dataset.defined', {
+      id: datasetId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      datasetKey: input.datasetKey,
+      taskKey: input.taskKey,
+      embodimentKey: input.embodimentKey,
+    })
+
+    return { datasetId }
   },
 }
 
@@ -287,6 +298,24 @@ const buildVersionCommand: CommandHandler<VersionBuildInput, VersionBuildResult>
     }
     await em.flush()
 
+    /*
+     * Wyjście deduplikacyjne wyżej nie emituje: ten sam odcisk treści to ta
+     * sama wersja zbioru. Przebudowa z niezmienionych kryteriów nad
+     * niezmienioną księgą nie jest nowym faktem.
+     */
+    await emitDatasetsEvent('datasets.version.built', {
+      id: datasetVersionId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      datasetId: input.datasetId,
+      version: nextVersion,
+      contentDigest: digest,
+      episodeCount: comp.total,
+      // Ostrzeżenia o składzie, nie sam licznik: zbiór z samych udanych
+      // epizodów ma ten sam `episodeCount` co zbiór zrównoważony.
+      warnings: composed,
+    })
+
     return {
       datasetVersionId,
       version: nextVersion,
@@ -328,7 +357,18 @@ const registerRunCommand: CommandHandler<RunRegisterInput, { trainingRunId: stri
     } as never)
     em.persist(run)
     await em.flush()
-    return { trainingRunId: (run as unknown as { id: string }).id, duplicate: false }
+
+    const trainingRunId = (run as unknown as { id: string }).id
+    await emitDatasetsEvent('datasets.run.registered', {
+      id: trainingRunId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      datasetVersionId: input.datasetVersionId,
+      runRef: input.runRef,
+      framework: input.framework ?? null,
+    })
+
+    return { trainingRunId, duplicate: false }
   },
 }
 
@@ -355,6 +395,7 @@ const completeRunCommand: CommandHandler<
     } as never)) as unknown as {
       id: string
       status: string
+      datasetVersionId: string
       policyVersionId?: string | null
       finishedAt?: Date | null
     } | null
@@ -379,6 +420,16 @@ const completeRunCommand: CommandHandler<
     run.policyVersionId = input.policyVersionId ?? null
     run.finishedAt = new Date()
     await em.flush()
+
+    await emitDatasetsEvent('datasets.run.completed', {
+      id: run.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      runRef: input.runRef,
+      status: input.status,
+      datasetVersionId: run.datasetVersionId,
+      policyVersionId: run.policyVersionId ?? null,
+    })
 
     return { trainingRunId: run.id, status: input.status, policyVersionId: run.policyVersionId ?? null }
   },

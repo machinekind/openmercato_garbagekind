@@ -12,6 +12,7 @@ import {
   type StageStatus,
 } from '../data/entities'
 import { DEFAULT_THRESHOLDS, SEVERE_KINDS, evaluateGate, stagesToHalt } from '../lib/gate'
+import { emitRolloutEvent } from '../events'
 
 /**
  * Komendy wdrożeń etapowych.
@@ -162,6 +163,16 @@ const planCommand: CommandHandler<PlanInput, { rolloutId: string; stageIds: stri
       await em.flush()
     }
 
+    await emitRolloutEvent('rollout.rollout.planned', {
+      id: rolloutId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      name: input.name,
+      policyVersionId: input.policyVersionId,
+      mode: input.mode,
+      stageCount: stageIds.length,
+    })
+
     return { rolloutId, stageIds }
   },
 }
@@ -275,6 +286,17 @@ const startStageCommand: CommandHandler<
         where id = ?`,
       [row.rollout_id],
     )
+
+    await emitRolloutEvent('rollout.stage.started', {
+      id: input.stageId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      rolloutId: row.rollout_id,
+      // Liczba pominiętych jedzie w ładunku celowo: etap, w którym pominięto
+      // połowę floty, ma w statusie to samo słowo `running` co etap udany.
+      applied,
+      skipped: skipped.length,
+    })
 
     return { stageId: input.stageId, applied, skipped }
   },
@@ -477,6 +499,26 @@ const evaluateGateCommand: CommandHandler<EvaluateInput, EvaluateResult> = {
         `update rollout_rollouts set status = 'rolled_back', status_reason = ?, finished_at = now(), updated_at = now() where id = ?`,
         [verdict.reason, row.rollout_id],
       )
+    }
+
+    const wspólne = {
+      id: input.stageId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      rolloutId: row.rollout_id,
+      reason: verdict.reason,
+      measured: verdict.measured as unknown as Record<string, unknown>,
+    }
+    if (verdict.decision === 'advance') {
+      await emitRolloutEvent('rollout.gate.advanced', wspólne)
+    } else if (verdict.decision === 'hold') {
+      await emitRolloutEvent('rollout.gate.held', wspólne)
+    } else if (verdict.decision === 'rollback') {
+      await emitRolloutEvent('rollout.gate.rolled_back', {
+        ...wspólne,
+        haltedStages,
+        rolledBackRobots,
+      })
     }
 
     return {

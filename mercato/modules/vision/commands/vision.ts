@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { registerCommand, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { Camera, Clip, DetectionWindow, DetectorVersion } from '../data/entities'
 import { checkCamera, checkClassVocabulary, deleteAfterFor, LAWFUL_PURPOSES, MAX_RETENTION_DAYS } from '../lib/lawful'
+import { emitVisionEvent } from '../events'
 
 /**
  * Komendy wzroku maszynowego.
@@ -99,7 +100,32 @@ const registerCameraCommand: CommandHandler<
      * poinformowania załogi jest wadą usuwalną — ale tylko wtedy, gdy ktoś
      * się o niej dowie przed uruchomieniem kamery.
      */
-    return { cameraId: (camera as unknown as { id: string }).id, warnings: verdict.warnings }
+    const cameraId = (camera as unknown as { id: string }).id
+    await emitVisionEvent('vision.camera.registered', {
+      id: cameraId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      cellId: input.cellId,
+      code: input.code,
+      purpose: input.purpose,
+      retentionDays: input.retentionDays,
+      peopleInView: input.peopleInView,
+    })
+
+    if (verdict.warnings.length) {
+      // Osobne zdarzenie, bo odbiorca jest inny: rejestracja kamery interesuje
+      // tablicę wyposażenia, braki formalne interesują tego, kto odpowiada
+      // za zgodność — i ma je usunąć, zanim kamera ruszy.
+      await emitVisionEvent('vision.camera.compliance_warning', {
+        id: cameraId,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        code: input.code,
+        warnings: verdict.warnings,
+      })
+    }
+
+    return { cameraId, warnings: verdict.warnings }
   },
 }
 
@@ -170,7 +196,20 @@ const registerDetectorCommand: CommandHandler<
     em.persist(detector)
     await em.flush()
 
-    return { detectorVersionId: (detector as unknown as { id: string }).id, presenceOnly: verdict.presenceOnly }
+    // Ścieżka „ta sama rewizja, te same wagi" wyżej nie emituje: to jest
+    // ponowne zgłoszenie tego samego detektora, nie nowa wersja.
+    const detectorVersionId = (detector as unknown as { id: string }).id
+    await emitVisionEvent('vision.detector.registered', {
+      id: detectorVersionId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      detectorKey: input.detectorKey,
+      revision: input.revision,
+      weightsDigest: input.weightsDigest,
+      presenceOnly: verdict.presenceOnly,
+    })
+
+    return { detectorVersionId, presenceOnly: verdict.presenceOnly }
   },
 }
 
@@ -250,7 +289,23 @@ const recordWindowCommand: CommandHandler<RecordWindowInput, { windowId: string;
     em.persist(window)
     await em.flush()
 
-    return { windowId: (window as unknown as { id: string }).id, action: 'created' }
+    // Wyjście idempotentne wyżej (`action: 'skipped'`) nie emituje: powtórka
+    // okna po zerwaniu łącza nie jest drugim oknem.
+    const windowId = (window as unknown as { id: string }).id
+    await emitVisionEvent('vision.window.recorded', {
+      id: windowId,
+      organizationId: camera.organizationId,
+      tenantId: input.tenantId,
+      cameraId: input.cameraId,
+      cellId: camera.cellId,
+      detectorVersionId: input.detectorVersionId,
+      startedAt: input.startedAt.toISOString(),
+      endedAt: input.endedAt.toISOString(),
+      counts: input.counts,
+      countingMode: input.countingMode,
+    })
+
+    return { windowId, action: 'created' }
   },
 }
 
@@ -359,6 +414,44 @@ const purgeClipsCommand: CommandHandler<
      * nieodwracalnie usunąć materiał dowodowy. Wpis w bazie mówi „ten plik
      * ma zniknąć"; kasuje ten, kto go trzyma.
      */
+    if (purged.length > 0) {
+      await emitVisionEvent('vision.clips.marked_for_deletion', {
+        organizationId: input.organizationId ?? null,
+        tenantId: input.tenantId,
+        markedCount: purged.length,
+        heldBack,
+        clipIds: purged.map((clip) => clip.clipId),
+      })
+    }
+
+    /**
+     * Liczba, która naprawdę mówi o zgodności: materiał oznaczony i nadal
+     * istniejący, bo nikt nie potwierdził skasowania bajtów. Liczona tutaj,
+     * a nie w workerze, bo w workerze była liczona globalnie i przez to
+     * nie dało się jej nikomu przypisać.
+     *
+     * To zdarzenie **powtarza się** przy każdym przebiegu, dopóki stan trwa —
+     * świadomie, wbrew zasadzie wyzwalania zboczem obowiązującej w reszcie
+     * wtyczki. „Dziś nadal przechowujemy nagranie po ustawowym terminie"
+     * jest prawdziwe każdego dnia z osobna i każdego dnia z osobna jest
+     * naruszeniem; ogłoszenie go raz i zamilknięcie zamieniłoby trwające
+     * naruszenie w jednorazową notkę.
+     */
+    const zaległe = await em.getConnection().execute<Array<{ count: string; oldest: string | null }>>(
+      `select count(*) as count, min(marked_for_deletion_at) as oldest from vision_clips
+        where tenant_id = ? and marked_for_deletion_at is not null and deletion_confirmed_at is null`,
+      [input.tenantId],
+    )
+    const niepotwierdzone = Number(zaległe?.[0]?.count ?? 0)
+    if (niepotwierdzone > 0) {
+      await emitVisionEvent('vision.clips.deletion_overdue', {
+        organizationId: input.organizationId ?? null,
+        tenantId: input.tenantId,
+        unconfirmed: niepotwierdzone,
+        oldestMarkedAt: zaległe?.[0]?.oldest ?? null,
+      })
+    }
+
     return { purged, heldBack }
   },
 }
@@ -411,6 +504,18 @@ const confirmDeletionCommand: CommandHandler<ConfirmDeletionInput, { confirmed: 
       confirmed += 1
     }
     await em.flush()
+
+    if (confirmed > 0 || rejected.length > 0) {
+      await emitVisionEvent('vision.clips.deletion_confirmed', {
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        confirmed,
+        // Odrzucone jadą w ładunku, bo znaczą coś gorszego niż brak
+        // potwierdzenia: materiał skasowano poza procesem.
+        rejected,
+        confirmedBy: input.confirmedBy,
+      })
+    }
 
     return { confirmed, rejected }
   },

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { registerCommand, type CommandBus, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { Reconciliation, WorkBatch, WorkOrder, type BatchStatus, type WorkOrderStatus } from '../data/entities'
 import { DEFAULT_TOLERANCE_RATIO, reconcile } from '../lib/reconcile'
+import { emitWorkOrdersEvent } from '../events'
 
 /**
  * Komendy mostu hala ↔ przedsiębiorstwo.
@@ -73,7 +74,20 @@ const openOrderCommand: CommandHandler<OpenOrderInput, { workOrderId: string }> 
     em.persist(order)
     await em.flush()
 
-    return { workOrderId: (order as unknown as { id: string }).id }
+    const workOrderId = (order as unknown as { id: string }).id
+    await emitWorkOrdersEvent('work_orders.order.opened', {
+      id: workOrderId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      orderNumber: input.orderNumber,
+      cellId: input.cellId,
+      sku: input.sku,
+      targetGrams: input.targetGrams,
+      policyVersionId: input.policyVersionId ?? null,
+      salesOrderId: input.salesOrderId ?? null,
+    })
+
+    return { workOrderId }
   },
 }
 
@@ -124,7 +138,17 @@ const openBatchCommand: CommandHandler<OpenBatchInput, { batchId: string; opened
     em.persist(batch)
     await em.flush()
 
-    return { batchId: (batch as unknown as { id: string }).id, openedAt }
+    const batchId = (batch as unknown as { id: string }).id
+    await emitWorkOrdersEvent('work_orders.batch.opened', {
+      id: batchId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      workOrderId: input.workOrderId,
+      containerCode: input.containerCode,
+      openedAt: openedAt.toISOString(),
+    })
+
+    return { batchId, openedAt }
   },
 }
 
@@ -349,6 +373,41 @@ const closeBatchCommand: CommandHandler<CloseBatchInput, CloseBatchResult> = {
     batch.lotNumber = input.weighedGrams > 0 ? lotNumber : null
     await em.flush()
 
+    await emitWorkOrdersEvent('work_orders.batch.closed', {
+      id: batch.id,
+      organizationId: order.organizationId,
+      tenantId: input.tenantId,
+      workOrderId: order.id,
+      weighedGrams: input.weighedGrams,
+      claimedPieces,
+      expectedGrams: verdict.expectedGrams,
+      driftGrams: verdict.driftGrams,
+      verdict: verdict.verdict,
+      lotNumber: batch.lotNumber ?? null,
+    })
+
+    /*
+     * Osobne zdarzenie wyzwalane werdyktem, nie flagą `requiresReview`.
+     * `requiresReview` jest decyzją o skierowaniu **maszyny** do przeglądu
+     * i może być wyciszona progiem; werdykt jest tym, co zmierzono.
+     * Odbiorca statystyczny potrzebuje pomiaru, a nie cudzej decyzji o progu.
+     */
+    if (verdict.verdict !== 'ok') {
+      await emitWorkOrdersEvent('work_orders.batch.drift_detected', {
+        id: batch.id,
+        organizationId: order.organizationId,
+        tenantId: input.tenantId,
+        workOrderId: order.id,
+        policyVersionId: order.policyVersionId ?? null,
+        weighedGrams: input.weighedGrams,
+        expectedGrams: verdict.expectedGrams,
+        driftGrams: verdict.driftGrams,
+        driftRatio: verdict.driftRatio,
+        verdict: verdict.verdict,
+        reason: verdict.reason,
+      })
+    }
+
     return {
       batchId: batch.id,
       claimedPieces,
@@ -416,9 +475,19 @@ const closeOrderCommand: CommandHandler<
     if (input.notes) order.notes = input.notes
     await em.flush()
 
+    const producedGrams = suma.reduce((acc, batch) => acc + Number(batch.weighedGrams ?? 0), 0)
+    await emitWorkOrdersEvent('work_orders.order.closed', {
+      id: order.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      status: input.status,
+      producedGrams,
+      batches: suma.length,
+    })
+
     return {
       workOrderId: order.id,
-      producedGrams: suma.reduce((acc, batch) => acc + Number(batch.weighedGrams ?? 0), 0),
+      producedGrams,
       batches: suma.length,
     }
   },

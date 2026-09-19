@@ -12,6 +12,7 @@ import {
   verifyPayloadSignature,
 } from '../lib/crypto'
 import { evaluateLiveness, isTimestampFresh } from '../lib/liveness'
+import { emitEdgeEvent } from '../events'
 
 /**
  * Komendy kanału brzegowego.
@@ -79,8 +80,18 @@ const issueEnrollmentCommand: CommandHandler<
 
     // Parametry żywotności podróżują razem z biletem, w jawnej postaci —
     // agent musi znać swój termin, zanim po raz pierwszy się odezwie.
+    const tokenId = (record as unknown as { id: string }).id
+    await emitEdgeEvent('edge.enrollment.issued', {
+      id: tokenId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      robotId: input.robotId,
+      expiresAt: expiresAt.toISOString(),
+      issuedBy: ctx.auth?.sub ?? null,
+    })
+
     return {
-      tokenId: (record as unknown as { id: string }).id,
+      tokenId,
       // Jedyny moment, w którym jawny bilet w ogóle istnieje po stronie centrali.
       token,
       expiresAt,
@@ -205,10 +216,21 @@ const enrollAgentCommand: CommandHandler<
     )
     await em.flush()
 
+    const sessionId = (session as unknown as { id: string }).id
+    await emitEdgeEvent('edge.agent.enrolled', {
+      id: agentId,
+      organizationId: tokenRecord.organizationId,
+      tenantId: tokenRecord.tenantId,
+      robotId: tokenRecord.robotId,
+      sessionId,
+      fingerprint,
+      agentVersion: input.agentVersion ?? null,
+    })
+
     return {
       agentId,
       robotId: tokenRecord.robotId,
-      sessionId: (session as unknown as { id: string }).id,
+      sessionId,
       fingerprint,
     }
   },
@@ -257,10 +279,30 @@ const connectAgentCommand: CommandHandler<
     const open = (await em.find(AgentSession, {
       agentId: input.agentId,
       endedAt: null,
-    } as never)) as unknown as Array<{ id: string; endedAt?: Date | null; endedReason?: string | null }>
+    } as never)) as unknown as Array<{
+      id: string
+      endedAt?: Date | null
+      endedReason?: string | null
+      heartbeatCount?: number | null
+      lastHeartbeatAt?: Date | null
+    }>
+
+    const supersededAt = new Date()
+    // Zdjęcie stanu wypartej sesji **przed** jej zamknięciem: po zapisie
+    // `endedAt` nie da się już odtworzyć, jak długo milczała w chwili wyparcia,
+    // a to jest jedyna liczba odróżniająca restart od drugiego nadawcy.
+    const superseded = open[0]
+      ? {
+          id: open[0].id,
+          heartbeatCount: open[0].heartbeatCount ?? 0,
+          silenceSeconds: open[0].lastHeartbeatAt
+            ? Math.round((supersededAt.getTime() - open[0].lastHeartbeatAt.getTime()) / 1000)
+            : null,
+        }
+      : null
 
     for (const session of open) {
-      session.endedAt = new Date()
+      session.endedAt = supersededAt
       session.endedReason = 'superseded' as never
     }
 
@@ -274,9 +316,33 @@ const connectAgentCommand: CommandHandler<
     em.persist(session)
     await em.flush()
 
+    const sessionId = (session as unknown as { id: string }).id
+    await emitEdgeEvent('edge.agent.connected', {
+      id: input.agentId,
+      organizationId: agent.organizationId,
+      tenantId: agent.tenantId,
+      robotId: agent.robotId,
+      sessionId,
+      supersededSessionId: superseded?.id ?? null,
+      agentVersion: input.agentVersion ?? agent.agentVersion ?? null,
+    })
+
+    if (superseded) {
+      await emitEdgeEvent('edge.agent.clone_suspected', {
+        id: input.agentId,
+        organizationId: agent.organizationId,
+        tenantId: agent.tenantId,
+        robotId: agent.robotId,
+        sessionId,
+        supersededSessionId: superseded.id,
+        supersededHeartbeatCount: superseded.heartbeatCount,
+        supersededSilenceSeconds: superseded.silenceSeconds,
+      })
+    }
+
     return {
-      sessionId: (session as unknown as { id: string }).id,
-      supersededSessionId: open[0]?.id ?? null,
+      sessionId,
+      supersededSessionId: superseded?.id ?? null,
       heartbeatIntervalSeconds: agent.heartbeatIntervalSeconds,
     }
   },
@@ -431,10 +497,22 @@ const rotateKeyCommand: CommandHandler<
     em.persist(next)
     await em.flush()
 
-    return {
-      keyId: (next as unknown as { id: string }).id,
+    const keyId = (next as unknown as { id: string }).id
+    const retiredKeyIds = current.map((key) => key.id)
+    await emitEdgeEvent('edge.agent.key_rotated', {
+      id: keyId,
+      organizationId: agent.organizationId,
+      tenantId: agent.tenantId,
+      agentId: input.agentId,
       fingerprint,
-      retiredKeyIds: current.map((key) => key.id),
+      retiredKeyIds,
+      overlapUntil: overlapUntil.toISOString(),
+    })
+
+    return {
+      keyId,
+      fingerprint,
+      retiredKeyIds,
       overlapUntil,
     }
   },
@@ -459,6 +537,9 @@ const revokeAgentCommand: CommandHandler<RevokeAgentInput, { agentId: string; re
 
     const agent = (await em.findOne(Agent, { id: input.agentId } as never)) as unknown as {
       id: string
+      robotId: string
+      organizationId: string
+      tenantId: string
       status: string
       revokedAt?: Date | null
       revokedReason?: string | null
@@ -487,6 +568,16 @@ const revokeAgentCommand: CommandHandler<RevokeAgentInput, { agentId: string; re
     }
 
     await em.flush()
+
+    await emitEdgeEvent('edge.agent.revoked', {
+      id: input.agentId,
+      organizationId: agent.organizationId,
+      tenantId: agent.tenantId,
+      robotId: agent.robotId,
+      reason: input.reason,
+      revokedKeys: keys.length,
+    })
+
     return { agentId: input.agentId, revokedKeys: keys.length }
   },
 }
@@ -503,7 +594,10 @@ export type SweepInput = z.infer<typeof sweepSchema>
 
 const sweepSessionsCommand: CommandHandler<
   SweepInput,
-  { closed: number; lost: Array<{ agentId: string; robotId: string; silenceSeconds: number | null }> }
+  {
+    closed: number
+    lost: Array<{ agentId: string; robotId: string; sessionId: string; silenceSeconds: number | null }>
+  }
 > = {
   id: 'edge.sessions.sweep',
   async execute(rawInput, ctx) {
@@ -514,15 +608,29 @@ const sweepSessionsCommand: CommandHandler<
     const sessions = (await em.find(AgentSession, {
       tenantId: input.tenantId,
       endedAt: null,
-    } as never)) as unknown as Array<{ agentId: string; endedAt?: Date | null; endedReason?: string | null }>
+    } as never)) as unknown as Array<{
+      id: string
+      agentId: string
+      endedAt?: Date | null
+      endedReason?: string | null
+    }>
 
-    const lost: Array<{ agentId: string; robotId: string; silenceSeconds: number | null }> = []
+    const lost: Array<{
+      agentId: string
+      robotId: string
+      sessionId: string
+      organizationId: string
+      tenantId: string
+      silenceSeconds: number | null
+    }> = []
     let closed = 0
 
     for (const session of sessions) {
       const agent = (await em.findOne(Agent, { id: session.agentId } as never)) as unknown as {
         id: string
         robotId: string
+        organizationId: string
+        tenantId: string
         status: 'enrolled' | 'revoked'
         lastSeenAt?: Date | null
         heartbeatIntervalSeconds: number
@@ -546,10 +654,33 @@ const sweepSessionsCommand: CommandHandler<
       session.endedAt = now
       session.endedReason = 'timeout' as never
       closed += 1
-      lost.push({ agentId: agent.id, robotId: agent.robotId, silenceSeconds: verdict.silenceSeconds })
+      lost.push({
+        agentId: agent.id,
+        robotId: agent.robotId,
+        sessionId: session.id,
+        organizationId: agent.organizationId,
+        tenantId: agent.tenantId,
+        silenceSeconds: verdict.silenceSeconds,
+      })
     }
 
+    /*
+     * Zrzut przed emisją: zamknięcie sesji musi być trwałe, zanim ktokolwiek
+     * dostanie wiadomość o utracie. Odwrotna kolejność przy awarii dałaby
+     * subskrybenta, który wie o utracie, i bazę, która o niej nie wie.
+     */
     await em.flush()
+
+    for (const wpis of lost) {
+      await emitEdgeEvent('edge.agent.lost', {
+        id: wpis.agentId,
+        organizationId: wpis.organizationId,
+        tenantId: wpis.tenantId,
+        robotId: wpis.robotId,
+        sessionId: wpis.sessionId,
+        silenceSeconds: wpis.silenceSeconds,
+      })
+    }
 
     /**
      * Zamiatanie **nie** zmienia stanu robota.
@@ -559,7 +690,15 @@ const sweepSessionsCommand: CommandHandler<
      * ciszę; wniosek, że cisza znaczy „nie wolno pracować", należy do dziedziny
      * i zapada w `fleet`. Zwracamy więc listę, a nie wykonujemy wyroku.
      */
-    return { closed, lost }
+    return {
+      closed,
+      lost: lost.map(({ agentId, robotId, sessionId, silenceSeconds }) => ({
+        agentId,
+        robotId,
+        sessionId,
+        silenceSeconds,
+      })),
+    }
   },
 }
 

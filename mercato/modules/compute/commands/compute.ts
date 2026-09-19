@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { registerCommand, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { ComputeNode, Placement } from '../data/entities'
 import { checkNodeRoles, NODE_ROLES } from '../lib/capacity'
+import { emitComputeEvent } from '../events'
 
 const scoped = z.object({
   organizationId: z.string().uuid(),
@@ -63,7 +64,21 @@ const registerNodeCommand: CommandHandler<RegisterNodeInput, { nodeId: string; r
     em.persist(node)
     await em.flush()
 
-    return { nodeId: (node as unknown as { id: string }).id, roles: input.roles }
+    const nodeId = (node as unknown as { id: string }).id
+    await emitComputeEvent('compute.node.registered', {
+      id: nodeId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      code: input.code,
+      kind: input.kind,
+      cellId: input.cellId ?? null,
+      memoryGb: input.memoryGb,
+      memoryBandwidthGbs: input.memoryBandwidthGbs,
+      roles: input.roles,
+      realtimeCapable: input.realtimeCapable,
+    })
+
+    return { nodeId, roles: input.roles }
   },
 }
 
@@ -118,7 +133,18 @@ const placeWorkloadCommand: CommandHandler<PlaceWorkloadInput, { placementId: st
     em.persist(placement)
     await em.flush()
 
-    return { placementId: (placement as unknown as { id: string }).id }
+    const placementId = (placement as unknown as { id: string }).id
+    await emitComputeEvent('compute.placement.set', {
+      id: placementId,
+      organizationId: node.organizationId,
+      tenantId: input.tenantId,
+      nodeId: input.nodeId,
+      workloadType: input.workloadType,
+      workloadRef: input.workloadRef,
+      requiredRole: input.requiredRole,
+    })
+
+    return { placementId }
   },
 }
 

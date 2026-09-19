@@ -8,6 +8,7 @@ import {
   type ClearanceVerdict,
   type RiskClass,
 } from '../lib/clearance'
+import { emitSafetyEvent } from '../events'
 
 /**
  * Komendy warstwy bezpieczeństwa.
@@ -197,7 +198,17 @@ const draftCaseCommand: CommandHandler<CaseDraftInput, { safetyCaseId: string }>
     em.persist(safetyCase)
     await em.flush()
 
-    return { safetyCaseId: (safetyCase as unknown as { id: string }).id }
+    const safetyCaseId = (safetyCase as unknown as { id: string }).id
+    await emitSafetyEvent('safety.case.drafted', {
+      id: safetyCaseId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      policyVersionId: input.policyVersionId,
+      cellClass: input.cellClass,
+      riskClass: input.riskClass,
+    })
+
+    return { safetyCaseId }
   },
 }
 
@@ -269,6 +280,17 @@ const approveCaseCommand: CommandHandler<CaseApproveInput, { safetyCaseId: strin
     safetyCase.validUntil = input.validUntil
     await em.flush()
 
+    await emitSafetyEvent('safety.case.approved', {
+      id: safetyCase.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      approvedBy: input.approvedBy,
+      validUntil: input.validUntil.toISOString(),
+      // Rodzaj warstwy jedzie w ładunku, bo to jest jedyna rzecz, która
+      // odróżnia dopuszczenie od dokumentu opisującego nadzieję.
+      safetyLayerKind: safetyCase.safetyLayerKind as string,
+    })
+
     return { safetyCaseId: safetyCase.id, validUntil: input.validUntil }
   },
 }
@@ -289,9 +311,19 @@ const withdrawCaseCommand: CommandHandler<z.infer<typeof caseWithdrawSchema>, { 
     if (!safetyCase) throw new Error(`Uzasadnienie ${input.safetyCaseId} nie istnieje.`)
     if (safetyCase.status === 'withdrawn') throw new Error('Uzasadnienie jest już wycofane.')
 
+    const previousStatus = safetyCase.status
     safetyCase.status = 'withdrawn'
     safetyCase.withdrawnReason = input.reason
     await em.flush()
+
+    await emitSafetyEvent('safety.case.withdrawn', {
+      id: safetyCase.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      reason: input.reason,
+      previousStatus,
+    })
+
     return { safetyCaseId: safetyCase.id }
   },
 }
@@ -336,7 +368,20 @@ const defineSuiteCommand: CommandHandler<z.infer<typeof suiteDefineSchema>, { su
     } as never)
     em.persist(suite)
     await em.flush()
-    return { suiteId: (suite as unknown as { id: string }).id }
+
+    // Ścieżka nadpisania wyżej nie emituje: zestaw o tym samym kluczu to ten
+    // sam zestaw, a jego redefinicja nie jest nowym faktem dla nikogo poza
+    // modułem.
+    const suiteId = (suite as unknown as { id: string }).id
+    await emitSafetyEvent('safety.suite.defined', {
+      id: suiteId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      suiteKey: input.suiteKey,
+      requiredFor: input.requiredFor,
+    })
+
+    return { suiteId }
   },
 }
 
@@ -386,7 +431,33 @@ const recordRunCommand: CommandHandler<RunRecordInput, { evalRunId: string }> = 
 
     em.persist(run)
     await em.flush()
-    return { evalRunId: (run as unknown as { id: string }).id }
+
+    const evalRunId = (run as unknown as { id: string }).id
+    await emitSafetyEvent('safety.run.recorded', {
+      id: evalRunId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      policyVersionId: input.policyVersionId,
+      suiteKey: input.suiteKey,
+      result: input.result,
+      passedCases: input.passedCases ?? null,
+      totalCases: input.totalCases ?? null,
+      embodimentSpecDigest: digest,
+    })
+
+    if (input.result !== 'pass') {
+      await emitSafetyEvent('safety.run.failed', {
+        id: evalRunId,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        policyVersionId: input.policyVersionId,
+        suiteKey: input.suiteKey,
+        result: input.result,
+        evidenceUri: input.evidenceUri ?? null,
+      })
+    }
+
+    return { evalRunId }
   },
 }
 
@@ -536,8 +607,42 @@ const reportIncidentCommand: CommandHandler<
       )
     }
 
+    const incidentId = (incident as unknown as { id: string }).id
+    await emitSafetyEvent('safety.incident.reported', {
+      id: incidentId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      robotId: input.robotId ?? null,
+      cellId: input.cellId ?? null,
+      policyVersionId: input.policyVersionId ?? null,
+      episodeId: input.episodeId ?? null,
+      harm: input.harm,
+      priority: verdict.priority,
+      haltDeployment: verdict.haltDeployment,
+      safetyLayerEngaged: input.safetyLayerEngaged,
+      policyImplicated: input.policyImplicated,
+      reason: verdict.reason,
+      occurredAt: input.occurredAt.toISOString(),
+    })
+
+    if (verdict.haltDeployment && input.policyVersionId && cellClass) {
+      // Emitowane pod tym samym warunkiem, co wycofanie hurtowe wyżej — nie
+      // pod samym `haltDeployment`. Incydent bez wskazanej wersji polityki
+      // albo bez klasy celi niczego nie wycofał i ogłaszanie, że wycofał,
+      // byłoby nieprawdą.
+      await emitSafetyEvent('safety.incident.halted_deployment', {
+        id: incidentId,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        policyVersionId: input.policyVersionId,
+        cellClass,
+        priority: verdict.priority,
+        reason: verdict.reason,
+      })
+    }
+
     return {
-      incidentId: (incident as unknown as { id: string }).id,
+      incidentId,
       priority: verdict.priority,
       haltDeployment: verdict.haltDeployment,
       reason: verdict.reason,

@@ -10,8 +10,9 @@ import {
   validateEmbodimentSpec,
   type EmbodimentSpec,
 } from './lib/embodimentSpec'
-import { evaluateRobotCalibration } from './commands/robots'
+import { evaluateRobotCalibration } from './lib/robotCalibration'
 import { isActive } from './lib/lifecycle'
+import { ensureCalibrationExpirySchedule } from './setup'
 
 /**
  * Komendy operatorskie rejestru floty.
@@ -491,4 +492,62 @@ const embodimentCommand: ModuleCli = {
   },
 }
 
-export default [seedCommand, statusCommand, embodimentCommand, layoutCommand] satisfies ModuleCli[]
+/**
+ * Rejestracja harmonogramu poza inicjalizacją tenanta.
+ *
+ * `seedDefaults` platformy uruchamia się tylko przy zakładaniu tenanta, więc
+ * moduł doinstalowany do działającego systemu nie dostałby harmonogramu nigdy.
+ * To jest obejście luki platformy, nazwane wprost, a nie osobna funkcja.
+ */
+const installSchedulesCommand: ModuleCli = {
+  command: 'install-schedules',
+  async run(_rest) {
+    const container = await createRequestContainer()
+    await ensureCalibrationExpirySchedule(container as unknown as import('awilix').AwilixContainer)
+    console.log('Harmonogram wykrywania wygasłych kalibracji: zarejestrowany (albo już był).')
+    console.log('Sprawdzenie: yarn mercato scheduler list')
+  },
+}
+
+/** Ręczny przebieg detektora — ten sam, który wykonuje zadanie cykliczne. */
+const expiryCommand: ModuleCli = {
+  command: 'expiry',
+  async run(rest) {
+    const args = parseArgs(rest)
+    const container = await createRequestContainer()
+    const em = container.resolve('em') as EntityManager
+    const scope = await resolveScope(em, args)
+    const bus = container.resolve('commandBus') as CommandBus
+
+    const envelope = await bus.execute('fleet.calibrations.detect_expired', {
+      input: scope,
+      ctx: buildCommandContext(container, scope),
+    })
+    const result = envelope.result as {
+      expired: Array<{ robotId: string; kind: string; validUntil: string; robotState: string; required: boolean }>
+    }
+
+    if (result.expired.length === 0) {
+      console.log('Brak nowo wygasłych kalibracji.')
+      console.log('Uwaga: to nie znaczy „wszystkie ważne" — znaczy „nic nowego do ogłoszenia".')
+      console.log('Stan ważności pokazuje: mercato fleet status')
+      return
+    }
+
+    console.log(`Ogłoszono wygaśnięcie: ${result.expired.length}`)
+    for (const wpis of result.expired) {
+      const znacznik = wpis.required ? 'WYMAGANA' : 'informacyjna'
+      console.log(`  ${wpis.robotId}  ${wpis.kind}  do ${wpis.validUntil}  [${wpis.robotState}] ${znacznik}`)
+    }
+    console.log('\nMaszyn nie zatrzymano — detektor ogłasza, o kwarantannie decyduje człowiek.')
+  },
+}
+
+export default [
+  seedCommand,
+  statusCommand,
+  embodimentCommand,
+  layoutCommand,
+  expiryCommand,
+  installSchedulesCommand,
+] satisfies ModuleCli[]

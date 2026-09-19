@@ -42,6 +42,9 @@ function makeCtx(options: { camera?: Row | null; detector?: Row | null; window?:
     flush: jest.fn(async () => {
       for (const row of persisted) if (!row.id) row.id = 'nowy-1'
     }),
+    // Komenda oznaczania liczy zaległości zapytaniem surowym — atrapa zwraca
+    // zero, bo te testy sprawdzają odmowy, a nie liczbę zaległych nagrań.
+    getConnection: () => ({ execute: jest.fn(async () => [{ count: '0', oldest: null }]) }),
   }
   return {
     persisted,

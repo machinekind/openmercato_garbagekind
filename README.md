@@ -24,7 +24,8 @@ robotyczną.
 | [`physical-ai/PLANT-VIEW.md`](physical-ai/PLANT-VIEW.md) | rzut hali: rozmieszczenie, status i wynik — oraz dlaczego brak obmiaru nie jest zgadywany |
 | [`physical-ai/HMI.md`](physical-ai/HMI.md) | system wizualny wg ISA-101 — i dlaczego pierwsza wersja rzutu była źle zaprojektowana |
 | [`physical-ai/OPERATIONS.md`](physical-ai/OPERATIONS.md) | zadania cykliczne — i dlaczego automatyzacja oznaczania **nie** dawała zgodności |
-| `mercato/modules/` | dziewięć modułów Open Mercato (`sortownia` + osiem robotycznych) |
+| [`physical-ai/EVENTS.md`](physical-ai/EVENTS.md) | co wtyczka **ogłasza**, czego świadomie nie ogłasza i dlaczego ruch o częstotliwości maszynowej nie jest faktem |
+| `mercato/modules/` | trzynaście modułów Open Mercato (`sortownia` + jedenaście robotycznych + `hmi` jako system wizualny) |
 | `mercato/embodiments/` | opisy ramion; `so101_follower.json` z dokumentacji LeRobot |
 | `legacy/`, `client/`, `webui/` | system legacy z etapów wcześniejszych — opisany niżej |
 

@@ -10,6 +10,7 @@ import {
 } from '../data/entities'
 import { computeContentDigest, validateArtifactSet, type ArtifactInput } from '../lib/digest'
 import { checkEmbodimentCompatibility, type EmbodimentContract } from '../lib/compatibility'
+import { emitPolicyRegistryEvent } from '../events'
 
 /**
  * Komendy rejestru polityk.
@@ -156,7 +157,16 @@ const registerPolicyCommand: CommandHandler<PolicyRegisterInput, { policyId: str
     em.persist(policy)
     await em.flush()
 
-    return { policyId: (policy as unknown as { id: string }).id }
+    const policyId = (policy as unknown as { id: string }).id
+    await emitPolicyRegistryEvent('policy_registry.policy.registered', {
+      id: policyId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      policyKey: input.policyKey,
+      name: input.name,
+    })
+
+    return { policyId }
   },
 }
 
@@ -290,6 +300,23 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
     )
     await em.flush()
 
+    /*
+     * Emitujemy wyłącznie na ścieżce nowej wersji. Wyjście deduplikacyjne
+     * wyżej nie nadaje niczego i tak ma zostać: ten sam odcisk treści to ten
+     * sam fakt, a zdarzenie powtórzone przy każdym ponownym wgraniu z CI
+     * uruchamiałoby automatyzacje drugi raz na tej samej wersji.
+     */
+    await emitPolicyRegistryEvent('policy_registry.version.registered', {
+      id: policyVersionId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      policyId: input.policyId,
+      version: nextVersion,
+      contentDigest,
+      embodimentRevisionId: input.embodimentRevisionId,
+      declaredSpecDigest: input.declaredSpecDigest,
+    })
+
     return { policyVersionId, version: nextVersion, contentDigest, deduplicated: false }
   },
 }
@@ -354,6 +381,36 @@ const transitionVersionCommand: CommandHandler<
       } as never),
     )
     await em.flush()
+
+    await emitPolicyRegistryEvent('policy_registry.version.transitioned', {
+      id: version.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      fromStatus: from,
+      toStatus: input.toStatus,
+      reason: input.reason,
+    })
+
+    // Dwa statusy dostają własne zdarzenie, bo reagują na nie inni odbiorcy:
+    // zwolnienie otwiera drogę do przypisania, wycofanie każe przejrzeć
+    // maszyny, które tę wersję już mają.
+    if (input.toStatus === 'released') {
+      await emitPolicyRegistryEvent('policy_registry.version.released', {
+        id: version.id,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        fromStatus: from,
+        reason: input.reason,
+      })
+    } else if (input.toStatus === 'deprecated') {
+      await emitPolicyRegistryEvent('policy_registry.version.deprecated', {
+        id: version.id,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        fromStatus: from,
+        reason: input.reason,
+      })
+    }
 
     return { policyVersionId: version.id, fromStatus: from, toStatus: input.toStatus }
   },

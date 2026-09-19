@@ -3,7 +3,8 @@ import { z } from 'zod'
 import { registerCommand, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { Calibration, Cell, EmbodimentRevision, Robot, RobotTransition, type RobotState } from '../data/entities'
 import { checkTransition, type TransitionActor } from '../lib/lifecycle'
-import { evaluateCalibration } from '../lib/calibration'
+import { evaluateRobotCalibration } from '../lib/robotCalibration'
+import { emitFleetEvent } from '../events'
 
 /**
  * Komendy rejestru floty.
@@ -144,6 +145,22 @@ const registerRobotCommand: CommandHandler<RobotRegisterInput, { robotId: string
     )
     await em.flush()
 
+    // Emisja po drugim zrzucie, nie przed: subskrybent dostaje identyfikator,
+    // pod którym rekord naprawdę już leży w bazie. Szyna zdarzeń zjada błędy
+    // subskrybentów u siebie (`rethrowHandlerErrors` jest opt-in), więc `await`
+    // nie naraża zapisanego faktu na cudzą awarię.
+    await emitFleetEvent('fleet.robot.registered', {
+      id: robotId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      serialNumber: input.serialNumber,
+      name: input.name,
+      embodimentRevisionId: input.embodimentRevisionId,
+      ownerOrganizationId: input.ownerOrganizationId,
+      operatorOrganizationId: input.operatorOrganizationId,
+      cellId: input.cellId ?? null,
+    })
+
     return { robotId }
   },
 }
@@ -210,6 +227,50 @@ const transitionRobotCommand: CommandHandler<
     )
     await em.flush()
 
+    const approvedBy = input.approvedBy ?? null
+    await emitFleetEvent('fleet.robot.transitioned', {
+      id: target.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      fromState: current,
+      toState: input.toState,
+      reason: input.reason,
+      actor: input.actor,
+      approvedBy,
+    })
+
+    // Trzy przejścia dostają własne zdarzenie obok ogólnego, bo na każde z nich
+    // reaguje inny odbiorca i żaden z nich nie powinien dopasowywać stringa
+    // w `toState`: wstrzymanie pracy, wznowienie przydziału, unieważnienie
+    // tożsamości brzegowej.
+    if (input.toState === 'quarantined') {
+      await emitFleetEvent('fleet.robot.quarantined', {
+        id: target.id,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        fromState: current,
+        reason: input.reason,
+        actor: input.actor,
+      })
+    } else if (input.toState === 'ready') {
+      await emitFleetEvent('fleet.robot.cleared', {
+        id: target.id,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        fromState: current,
+        reason: input.reason,
+        approvedBy,
+      })
+    } else if (input.toState === 'decommissioned') {
+      await emitFleetEvent('fleet.robot.decommissioned', {
+        id: target.id,
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        fromState: current,
+        reason: input.reason,
+      })
+    }
+
     return { robotId: target.id, fromState: current, toState: input.toState }
   },
 }
@@ -245,35 +306,19 @@ const recordCalibrationCommand: CommandHandler<CalibrationRecordInput, { calibra
     em.persist(calibration)
     await em.flush()
 
-    return { calibrationId: (calibration as unknown as { id: string }).id }
+    const calibrationId = (calibration as unknown as { id: string }).id
+    await emitFleetEvent('fleet.calibration.recorded', {
+      id: calibrationId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      robotId: input.robotId,
+      kind: input.kind,
+      measuredAt: input.measuredAt.toISOString(),
+      validUntil: input.validUntil.toISOString(),
+    })
+
+    return { calibrationId }
   },
-}
-
-/** Werdykt kalibracyjny dla robota — wymagania bierze z jego rewizji embodimentu. */
-export async function evaluateRobotCalibration(
-  em: EntityManager,
-  robot: { id: string; embodimentRevisionId: string },
-  tenantId: string,
-  now: Date = new Date(),
-) {
-  const revision = await em.findOne(EmbodimentRevision, {
-    id: robot.embodimentRevisionId,
-    tenantId,
-  } as never)
-  const required = ((revision as unknown as { requiredCalibrations?: string[] | null })
-    ?.requiredCalibrations ?? []) as string[]
-
-  const records = (await em.find(Calibration, {
-    robotId: robot.id,
-    tenantId,
-  } as never)) as unknown as Array<{
-    kind: string
-    measuredAt: Date
-    validUntil: Date
-    invalidatedAt?: Date | null
-  }>
-
-  return evaluateCalibration(required, records, now)
 }
 
 registerCommand(registerRobotCommand)
@@ -329,6 +374,17 @@ const setCellLayoutCommand: CommandHandler<SetCellLayoutInput, { cellId: string 
     cell.layoutHeightM = input.height
     cell.layoutRotationDeg = input.rotationDeg ?? null
     await em.flush()
+
+    await emitFleetEvent('fleet.cell.layout_changed', {
+      id: cell.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      x: input.x,
+      y: input.y,
+      width: input.width,
+      height: input.height,
+      rotationDeg: input.rotationDeg ?? null,
+    })
 
     return { cellId: cell.id }
   },

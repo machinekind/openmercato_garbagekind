@@ -44,6 +44,7 @@ dowodowego.
 | --- | --- | --- | --- |
 | `vision` | `vision-clips-purge` | 24 h | oznacza materiał po terminie we wszystkich tenantach |
 | `edge` | `edge-sessions-sweep` | 5 min | zamyka sesje agentów po progu ciszy |
+| `fleet` | `fleet-calibration-expiry` | 1 h | ogłasza wygaśnięcie kalibracji (dołożone razem ze zdarzeniami modułowymi — patrz `EVENTS.md`) |
 
 Plus komenda `vision.clips.confirm_deletion` i `mercato vision confirm`,
 którą woła proces kasujący bajty.
@@ -85,11 +86,16 @@ klucza, a `register` nadpisuje.
 ```
  source_module |                 name                 | schedule_value |    target_queue     | is_enabled
 ---------------+--------------------------------------+----------------+---------------------+-----------
- vision        | Materiał wideo po terminie ustawowym | 24h            | vision-clips-purge  | t
- edge          | Zamiatanie sesji agentów po ciszy    | 5m             | edge-sessions-sweep | t
+ vision        | Materiał wideo po terminie ustawowym | 24h            | vision-clips-purge       | t
+ edge          | Zamiatanie sesji agentów po ciszy    | 5m             | edge-sessions-sweep      | t
+ fleet         | Wygasłe kalibracje                   | 1h             | fleet-calibration-expiry | t
 ```
 
-Oba widoczne w `mercato scheduler list` z wyliczonym następnym przebiegiem.
+Wszystkie widoczne w `mercato scheduler list` z wyliczonym następnym przebiegiem.
+
+Zamiatanie sesji wykonało realny przebieg: `last_run_at = 2026-09-19 10:12:35`,
+trzy sesje zamknięte po timeoucie. To jest różnica między „harmonogram
+zarejestrowany" a „harmonogram działa".
 
 Wymuszenie przebiegu z wiersza poleceń (`scheduler run <id>`) kończy się
 `Could not resolve 'queueService'` — kontener CLI nie ma usługi kolejki.

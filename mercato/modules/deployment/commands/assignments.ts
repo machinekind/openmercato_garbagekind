@@ -7,6 +7,7 @@ import { Assignment, Lease, StateReport, type DesiredState } from '../data/entit
 import { leaseSecondsFor, reconcile, renewAfterSeconds } from '../lib/lease'
 import { leasePayload } from '../lib/protocol'
 import { selectUsableKeys, verifyPayloadSignature } from '../../edge/lib/crypto'
+import { emitDeploymentEvent } from '../events'
 
 /**
  * Komendy kanału stanu pożądanego.
@@ -244,8 +245,22 @@ const assignCommand: CommandHandler<
     em.persist(assignment)
     await em.flush()
 
+    const assignmentId = (assignment as unknown as { id: string }).id
+    await emitDeploymentEvent('deployment.assignment.assigned', {
+      id: assignmentId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      robotId: input.robotId,
+      policyVersionId: input.policyVersionId,
+      desiredState: input.desiredState,
+      riskClass,
+      leaseSeconds,
+      supersededId: previous?.id ?? null,
+      reason: input.reason,
+    })
+
     return {
-      assignmentId: (assignment as unknown as { id: string }).id,
+      assignmentId,
       riskClass,
       leaseSeconds,
       supersededId: previous?.id ?? null,
@@ -287,6 +302,15 @@ const revokeCommand: CommandHandler<RevokeInput, { assignmentId: string; revoked
     await em.flush()
 
     const count = Array.isArray(revoked) ? revoked.length : Number(revoked?.rowCount ?? 0)
+
+    await emitDeploymentEvent('deployment.assignment.revoked', {
+      id: assignment.id,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      reason: input.reason,
+      revokedLeases: count,
+    })
+
     return { assignmentId: assignment.id, revokedLeases: count }
   },
 }
@@ -489,19 +513,57 @@ const reportCommand: CommandHandler<ReportInput, { reconciliation: string; reaso
               : 'robot pracuje mimo braku przypisania',
         }
 
-    em.persist(
-      em.create(StateReport, {
+    /*
+     * Werdykt poprzedniego raportu tej maszyny — odczytany **przed** zapisem
+     * bieżącego, bo po zapisie „poprzedni" byłby już tym właśnie.
+     *
+     * To jest cały mechanizm wyzwalania zboczem. Raporty przychodzą
+     * z częstotliwością maszynową i rozjazd trwa tyle, ile trwa jego przyczyna;
+     * ogłaszanie go przy każdym raporcie zamieniłoby zdarzenie w szum, a szum
+     * jest dokładnie tym, czego operator nie czyta. `null` znaczy „pierwszy
+     * raport tej maszyny" i jest traktowany jak zmiana — bo nim jest.
+     */
+    const poprzedni = (await em.find(
+      StateReport,
+      { tenantId: session.tenant_id, robotId: session.robot_id } as never,
+      { orderBy: { reportedAt: 'desc' }, limit: 1 } as never,
+    )) as unknown as Array<{ reconciliation: string }>
+    const poprzedniWerdykt = poprzedni[0]?.reconciliation ?? null
+
+    const report = em.create(StateReport, {
+      organizationId: session.organization_id,
+      tenantId: session.tenant_id,
+      robotId: session.robot_id,
+      assignmentId: assignment?.id ?? null,
+      reportedPolicyVersionId: input.reportedPolicyVersionId ?? null,
+      reportedState: input.reportedState,
+      reconciliation: verdict.state,
+      reason: verdict.reason,
+    } as never)
+    em.persist(report)
+    await em.flush()
+
+    if (verdict.state !== poprzedniWerdykt) {
+      const reportId = (report as unknown as { id: string }).id
+      const wspólne = {
+        id: reportId,
         organizationId: session.organization_id,
         tenantId: session.tenant_id,
         robotId: session.robot_id,
         assignmentId: assignment?.id ?? null,
-        reportedPolicyVersionId: input.reportedPolicyVersionId ?? null,
         reportedState: input.reportedState,
-        reconciliation: verdict.state,
-        reason: verdict.reason,
-      } as never),
-    )
-    await em.flush()
+        previousReconciliation: poprzedniWerdykt,
+      }
+      if (verdict.state === 'drift') {
+        await emitDeploymentEvent('deployment.state.drift_detected', {
+          ...wspólne,
+          reportedPolicyVersionId: input.reportedPolicyVersionId ?? null,
+          reason: verdict.reason,
+        })
+      } else if (verdict.state === 'converged') {
+        await emitDeploymentEvent('deployment.state.converged', wspólne)
+      }
+    }
 
     return { reconciliation: verdict.state, reason: verdict.reason }
   },

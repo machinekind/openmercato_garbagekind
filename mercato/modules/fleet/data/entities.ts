@@ -367,6 +367,19 @@ export class Calibration {
   @Property({ name: 'invalidated_reason', type: 'text', nullable: true })
   invalidatedReason?: string | null
 
+  /**
+   * Odhaczenie powiadomienia o wygaśnięciu — nie status ważności.
+   *
+   * Ważność wyprowadzamy przy odczycie z `validUntil` i tak zostaje: kolumna
+   * „wygasła true/false" psuje się dokładnie wtedy, gdy przestanie działać
+   * proces, który ją ustawia. To pole odpowiada na inne pytanie — „czy ten
+   * konkretny fakt został już raz ogłoszony". Bez niego detektor cykliczny
+   * nadawałby to samo zdarzenie co przebieg i po dobie nikt by go już nie
+   * czytał.
+   */
+  @Property({ name: 'expiry_notified_at', type: Date, nullable: true })
+  expiryNotifiedAt?: Date | null
+
   @Property({ name: 'created_at', type: Date, onCreate: () => new Date() })
   createdAt: Date = new Date()
 

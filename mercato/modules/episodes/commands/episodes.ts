@@ -2,6 +2,7 @@ import type { EntityManager } from '@mikro-orm/postgresql'
 import { z } from 'zod'
 import { registerCommand, type CommandHandler } from '@open-mercato/shared/lib/commands'
 import { Episode, Intervention, type EpisodeOutcome, type InterventionKind } from '../data/entities'
+import { emitEpisodesEvent } from '../events'
 
 /**
  * Komendy księgi epizodów.
@@ -137,7 +138,26 @@ const recordEpisodeCommand: CommandHandler<EpisodeRecordInput, EpisodeRecordResu
     em.persist(episode)
     await em.flush()
 
-    return { episodeId: (episode as unknown as { id: string }).id, sequence, duplicate: false }
+    /*
+     * Wyjście duplikatem wyżej świadomie nie emituje: ten sam `externalRef`
+     * to ten sam epizod, a nie drugi. Ponowne wysłanie z hali po zerwaniu
+     * łącza nie może podwajać statystyk ani odpalać automatyzacji drugi raz.
+     */
+    const episodeId = (episode as unknown as { id: string }).id
+    await emitEpisodesEvent('episodes.episode.recorded', {
+      id: episodeId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      robotId: input.robotId,
+      sequence,
+      taskKey: input.taskKey,
+      outcome: input.outcome,
+      durationMs: input.endedAt.getTime() - input.startedAt.getTime(),
+      policyVersionId: input.policyVersionId ?? null,
+      cellId: input.cellId ?? null,
+    })
+
+    return { episodeId, sequence, duplicate: false }
   },
 }
 
@@ -197,8 +217,32 @@ const recordInterventionCommand: CommandHandler<
     em.persist(intervention)
     await em.flush()
 
+    const interventionId = (intervention as unknown as { id: string }).id
+    const wspólne = {
+      id: interventionId,
+      organizationId: input.organizationId,
+      tenantId: input.tenantId,
+      robotId: input.robotId,
+      episodeId: episode?.id ?? null,
+      kind: input.kind,
+      reasonCategory: input.reasonCategory,
+      reason: input.reason,
+      occurredAt: input.occurredAt.toISOString(),
+    }
+    await emitEpisodesEvent('episodes.intervention.recorded', {
+      ...wspólne,
+      recoverySeconds: input.recoverySeconds ?? null,
+    })
+
+    // Wydzielenie po rodzaju, nie po nazwie: zatrzymanie awaryjne, przerwanie
+    // i przejęcie zdalne to sytuacje, w których człowiek musiał odebrać
+    // maszynie sprawczość. Korekta chwytu nią nie jest.
+    if (input.kind === 'estop' || input.kind === 'abort' || input.kind === 'teleop_takeover') {
+      await emitEpisodesEvent('episodes.intervention.emergency', wspólne)
+    }
+
     return {
-      interventionId: (intervention as unknown as { id: string }).id,
+      interventionId,
       episodeId: episode?.id ?? null,
       interventionCount: episode ? episode.interventionCount : null,
     }
@@ -246,6 +290,17 @@ const reconcileCountsCommand: CommandHandler<
         `update episodes_episodes set intervention_count = ?, updated_at = now() where id = ?`,
         [actual, row.id],
       )
+    }
+
+    // Emitujemy tylko, gdy coś naprawdę było do poprawienia. Przebieg
+    // kontrolny bez rozjazdu jest brakiem newsa i nie zasługuje na zdarzenie.
+    if (corrections.length > 0) {
+      await emitEpisodesEvent('episodes.counts.corrected', {
+        organizationId: input.organizationId,
+        tenantId: input.tenantId,
+        checked: rows.length,
+        corrected: corrections.length,
+      })
     }
 
     return { checked: rows.length, corrected: corrections.length, corrections }
