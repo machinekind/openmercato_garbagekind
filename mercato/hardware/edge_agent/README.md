@@ -80,7 +80,21 @@ wszystkie siedem komunikatów, odcisk klucza, kanoniczny JSON z liczbami
 granicznymi oraz to, że podpis uderzenia serca **nie** przechodzi jako
 dzierżawa.
 
-Niezweryfikowane: przebieg na żywo przeciwko uruchomionemu ERP. To repozytorium
-nie zawiera manifestu pakietów ani zależności serwera, więc nie da się w nim
-postawić centrali. Do zamknięcia warunków Z3, Z6 i Z7 potrzebny jest przebieg
-przeciwko działającej instancji z wystawionym biletem wpisowym.
+**Przebieg na żywo wykonany 20.09.2026** przeciwko uruchomionej instancji
+(Open Mercato 0.8.0, robot `FR3-0001`). Zamknięte: `init` → `enroll` →
+`connect` → 12 uderzeń serca z rosnącą sekwencją → dzierżawa
+(`desiredState: running`, `leaseExpiryBehavior: hold_position`) → podpisane
+zgłoszenie stanu z werdyktem `converged`. Ślad jest w `edge_agent_sessions`,
+`deployment_leases` i `deployment_state_reports`. To domyka **Z3** i **Z6**.
+
+Przebieg ujawnił usterkę po stronie centrali, której nie miał czym złapać
+żaden test jednostkowy: endpointy `/api/deployment/lease` i `/api/deployment/report`
+budowały wejście komendy z `organizationId: ''`, więc **każde** żądanie agenta
+kończyło się odmową 401 z błędu walidacji UUID. Wszystkie istniejące testy
+wołały komendę wprost, z poprawnym zakresem, i sprawdzały komendę — nigdy
+sklejenia route ↔ komenda. Poprawione wraz z testem regresji
+(`deployment/__tests__/route.test.ts`).
+
+Niezamknięte: **Z7** (telemetria epizodów) wymaga prawdziwego dziennika ruchu
+z podłączonego ramienia. Syntetycznego nie wysyłamy — księga epizodów jest
+podstawą bramy wdrożenia i nie wolno jej zasiać zmyślonymi liczbami.

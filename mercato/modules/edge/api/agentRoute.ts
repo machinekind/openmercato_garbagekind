@@ -19,15 +19,27 @@ export function json(body: unknown, status: number): Response {
   })
 }
 
+export type AgentScope = { organizationId: string }
+
 export type ScopeLookup = (em: EntityManager, payload: Record<string, unknown>) => Promise<
-  { organizationId: string } | null
+  AgentScope | null
 >
 
+/**
+ * `buildInput` dostaje zakres ustalony przez serwer.
+ *
+ * Drugi argument nie jest wygodą: komendy `deployment.*` mają
+ * `organizationId` w schemacie wejścia, a nie tylko w kontekście. Dopóki route
+ * wstawiał tam pustą wartość, każde żądanie agenta kończyło się odmową 401
+ * z błędu walidacji UUID — a że własne testy wołają komendę wprost z poprawnym
+ * zakresem, nie było tego czym złapać. Znalazł to dopiero niezależny agent
+ * uruchomiony przeciwko żywej instancji.
+ */
 export async function runAgentCommand(
   req: Request,
   commandId: string,
   lookupScope: ScopeLookup,
-  buildInput: (payload: Record<string, unknown>) => Record<string, unknown>,
+  buildInput: (payload: Record<string, unknown>, scope: AgentScope) => Record<string, unknown>,
 ): Promise<Response> {
   let payload: Record<string, unknown>
   try {
@@ -50,7 +62,7 @@ export async function runAgentCommand(
 
   const bus = container.resolve('commandBus') as CommandBus
   try {
-    const envelope = await bus.execute(commandId, { input: buildInput(payload), ctx })
+    const envelope = await bus.execute(commandId, { input: buildInput(payload, scope), ctx })
     return json(envelope.result, 200)
   } catch (error) {
     /**

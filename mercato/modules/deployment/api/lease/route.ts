@@ -36,8 +36,8 @@ export async function POST(req: Request): Promise<Response> {
       )
       return rows?.length ? { organizationId: rows[0].organization_id } : null
     },
-    (payload) => ({
-      organizationId: '',
+    (payload, scope) => ({
+      organizationId: scope.organizationId,
       agentSessionId: payload.sessionId,
       sequence: payload.sequence,
       timestamp: payload.timestamp,
