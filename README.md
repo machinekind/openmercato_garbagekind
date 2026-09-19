@@ -150,3 +150,6 @@ yarn test --testPathPatterns "modules/(fleet|edge|policy_registry|safety|deploym
 - [Węzły obliczeniowe](physical-ai/COMPUTE.md)
 - [Interfejs operatora](physical-ai/HMI.md)
 - [Katalog zdarzeń](physical-ai/EVENTS.md)
+- [Rzut hali](physical-ai/PLANT-VIEW.md)
+- [Zadania cykliczne i kroki instalacyjne](physical-ai/OPERATIONS.md)
+- [Zadania dla zespołu physical](physical-ai/HANDOFF-PHYSICAL.md)
