@@ -2,6 +2,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -33,6 +34,22 @@ class SO101ValidationTest(unittest.TestCase):
         self.assertFalse(valid)
         self.assertTrue(any("gripper" in problem for problem in problems))
         self.assertTrue(any("shoulder_pan" in problem for problem in problems))
+
+    def test_calibration_metadata_has_expiry_format_and_uncertainty(self):
+        measured = datetime(2026, 9, 19, 10, 0, tzinfo=timezone.utc)
+        metadata = validator.calibration_metadata(measured, 30, 0.5)
+        self.assertEqual(metadata["format"], "lerobot-motors-bus-v1")
+        self.assertEqual(metadata["measuredAt"], "2026-09-19T10:00:00Z")
+        self.assertEqual(metadata["validUntil"], "2026-10-19T10:00:00Z")
+        self.assertEqual(metadata["uncertainty"]["value"], 0.5)
+        self.assertEqual(metadata["uncertainty"]["unit"], "degree")
+
+    def test_calibration_metadata_rejects_missing_validity_and_uncertainty(self):
+        measured = datetime(2026, 9, 19, 10, 0, tzinfo=timezone.utc)
+        with self.assertRaisesRegex(ValueError, "positive number of days"):
+            validator.calibration_metadata(measured, 0, 0.5)
+        with self.assertRaisesRegex(ValueError, "non-negative number"):
+            validator.calibration_metadata(measured, 30, -0.1)
 
     def test_power_fails_outside_declared_supply_range(self):
         report = validator.blank_report()

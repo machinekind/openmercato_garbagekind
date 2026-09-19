@@ -16,12 +16,12 @@ import json
 import platform
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 
-TOOL_VERSION = "1.2.0"
+TOOL_VERSION = "1.3.0"
 JOINTS = (
     ("shoulder_pan", 1),
     ("shoulder_lift", 2),
@@ -207,6 +207,34 @@ def calibration_is_plausible(calibration: dict[str, Any]) -> tuple[bool, list[st
     return not problems, problems
 
 
+def calibration_metadata(
+    measured_at: datetime, valid_days: int, uncertainty_deg: float
+) -> dict[str, Any]:
+    if measured_at.tzinfo is None or measured_at.utcoffset() is None:
+        raise ValueError("Calibration timestamp must be timezone-aware")
+    if not isinstance(valid_days, int) or isinstance(valid_days, bool) or valid_days <= 0:
+        raise ValueError("Calibration validity must be a positive number of days")
+    if (
+        not isinstance(uncertainty_deg, (int, float))
+        or isinstance(uncertainty_deg, bool)
+        or uncertainty_deg < 0
+    ):
+        raise ValueError("Calibration uncertainty must be a non-negative number")
+    measured_utc = measured_at.astimezone(timezone.utc)
+    valid_until = measured_utc + timedelta(days=valid_days)
+    return {
+        "format": "lerobot-motors-bus-v1",
+        "measuredAt": measured_utc.isoformat().replace("+00:00", "Z"),
+        "validUntil": valid_until.isoformat().replace("+00:00", "Z"),
+        "validityDays": valid_days,
+        "uncertainty": {
+            "value": float(uncertainty_deg),
+            "unit": "degree",
+            "appliesTo": "joint_homing_offset",
+        },
+    }
+
+
 def command_scan(args: argparse.Namespace, report: dict[str, Any]) -> int:
     ports = discover_ports()
     report["checks"]["discovery"] = {
@@ -267,6 +295,9 @@ def command_inspect(args: argparse.Namespace, report: dict[str, Any]) -> int:
 def command_calibrate(args: argparse.Namespace, report: dict[str, Any]) -> int:
     if args.confirm != "CALIBRATE-SO101":
         raise ValueError("Calibration requires --confirm CALIBRATE-SO101")
+    # Reject incomplete evidence metadata before opening the motor bus or
+    # starting the interactive calibration procedure.
+    calibration_metadata(datetime.now(timezone.utc), args.valid_days, args.uncertainty_deg)
     _, _, _, robot_types = lerobot_runtime()
     SOFollower, SOFollowerRobotConfig = robot_types
     calibration_dir = args.calibration_dir.resolve()
@@ -289,6 +320,9 @@ def command_calibrate(args: argparse.Namespace, report: dict[str, Any]) -> int:
 
     plausible, problems = calibration_is_plausible(calibration)
     calibration_file = Path(robot.calibration_fpath)
+    metadata = calibration_metadata(
+        datetime.now(timezone.utc), args.valid_days, args.uncertainty_deg
+    )
     report["port"] = args.port
     report["checks"]["jointOffsets"] = {
         "status": "passed" if plausible and calibration_file.exists() else "failed",
@@ -298,6 +332,7 @@ def command_calibrate(args: argparse.Namespace, report: dict[str, Any]) -> int:
         "calibrationFile": str(calibration_file),
         "calibrationFileSha256": sha256_file(calibration_file) if calibration_file.exists() else None,
         "calibration": calibration,
+        **metadata,
         "invalidatedBy": [
             "servo replacement",
             "horn remount or loosening",
@@ -587,6 +622,8 @@ def parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--port", required=True)
     calibrate.add_argument("--robot-id", default="mercato-so101-01")
     calibrate.add_argument("--calibration-dir", type=Path, default=Path(".runtime/so101-validation/calibration"))
+    calibrate.add_argument("--valid-days", type=int, required=True)
+    calibrate.add_argument("--uncertainty-deg", type=float, required=True)
     calibrate.add_argument("--confirm", required=True)
 
     measure = commands.add_parser("measure", help="Record independently measured reach and payload")

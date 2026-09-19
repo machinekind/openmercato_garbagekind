@@ -43,12 +43,15 @@ interpretera. Raport domyślnie powstaje poza Git w
 
    ```powershell
    & $py mercato\hardware\so101\validate.py calibrate --port COM5 `
-     --robot-id mercato-so101-01 --confirm CALIBRATE-SO101
+     --robot-id mercato-so101-01 --valid-days 30 --uncertainty-deg 0.5 `
+     --confirm CALIBRATE-SO101
    ```
 
    Wynik jest odczytywany z EEPROM, zapisywany przez LeRobot do pliku i
-   haszowany. Ważność jest zdarzeniowa: wymiana serwa, ponowny montaż orczyka,
-   kolizja albo zmiana ID/`drive_mode` unieważnia dowód.
+   haszowany. Operator musi jawnie podać okres ważności oraz zmierzoną lub
+   uzasadnioną niepewność offsetu w stopniach — wartości w przykładzie nie są
+   domyślne. Ważność jest również zdarzeniowa: wymiana serwa, ponowny montaż
+   orczyka, kolizja albo zmiana ID/`drive_mode` unieważnia dowód przed datą.
 
 3. Zasięg i udźwig mierzy się niezależnymi przyrządami. Nie wpisujemy wartości
    katalogowej. Przykład zapisu wykonanego pomiaru:
