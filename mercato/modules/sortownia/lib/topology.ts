@@ -143,7 +143,7 @@ export async function ensureTopology(
         isActive: true,
         capacityWeight: plan.capacityKg === null ? null : String(plan.capacityKg),
         metadata,
-      } as WarehouseLocation)
+      } as never)
       em.persist(location)
       created += 1
     } else {

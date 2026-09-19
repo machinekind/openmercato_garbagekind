@@ -246,19 +246,19 @@ export const sortowniaLegacyAdapter: DataSyncAdapter = {
         const file = input.entityType === ENTITY_MOVEMENTS ? movementsFile() : fractionsFile()
         if (!(await fileExists(file))) {
           return {
-            valid: false,
+            ok: false,
             message: `Brak zrzutu plikowego: ${file}. Uruchom eksport po stronie systemu legacy.`,
-          } as ValidationResult
+          }
         }
         notes.push(`Zrzut plikowy: ${file}.`)
       }
 
-      return { valid: true, message: notes.join(' ') } as ValidationResult
+      return { ok: true, message: notes.join(' ') }
     } catch (error) {
       return {
-        valid: false,
+        ok: false,
         message: `Nie udało się połączyć z systemem legacy: ${(error as Error)?.message ?? error}`,
-      } as ValidationResult
+      }
     }
   },
 
@@ -508,11 +508,14 @@ export const sortowniaLegacyAdapter: DataSyncAdapter = {
       cursor.lastMoveNo = lastMoveNo
       processed += rows.length
 
-      const items: ImportItem[] = outcomes.map((outcome) => ({
-        externalId: outcome.externalId,
-        data: { stkmoveno: outcome.stkmoveno, error: outcome.error ?? null },
-        action: outcome.action,
-      }))
+      const items: ImportItem[] = outcomes.map((outcome) => {
+        const error = 'error' in outcome ? outcome.error ?? null : null
+        return {
+          externalId: outcome.externalId,
+          data: { stkmoveno: outcome.stkmoveno, error },
+          action: outcome.action,
+        }
+      })
 
       const duplicates = outcomes.filter((outcome) => outcome.action === 'skip').length
       const failures = outcomes.filter((outcome) => outcome.action === 'failed').length

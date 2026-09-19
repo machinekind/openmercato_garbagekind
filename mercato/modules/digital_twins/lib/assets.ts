@@ -1,7 +1,19 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 
-export type PackagedAssetName = 'room.glb' | 'room.manifest.json' | 'viewer.js' | 'poster.webp'
+export type PackagedAssetName =
+  | 'room.glb'
+  | 'room.manifest.json'
+  | 'cameras.manifest.json'
+  | 'viewer.js'
+  | 'tracker.js'
+  | 'poster.webp'
+  | 'detector.model.json'
+  | 'group1-shard1of5'
+  | 'group1-shard2of5'
+  | 'group1-shard3of5'
+  | 'group1-shard4of5'
+  | 'group1-shard5of5'
 
 export async function readPackagedAsset(name: PackagedAssetName): Promise<Buffer> {
   const configured = process.env.DIGITAL_TWINS_ASSET_DIR

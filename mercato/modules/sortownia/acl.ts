@@ -1,6 +1,4 @@
-import type { FeatureDefinition } from '@open-mercato/shared/security/features'
-
-export const features: FeatureDefinition[] = [
+export const features = [
   {
     id: 'sortownia.view',
     module: 'sortownia',
