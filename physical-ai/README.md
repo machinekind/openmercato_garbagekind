@@ -5,6 +5,9 @@
 > zachowane w [`evidence/hackathon-2026-09-18-19/mercatoXD/`](evidence/hackathon-2026-09-18-19/mercatoXD/README.md).
 > Materiał dotyczy głównie Galaxea A1X/A1XY; nie zastępuje odbioru SO-101.
 
+Aktualna lista prób i artefaktów do zebrania przez zespół physical:
+[`PHYSICAL-VALIDATION-BACKLOG.md`](PHYSICAL-VALIDATION-BACKLOG.md).
+
 Ten katalog jest miejscem na nowy kierunek: platformę operacyjną dla flot
 robotów, których polityki sterowania uczone są metodami RL (oraz IL, offline
 RL i modelami VLA).
