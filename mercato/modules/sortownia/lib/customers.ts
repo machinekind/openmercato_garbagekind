@@ -3,6 +3,7 @@ import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib
 import type { TenantScope } from '@open-mercato/core/modules/data_sync/lib/adapter'
 import { CustomerEntity } from '@open-mercato/core/modules/customers/data/entities'
 import type { LegacyCustomerRow } from './legacyFiles'
+import { SUPPLIER_STAGE } from './crm'
 
 /**
  * Kontrahenci systemu legacy jako firmy w module klientów Open Mercato.
@@ -42,6 +43,17 @@ export function describeRole(typ: string): string {
 }
 
 /**
+ * Rola legacy → etap cyklu życia w CRM. Odbiorca frakcji to klient — kupuje od
+ * nas i ma zamówienia. Dostawca odpadu nie kupuje nic, więc nie należy do
+ * lejka sprzedaży; dostaje własny etap zamiast pustego pola.
+ */
+export function lifecycleStageForRole(typ: string): string | null {
+  if (typ === 'ODB') return 'customer'
+  if (typ === 'DOS') return SUPPLIER_STAGE
+  return null
+}
+
+/**
  * Znacznik pochodzenia rekordu wraz z kluczem ze starego systemu.
  *
  * Kontrakt firmy w Open Mercato nie ma pola na identyfikator zewnętrzny, a
@@ -62,35 +74,63 @@ export function debtornoFromSource(source: string | null | undefined): string | 
   return source.startsWith(prefix) ? source.slice(prefix.length) : null
 }
 
-export async function loadCustomerIndex(
-  em: EntityManager,
-  scope: TenantScope,
-): Promise<CustomerIndex> {
+type LegacyCompany = { id: string; lifecycleStage: string | null }
+
+async function loadLegacyCompanies(em: EntityManager, scope: TenantScope): Promise<Map<string, LegacyCompany>> {
   const rows = await em.find(CustomerEntity, {
     organizationId: scope.organizationId,
     tenantId: scope.tenantId,
     source: { $like: `${LEGACY_SOURCE_PREFIX}:%` },
   } as never)
-  const index: CustomerIndex = new Map()
-  for (const row of rows as Array<{ id: string; source?: string | null }>) {
+  const companies = new Map<string, LegacyCompany>()
+  for (const row of rows as Array<{ id: string; source?: string | null; lifecycleStage?: string | null }>) {
     const debtorno = debtornoFromSource(row.source)
-    if (debtorno) index.set(debtorno, row.id)
+    if (debtorno) companies.set(debtorno, { id: row.id, lifecycleStage: row.lifecycleStage?.trim() || null })
   }
-  return index
+  return companies
+}
+
+export async function loadCustomerIndex(
+  em: EntityManager,
+  scope: TenantScope,
+): Promise<CustomerIndex> {
+  const companies = await loadLegacyCompanies(em, scope)
+  return new Map([...companies].map(([debtorno, company]) => [debtorno, company.id]))
 }
 
 export async function ensureCustomers(
   ctx: CustomerContext,
   rows: LegacyCustomerRow[],
 ): Promise<{ index: CustomerIndex; outcomes: CustomerOutcome[] }> {
-  const index = await loadCustomerIndex(ctx.em, ctx.scope)
+  const existing = await loadLegacyCompanies(ctx.em, ctx.scope)
+  const index: CustomerIndex = new Map([...existing].map(([debtorno, company]) => [debtorno, company.id]))
   const outcomes: CustomerOutcome[] = []
 
   for (const row of rows) {
     const debtorno = row.debtorno.trim()
     if (!debtorno) continue
+    const lifecycleStage = lifecycleStageForRole(row.typ)
 
-    if (index.has(debtorno)) {
+    const known = existing.get(debtorno)
+    if (known) {
+      // Firma sprzed tej zmiany ma puste pole etapu — uzupełniamy, nie zakładamy drugiej.
+      if (!known.lifecycleStage && lifecycleStage) {
+        try {
+          await ctx.commandBus.execute('customers.companies.update', {
+            input: {
+              id: known.id,
+              organizationId: ctx.scope.organizationId,
+              tenantId: ctx.scope.tenantId,
+              lifecycleStage,
+            },
+            ctx: ctx.commandContext,
+          })
+          outcomes.push({ debtorno, action: 'update' })
+        } catch (error) {
+          outcomes.push({ debtorno, action: 'failed', error: error instanceof Error ? error.message : String(error) })
+        }
+        continue
+      }
       outcomes.push({ debtorno, action: 'skip' })
       continue
     }
@@ -118,6 +158,7 @@ export async function ensureCustomers(
               .join(' · '),
             industry: 'Gospodarka odpadami',
             source: legacySource(debtorno),
+            lifecycleStage: lifecycleStage ?? undefined,
             isActive: true,
           },
           ctx: ctx.commandContext,
