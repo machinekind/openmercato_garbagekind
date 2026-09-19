@@ -112,7 +112,7 @@ def parse_utc(value: Any, label: str) -> datetime:
 def read_json(path: Path) -> dict[str, Any]:
     try:
         return require_object(json.loads(path.read_text(encoding="utf-8")), path.name)
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise EvidenceError(f"{path.name} is not valid JSON: {exc}") from exc
 
 
@@ -324,7 +324,7 @@ def validate_checksums(root: Path) -> int:
     for path in root.rglob("*"):
         if path.is_symlink():
             raise EvidenceError(f"Evidence bundle must not contain symlinks: {path.relative_to(root)}")
-        if path.is_file() and path.name != "checksums.sha256":
+        if path.is_file() and path != root / "checksums.sha256":
             actual_files.add(path.relative_to(root).as_posix())
     missing = sorted(actual_files - declared.keys())
     unknown = sorted(declared.keys() - actual_files)

@@ -167,6 +167,23 @@ class EvidenceBundleTest(unittest.TestCase):
             with self.assertRaisesRegex(validator.EvidenceError, "runRef does not match"):
                 validator.verify_bundle(root)
 
+    def test_semantically_unchanged_tamper_is_rejected_by_checksum(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            build_bundle(root)
+            telemetry = root / "telemetry.ndjson"
+            telemetry.write_text(telemetry.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(validator.EvidenceError, "SHA-256 mismatch"):
+                validator.verify_bundle(root)
+
+    def test_unlisted_extra_file_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            build_bundle(root)
+            (root / "unlisted.log").write_text("not in manifest\n", encoding="utf-8")
+            with self.assertRaisesRegex(validator.EvidenceError, "omits files: unlisted.log"):
+                validator.verify_bundle(root)
+
     def test_missing_p0_trial_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
