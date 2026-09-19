@@ -254,5 +254,46 @@ class SO101ValidationTest(unittest.TestCase):
                 validator.command_finalize(args, current)
 
 
+class BusContractTest(unittest.TestCase):
+    def joints(self, **overrides):
+        rows = [
+            {"name": name, "id": motor_id, "firmwareVersion": "3.10"}
+            for name, motor_id in validator.JOINTS
+        ]
+        for index, patch in overrides.items():
+            rows[int(index)].update(patch)
+        return rows
+
+    def test_six_servos_with_readable_firmware_pass(self):
+        status, problems = validator.bus_contract_status(self.joints())
+
+        self.assertEqual(status, "passed")
+        self.assertEqual(problems, [])
+
+    def test_duplicate_motor_id_fails(self):
+        rows = self.joints()
+        rows[1]["id"] = rows[0]["id"]
+
+        status, problems = validator.bus_contract_status(rows)
+
+        self.assertEqual(status, "failed")
+        self.assertTrue(any("duplicate" in problem for problem in problems))
+
+    def test_missing_servo_fails(self):
+        status, problems = validator.bus_contract_status(self.joints()[:5])
+
+        self.assertEqual(status, "failed")
+        self.assertTrue(any("found 5" in problem for problem in problems))
+
+    def test_unreadable_firmware_fails_the_bus_contract(self):
+        rows = self.joints()
+        rows[3]["firmwareVersion"] = {"error": {"major": {"error": "TimeoutError"}, "minor": 10}}
+
+        status, problems = validator.bus_contract_status(rows)
+
+        self.assertEqual(status, "failed")
+        self.assertTrue(any("firmware" in problem for problem in problems))
+
+
 if __name__ == "__main__":
     unittest.main()

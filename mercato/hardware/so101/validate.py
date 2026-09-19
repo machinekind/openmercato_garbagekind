@@ -193,6 +193,32 @@ def read_register(bus: Any, name: str, motor: str) -> Any:
         return {"error": f"{type(exc).__name__}: {exc}"}
 
 
+def firmware_version(bus: Any, motor: str) -> str | dict[str, Any]:
+    """Skleja wersję firmware z dwóch rejestrów; błąd odczytu zostaje w dowodzie."""
+    major = read_register(bus, "Firmware_Major_Version", motor)
+    minor = read_register(bus, "Firmware_Minor_Version", motor)
+    if isinstance(major, dict) or isinstance(minor, dict):
+        return {"error": {"major": major, "minor": minor}}
+    return f"{major}.{minor}"
+
+
+def bus_contract_status(joints: list[dict[str, Any]]) -> tuple[str, list[str]]:
+    """Kryterium A1: dokładnie sześć serw, bez duplikatu ID, z czytelnym firmware."""
+    problems: list[str] = []
+    expected_ids = [motor_id for _, motor_id in JOINTS]
+    observed_ids = [joint.get("id") for joint in joints]
+    if len(joints) != len(JOINTS):
+        problems.append(f"expected {len(JOINTS)} servos, found {len(joints)}")
+    if len(set(observed_ids)) != len(observed_ids):
+        problems.append(f"duplicate motor ids: {observed_ids}")
+    if observed_ids != expected_ids:
+        problems.append(f"unexpected ids {observed_ids}, expected {expected_ids}")
+    for joint in joints:
+        if not isinstance(joint.get("firmwareVersion"), str):
+            problems.append(f"{joint.get('name')}: firmware version unreadable")
+    return ("passed" if not problems else "failed"), problems
+
+
 def calibration_payload(calibration: dict[str, Any]) -> dict[str, Any]:
     return {name: json_value(calibration[name]) for name, _ in JOINTS if name in calibration}
 
@@ -270,9 +296,12 @@ def command_inspect(args: argparse.Namespace, report: dict[str, Any]) -> int:
                     "id": motor_id,
                     "expectedModel": "STS3215",
                     "modelNumber": model_number,
+                    "firmwareVersion": firmware_version(bus, name),
                     "torqueEnabled": read_register(bus, "Torque_Enable", name),
                     "operatingMode": read_register(bus, "Operating_Mode", name),
                     "presentPositionRaw": read_register(bus, "Present_Position", name),
+                    "voltageDecivolt": read_register(bus, "Present_Voltage", name),
+                    "temperatureC": read_register(bus, "Present_Temperature", name),
                 }
             )
         observed_calibration = calibration_payload(bus.read_calibration())
@@ -281,12 +310,13 @@ def command_inspect(args: argparse.Namespace, report: dict[str, Any]) -> int:
             # Inspection is read-only: preserve the torque state found on entry.
             bus.disconnect(disable_torque=False)
 
-    correct_ids = [joint["id"] for joint in joints] == [motor_id for _, motor_id in JOINTS]
+    status, problems = bus_contract_status(joints)
     report["checks"]["busContract"] = {
-        "status": "passed" if len(joints) == 6 and correct_ids else "failed",
+        "status": status,
         "observedAt": now_iso(),
         "readOnly": True,
         "joints": joints,
+        "problems": problems,
     }
     report["checks"]["jointOffsetsObserved"] = {
         "status": "observed",
