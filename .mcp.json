@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "so101-arm": {
+      "command": "python3",
+      "args": ["mercato/hardware/so101/mcp_server.py"],
+      "env": {
+        "SO101_PORT": "/dev/ttyACM0"
+      }
+    }
+  }
+}

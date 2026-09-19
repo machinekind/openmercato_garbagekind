@@ -151,3 +151,54 @@ rewizji, bo fizycznie zweryfikowany kontrakt nie jest tą samą rewizją co opis
 oparty wyłącznie na dokumentacji. Rewizja zawiera obliczony przez narzędzie
 skrót zamkniętego raportu oraz `runRef`; raport z innego przebiegu jest
 odrzucany.
+
+## Demonstracja ruchu przez MCP
+
+Ten tryb jest **osobny od odbioru** i nie produkuje dowodów P0. `validate.py`
+nigdy nie włącza momentu; robi to wyłącznie `arm_control.py` wołane przez
+serwer MCP `mercato/hardware/so101/mcp_server.py`.
+
+```bash
+SO101_PORT=/dev/ttyACM0 python3 mercato/hardware/so101/mcp_server.py
+```
+
+Konfiguracja dla klienta jest w `.mcp.json` w katalogu głównym repozytorium.
+
+Narzędzia:
+
+| Narzędzie | Skutek | Wymaga `confirm=true` |
+| --- | --- | --- |
+| `so101_status` | odczyt pozycji, momentu, napięcia, temperatury, obciążenia | nie |
+| `so101_enable` | załącza moment przy `p_des = q` utrzymywanym 500 ms | tak |
+| `so101_random_pose` | przejazd do pozy losowej; domyślnie `shoulder_pan` i `shoulder_lift` o ≤ 30° | tak |
+| `so101_return_home` | powrót do pozy zastanej z chwili załączenia, moment zostaje | tak |
+| `so101_release` | powrót do pozy zastanej, potem zwolnienie momentu | tak |
+
+Ograniczenia wpisane w kod (`arm_control.py`):
+
+- okno pozycji = limity z EEPROM zawężone o `SOFT_LIMIT_MARGIN_TICKS` (120);
+- przyrost na jeden ruch ≤ 350 ticków (~31°), chwytak ≤ 150;
+- `Goal_Velocity` 300 i `Acceleration` 10 dla każdego stawu;
+- brama przed ruchem: napięcie 10,0–13,0 V, temperatura ≤ 50 °C,
+  `|Present_Load|` ≤ 900; niepełny odczyt nie jest traktowany jako zdrowy;
+- przekroczenie obciążenia w trakcie przejazdu zatrzymuje ramię na bieżącej
+  pozycji i zwraca status `halted_on_load`;
+- ruch bez wcześniejszego załączenia momentu jest odrzucany;
+- `so101_enable` zapamiętuje pozę zastaną, a `so101_release` domyślnie do niej
+  wraca przed zwolnieniem momentu, żeby ramię nie opadało z podniesionej pozy
+  (`return_home=false` zwalnia od razu w bieżącej pozie).
+
+Dziennik operacji powstaje poza Git w
+`.runtime/so101-motion/journal.ndjson` (ścieżkę zmienia `SO101_MOTION_JOURNAL`).
+
+### Czego ten tryb nie daje
+
+`so101_release` **nie jest E-stopem**: idzie tą samą magistralą i tym samym
+procesem, który może zawisnąć. Zamknięcie serwera MCP nie zmienia stanu
+momentu — ramię zostaje tak, jak stało. Deterministyczną warstwą zatrzymania
+jest wyłącznie zewnętrzny przerywacz zasilania napędów, którego ten zestaw nie
+ma. Dopóki go nie ma, warunek Z5 z `GREG_HANDOFF.md` pozostaje niespełniony i
+poza demonstracją nie wolno na tym sprzęcie uruchamiać polityki.
+
+Przed każdym uruchomieniem: przestrzeń robocza pusta, ramię podparte,
+wyłącznik zasilacza w zasięgu ręki.
