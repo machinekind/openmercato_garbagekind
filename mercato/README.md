@@ -70,8 +70,9 @@ python3 client/weberp_sync.py --wsad legacy/wsad --out out --full
 Po stronie Open Mercato:
 
 ```bash
-yarn mercato sortownia import          # topologia + frakcje + księga ruchów
+yarn mercato sortownia import          # topologia + frakcje + księga ruchów + CRM
 yarn mercato sortownia import --limit 50
+yarn mercato sortownia sync-crm        # sama synchronizacja firm ↔ szans sprzedaży
 ```
 
 Import jest **idempotentny**: drugie uruchomienie na tym samym zbiorze raportuje
@@ -110,12 +111,38 @@ wpłata potrzebuje faktury, a rezerwacja potrzebuje stanu magazynowego:
 
 ```
 topologia → frakcje → kontrahenci → zamówienia (+faktury)
-          → karty przekazania → wpłaty → partie → księga ruchów → rezerwacje
+          → karty przekazania → wpłaty → partie → księga ruchów → rezerwacje → CRM
 ```
 
 Rezerwacje idą **po** księdze, nie przed: przed ruchami magazyn jest pusty i
 WMS odmówiłby każdej, a rezerwacja założona na placu przyjęć blokowałaby masę,
 która ma dopiero zostać wysortowana do boksu.
+
+### Firmy i szanse sprzedaży to jedna prawda
+
+W CRM Open Mercato zakładka „Firmy" i zakładka „Szanse sprzedaży" to dwie
+tabele (`customer_entities` i `customer_deals`, spięte przez
+`customer_deal_companies`). Trzymane osobno rozjeżdżają się po tygodniu, więc
+`lib/crm.ts` pilnuje reguły:
+
+| etap cyklu życia firmy | szansa sprzedaży |
+|---|---|
+| `customer`, `subscriber` | ma mieć szansę **win** |
+| `prospect`, `lead` | ma mieć szansę **open** |
+| `supplier` | **żadnej** — dostawca odpadu nie kupuje |
+| `churned`, `other`, puste | nic nie wymuszamy |
+
+Kierunek w drugą stronę: firma bez etapu, ale ze szansą, dostaje etap ze
+statusu szansy (wygrana → klient, otwarta → potencjalny), a wygrana szansa
+awansuje potencjalnego klienta na klienta — wygrana to fakt, nie opinia.
+
+Import nadaje etap z roli legacy (`ODB` → `customer`, `DOS` → `supplier`;
+etapu `supplier` nie ma w słowniku platformy, więc dokładamy go przez
+`ensureDictionaryEntry`), a szansa zakładana przez synchronizację nosi
+`source = sortownia-crm-sync`, ma tytuł „{firma} — sprzedaż frakcji", trafia do
+domyślnego lejka (etap „Win" albo pierwszy) i jako wartość dostaje sumę brutto
+zamówień odbiorcy. Ręcznie założonych szans nie ruszamy — co najwyżej dokładamy
+własną obok, a przy dostawcy odpinamy albo usuwamy.
 
 Wszystko idzie komendami platformy (`commandBus`), a nie zapisem do encji.
 Komenda odpala zdarzenia, wpis do dziennika audytu i indeks wyszukiwania —

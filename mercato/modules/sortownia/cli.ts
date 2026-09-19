@@ -30,6 +30,7 @@ import { applyTransferCards } from './lib/transferCards'
 import { applyReservations } from './lib/reservations'
 import { applyMovementBatch, type MovementContext } from './lib/movements'
 import { ensureTopology, loadLocationIndex } from './lib/topology'
+import { syncCrm, type CrmSyncContext } from './lib/crm'
 
 /**
  * Komendy operatorskie modułu sortowni.
@@ -86,6 +87,30 @@ function buildCommandContext(container: Awaited<ReturnType<typeof createRequestC
   } as CommandRuntimeContext
 }
 
+async function runCrmSync(ctx: CrmSyncContext): Promise<void> {
+  const { actions, outcomes } = await syncCrm(ctx)
+  const count = (kind: string) => outcomes.filter((o) => o.ok && o.action === kind).length
+  const failed = outcomes.filter((o) => !o.ok)
+  console.log(
+    `  CRM: ${actions.length} korekt (etapy ${count('set-stage')}, nowe szanse ${count('create-deal')}, ` +
+      `zmienione ${count('update-deal')}, usunięte ${count('delete-deal') + count('unlink-company')})`,
+  )
+  for (const outcome of failed.slice(0, 5)) console.log(`    ! ${outcome.action} ${outcome.target}: ${outcome.error}`)
+}
+
+const syncCrmCommand: ModuleCli = {
+  command: 'sync-crm',
+  async run(rest) {
+    const args = parseArgs(rest)
+    const container = await createRequestContainer()
+    const em = container.resolve('em') as EntityManager
+    const scope = await resolveScope(em, args)
+    const commandBus = container.resolve('commandBus') as CommandBus
+    console.log(`Sortownia: synchronizacja CRM w organizacji ${scope.organizationId}`)
+    await runCrmSync({ em, commandBus, commandContext: buildCommandContext(container, scope), scope })
+  },
+}
+
 const importCommand: ModuleCli = {
   command: 'import',
   async run(rest) {
@@ -129,8 +154,9 @@ const importCommand: ModuleCli = {
       const result = await ensureCustomers({ em, commandBus, commandContext, scope }, rows)
       customerIndex = result.index
       const created = result.outcomes.filter((o) => o.action === 'create').length
+      const updated = result.outcomes.filter((o) => o.action === 'update').length
       const failedCustomers = result.outcomes.filter((o) => o.action === 'failed')
-      console.log(`  kontrahenci: ${rows.length} pozycji (nowych ${created}, istniejących ${result.outcomes.length - created - failedCustomers.length})`)
+      console.log(`  kontrahenci: ${rows.length} pozycji (nowych ${created}, uzupełnionych ${updated}, istniejących ${result.outcomes.length - created - updated - failedCustomers.length})`)
       for (const outcome of failedCustomers) console.log(`    ! ${outcome.debtorno}: ${outcome.error}`)
     } else {
       console.log(`  kontrahenci: pominięto (brak ${customersPath})`)
@@ -329,6 +355,9 @@ const importCommand: ModuleCli = {
       for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
     }
 
+    // 9. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
+    await runCrmSync({ em, commandBus, commandContext, scope })
+
     const balances = await em.find(InventoryBalance, {
       organizationId: scope.organizationId,
       tenantId: scope.tenantId,
@@ -351,4 +380,4 @@ const importCommand: ModuleCli = {
   },
 }
 
-export default [importCommand] satisfies ModuleCli[]
+export default [importCommand, syncCrmCommand] satisfies ModuleCli[]
