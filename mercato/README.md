@@ -302,10 +302,17 @@ Pulpit sprawdzony w przeglądarce (zalogowanie, render, zrzut ekranu): kafelki,
 wykres przepływu, zapełnienie boksów i księga ruchów zasilają się z żywej bazy.
 Plac przyjęć pokazuje 70,3% pojemności, a nie 291% jak przed poprawką partii.
 
-Testy: 198 jednostkowych i 19 po stronie legacy przechodzi, `eslint` na module
-czysty. Cross-walidacja (28 przypadków Playwright) nie była przepuszczona po
-tej zmianie — jej asercja o liczbie ruchów została przestawiona na kwity, ale
-sam przebieg czeka na uruchomienie.
+Testy: 198 jednostkowych, 19 po stronie legacy i 28 przypadków cross-walidacji
+Playwright przechodzi na żywym stacku bez ponowień; `eslint` na module czysty.
+Cross-walidacja złapałaby poprzednią usterkę: test „zamówienia otwarte mają
+zarezerwowaną masę" wymaga niezerowej liczby rezerwacji, a przed poprawką
+partii nie powstawała ani jedna.
+
+`yarn typecheck` zgłasza w module 6 błędów **niezwiązanych** z tą zmianą:
+`acl.ts` importuje `FeatureDefinition`, którego `@open-mercato/shared` już nie
+eksportuje, a `lib/adapter.ts` i `lib/topology.ts` rzutują struktury na typy
+platformy, które się rozjechały. To dryf API Open Mercato, nie regres importu —
+do osobnego przejścia.
 
 Nie zrobione jeszcze: uruchamianie importu z panelu Data Sync end‑to‑end
 (adapter jest zarejestrowany i waliduje połączenie, ale przebiegi odpalaliśmy
