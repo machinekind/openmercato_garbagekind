@@ -1,14 +1,394 @@
 # Sortownia i Physical AI
 
-Platforma operacyjna sortowni odpadów zbudowana na Open Mercato. Trzy warstwy,
-które w zakładzie istnieją osobno i dotąd nie rozmawiały ze sobą: stary system
-ewidencji z lat dziewięćdziesiątych, ewidencja magazynowo-sprzedażowa oraz hala
-z robotami sortującymi, wagami i kamerami.
+> **Zbudowane podczas hackathonu 18–19 września 2026.** Wszystko poniżej
+> powstało w tym oknie czasowym i działa na żywej instancji Open Mercato —
+> zrzuty ekranu w tym dokumencie są z uruchomionego systemu, nie z makiet.
+> Co jest zweryfikowane, a co nie, rozstrzyga sekcja
+> [Czego nie zdążyliśmy i co nie jest udowodnione](#czego-nie-zdążyliśmy-i-co-nie-jest-udowodnione).
 
-Repozytorium zawiera symulator systemu legacy (Python), czternaście modułów
-Open Mercato (TypeScript) i dokumentację decyzji projektowych. Nie zawiera
-samej platformy — moduły kopiuje się do klonu Open Mercato skryptem
+## W skrócie, prostymi słowami
+
+Sortownia odpadów ma trzy systemy, które ze sobą nie rozmawiają:
+
+1. **stary program ewidencyjny** z lat dziewięćdziesiątych — wie, ile kilogramów
+   przyjechało i wyjechało, i nic poza tym;
+2. **zeszyt i Excel brygadzisty** — pojemność boksów, czyj odpad gdzie leży,
+   kto zapłacił;
+3. **hala z robotami**, które od niedawna sortują same, bo ich sterowanie jest
+   **wyuczone**, a nie zaprogramowane.
+
+Zrobiliśmy jedną platformę, która spina wszystkie trzy. Konkretnie:
+
+- **czyta stary system** dwoma kanałami (XML-RPC i pliki) i przepisuje jego
+  ewidencję do Open Mercato — powtarzalnie, bez duplikatów, bez zatrzymywania
+  produkcji;
+- **domyka to, czego stary system nie wiedział**: ile boks pomieści, z której
+  dostawy pochodzi masa w boksie, czy zamówienie odbiorcy ma pokrycie
+  w magazynie, czy faktura została zapłacona, czy bilans masy się zgadza;
+- **prowadzi rejestr robotów uczonych**: która wersja sterownika pracuje na
+  której maszynie, kto ją dopuścił, na jakiej podstawie, ile razy człowiek
+  musiał interweniować — i odmawia dopuszczenia, gdy czegoś brakuje;
+- **uzgadnia pracę robota z wagą**: robot mówi, ile przesortował, waga mówi,
+  ile naprawdę. Do magazynu wchodzi liczba z wagi, a rozbieżność jest oceną
+  robota, nie magazynu.
+
+Jednym zdaniem: **odpad ma od teraz tożsamość i ślad — od bramy wjazdowej,
+przez boks i robota, po fakturę i kartę przekazania.**
+
+---
+
+## Jak to spełnia kryteria hackathonu
+
+| Kryterium | Jak jest spełnione |
+| --- | --- |
+| **Kompletny proces end-to-end** | Jeden przebieg łączy: przyjęcie odpadu na bramie → partia z dostawcą i datą → sortowanie na hali (robot lub ręcznie) → boks z pojemnością → rezerwacja pod zamówienie → wydanie do odbiorcy → karta przekazania odpadu → faktura → wpłata → bilans masy. Żaden krok nie jest zaślepką: każdy ma własną komendę, migrację, testy i ekran. Dowód: przebieg importu opisany w [`mercato/README.md`](mercato/README.md) i zrzuty niżej. |
+| **Możliwy do oszacowania efekt finansowy** | Model liczbowy z jawnymi wejściami jest w sekcji [Efekt finansowy](#efekt-finansowy). Opiera się na wielkościach, które system **już mierzy** na żywej instancji: 152 624 zł zaległych należności (najstarszy dokument 28 dni), 0,61 zł/kg średniej ceny sprzedaży, 27,555 t masy zarezerwowanej pod 5 zamówień, jedno zamówienie odrzucone przez WMS z braku pokrycia. |
+| **Konkretny właściciel biznesowy** | **Dyrektor zakładu** — właściciel wyniku (bilans masy, sprawność sortowania, przychód per frakcja, rozrachunki). Współwłaściciele operacyjni: **brygadzista hali** (dopuszczenia maszyn, ważenie partii, incydenty) i **pełnomocnik ds. zgodności/BHP** (uzasadnienia bezpieczeństwa, retencja nagrań). Każdy z nich ma w systemie własny ekran i własne uprawnienia — patrz [Kto z tego korzysta](#kto-z-tego-korzysta). |
+| **Rzeczywiste lub realistyczne dane** | Dwa źródła, oba opisane wprost: (1) **realistyczne dane ewidencyjne** — generator odtwarzający schemat i dialekt prawdziwego systemu webERP, 299 wierszy księgi ruchów, 8 kontrahentów, 46 zamówień, 46 faktur, 109 partii; (2) **rzeczywiste pomiary sprzętowe** — telemetria CAN-FD ramienia Galaxea A1X z realnego stanowiska, w tym udokumentowany incydent ruchu 76,36° przy załączeniu bez utrzymania pozycji zadanej. Materiał źródłowy i jego pochodzenie: [`physical-ai/MATERIAL-MERCATOXD.md`](physical-ai/MATERIAL-MERCATOXD.md). |
+
+---
+
+## Co widać
+
+Zrzuty z uruchomionej instancji (Open Mercato 0.8.0, PostgreSQL 16, dane
+z importu legacy), zebrane skryptem Playwright, nie retuszowane. Pełny zestaw
+— także ekrany, których nie ma poniżej (`edge`, `datasets`,
+`physical-management`) — leży w [`docs/screenshots/`](docs/screenshots).
+
+**Jeden wątek przewija się przez wszystkie:** system pokazuje, czego o sobie
+nie wie, i nazywa powód odmowy. To nie jest efekt uboczny — to jest cała
+różnica między ewidencją, na której można się oprzeć, a ekranem, który zawsze
+wygląda dobrze.
+
+### Nagranie: system odmawia dopuszczenia maszyny
+
+![Odmowa dopuszczenia robota do pracy](docs/screenshots/odmowa-dopuszczenia.gif)
+
+Nagranie z działającej instancji, bez montażu. Operator otwiera kartę robota
+`UR10E-0003` (stan `commissioning`), wybiera stan docelowy `ready` i wpisuje
+powód. Wtedy dzieją się trzy rzeczy, po kolei:
+
+1. **Pojawia się brama podpisu.** Dopuszczenie maszyny do pracy to nie jest
+   zmiana pola w formularzu: *„Biorę odpowiedzialność za dopuszczenie tej
+   maszyny. Mój identyfikator zostanie zapisany w księdze przejść."* Bez
+   zaznaczenia przycisk „Zatwierdź" pozostaje nieaktywny.
+2. **Powód jest obowiązkowy** i — jak mówi etykieta — *„trafia do księgi
+   przejść i zostaje tam na stałe"*.
+3. **Serwer odmawia, podając konkretny brak:**
+
+> **Nie można dopuścić robota: brak ważnej kalibracji: `camera_extrinsics`,
+> `tool_center_point`.**
+
+Tekst odmowy nie jest kodem błędu ani ogólnikiem „operacja niedozwolona".
+Wymienia **dokładnie te dwie kalibracje**, których brakuje, więc brygadzista
+wie, co ma zrobić, zamiast szukać administratora. Reguła jest po stronie
+serwera, nie w przeglądarce — ten sam `HTTP 422` dostanie skrypt, integracja
+i każdy inny klient.
+
+### Pulpit dyrektora — cały zakład na jednym ekranie
+
+![Pulpit sortowni](docs/screenshots/sortownia.png)
+
+Cztery liczby u góry to stan fizyczny zakładu, cztery poniżej — stan
+finansowy. Trzy rzeczy, których stary system nie umiał pokazać:
+
+- **bilans masy domyka się co do kilograma** — 437,452 t przyjęte − 236,353 t
+  wydane = 201,098 t na stanie. W starym systemie księga ruchów potrafiła zejść
+  poniżej zera i nikt się o tym nie dowiadywał przed załadunkiem;
+- **rozrachunki** — wystawione 199 004 zł, wpłacone 46 381 zł, **zaległe
+  152 624 zł**. Tej liczby nie było gdzie zobaczyć;
+- **sprawność sortowania 67,9%** i **średnia cena 0,61 zł/kg** — dwie miary,
+  które zamieniają „ile przerobiliśmy" na „ile na tym zarobiliśmy".
+
+### Rzut hali — maszyny w skali, z powodem odmowy na wierzchu
+
+![Rzut hali](docs/screenshots/plant.png)
+
+Zakład Wieliszew, 40 × 24 m, dwie cele, pięć maszyn — **rysowane w skali
+z rzeczywistych wymiarów**, a nie jako ikonki na siatce. Pasek alarmów u góry
+jest tu najważniejszy: z pięciu maszyn **żadna nie pracuje**, i każda ma
+wypisany powód:
+
+| Chip | Znaczenie |
+| --- | --- |
+| `UR10E-0002`, `UR10E-0003` — **Kalibracja nieważna** | maszyna sprawna, ale nie ma ważnego dowodu kalibracji, więc nie wolno jej dopuścić |
+| `UR10E-0001`, `FR3-0002` — **Agent milczy** | brak uderzenia serca w terminie — nie wiadomo, co robi |
+| `FR3-0001` — **Brak wpisanego agenta** | maszyna jest w rejestrze, ale nie ma tożsamości kryptograficznej |
+
+To jest cała teza projektu na jednym ekranie: **system nie zgaduje i nie
+udaje, że jest dobrze.** Cela `CELA-A` jest ogrodzona i ma 320 kg z celu
+540 kg; `CELA-P` to przestrzeń publiczna — inna klasa ryzyka, inne wymagania
+dopuszczenia.
+
+### Rejestr floty — właściciel i operator to dwie różne rzeczy
+
+![Rejestr floty](docs/screenshots/fleet.png)
+
+Pięć maszyn, cztery czynne, **trzy bez łączności i dwie z blokadą
+kalibracji**. Każdy wiersz mówi nie tylko „jaki stan", ale **od kiedy i na
+jakiej podstawie**: „kalibracja ważna 119 dni", „bez łączności od 66 402 s",
+„Uruchomienie po dostawie". Ostatnia kolumna to powód przejścia wpisany przez
+człowieka, który je zatwierdził.
+
+Rozdział **właściciel / operator** nie jest kosmetyką: integrator widzi
+maszyny, które serwisuje, a nie jest ich właścicielem; właściciel widzi swoje,
+choć obsługuje je ktoś inny.
+
+### Cyfrowy bliźniak — pomieszczenie odtworzone ze skanu LiDAR i filmu
+
+![Cyfrowy bliźniak](docs/screenshots/digital-twins.png)
+
+Model przestrzenny zbudowany z **318 punktów kontrolnych** (LiDAR + film),
+60 elementów w 11 warstwach, obracany i klikalny w przeglądarce. Każdy element
+można wskazać i odczytać jego wymiary.
+
+Zwróćcie uwagę na ramkę pod widokiem — to nie jest ozdobnik, tylko zasada,
+którą trzymamy w całym projekcie: *„Model geometryczny, bez połączenia
+z czujnikami. **Skala nie została niezależnie zweryfikowana.** Krzesła i część
+wyposażenia mają orientacyjne położenie."* System mówi, czego o sobie nie wie.
+
+### Most hala ↔ ERP — **kilogramy z wagi, nie z deklaracji**
+
+![Zlecenia robocze](docs/screenshots/work-orders.png)
+
+Podpis pod drugim kafelkiem jest całą zasadą tego modułu: *„320,4 kilogramów
+**z wagi, nie z deklaracji**"*. Robot deklaruje; waga rozstrzyga; do magazynu
+wchodzi waga.
+
+Kolumna po prawej to różnica między jednym a drugim, liczona per zlecenie:
+`-6,6 kg (-11,0%)` przy pięciu zleceniach, `-66,5 kg (-55,4%)` przy jednym
+i `+15,2 kg (+39,8%)` przy jeszcze innym. Kafelek *„Brakujący materiał: 7"*
+liczy **partie, w których robot zgłosił więcej, niż przyniósł** — i to jest
+ocena robota, nie magazynu. Zlecenia bez zamkniętej partii mają uczciwe
+*„brak odniesienia"* zamiast wyliczonego zera.
+
+### Trzeci świadek — kto się myli, robot czy waga?
+
+![Trzeci świadek](docs/screenshots/vision.png)
+
+Most hala ↔ ERP ma jeden trudny problem: **robot deklaruje, ile przesortował,
+a waga mówi co innego.** Sama para „robot kontra waga" nie wystarcza — wiadomo,
+że się nie zgadzają, ale nie wiadomo, kto się myli. Dlatego kamera jest
+**trzecim świadkiem**, a ekran pokazuje dokładnie tę logikę:
+
+| Wiersz | Werdykt |
+| --- | --- |
+| *„Wizja (1022) i robot (1022) zgodni, masa wskazuje 800 szt."* | **masa nominalna** — to nie błąd liczenia, tylko obiekty ważą co innego niż nominał (zgniecione, mokre) |
+| *„Deklaracja 1000 nie zgadza się z masą (800 szt.), a bez trzeciego świadka nie da się wskazać, po której stronie leży błąd"* | **nierozstrzygnięte — bez kamery** |
+| *„Trzy pomiary rozjechane parami: wizja 201, robot 251, masa 980. Żadna para się nie zgadza, więc nie ma punktu odniesienia"* | **nierozstrzygnięte** |
+| *„Deklaracja robota zgodna z masą. Bez kamery nad pojemnikiem to wszystko, co da się stwierdzić"* | **zgodne** |
+
+System nie udaje, że rozstrzygnął, gdy nie ma czym. **Do magazynu i tak
+wchodzi liczba z wagi** — rozbieżność jest oceną robota, nie magazynu.
+
+### Macierz dopuszczeń — **odmowa zawsze ma nazwany powód**
+
+![Macierz dopuszczeń](docs/screenshots/safety.png)
+
+Jeśli jeden ekran ma pokazać, o co w tym projekcie chodzi, to ten. Dwie pary
+dopuszczone, **cztery zablokowane — i przy każdej napisane, czego brakuje**:
+
+- `insert-peg-fr3 v1` × cela ogrodzona → *zestawy zakończone niepowodzeniem:
+  grasp-release-integrity*;
+- `pick-bin-ur10e v1` × przestrzeń publiczna → *brak zatwierdzonego
+  uzasadnienia bezpieczeństwa dla klasy celi public-handover; brak przebiegu
+  zestawów wymaganych dla klasy ryzyka public: bystander-detection,
+  force-pressure-limits, out-of-distribution-halt*.
+
+Trzy rzeczy, które ta tabela wymusza:
+
+1. **Dopuszczenie dotyczy klasy celi, nie pojedynczej celi** — inaczej każda
+   nowa cela wymagałaby osobnego uzasadnienia dla niezmienionej konfiguracji.
+2. **Wymagania zależą od klasy ryzyka.** Limity siły i nacisku (ISO/TS 15066)
+   mają sens tam, gdzie kontakt z człowiekiem jest możliwy — wymaganie ich za
+   płotem byłoby rytuałem.
+3. **„Polityka jako funkcja bezpieczeństwa: 0"** i podpis *„w zdrowym systemie
+   zero"*. Ustawienie tej flagi blokuje dopuszczenie niezależnie od wszystkich
+   zaliczonych testów — bo wpycha maszynę w Annex I część A rozporządzenia
+   (UE) 2023/1230, czyli w ocenę przez jednostkę notyfikowaną, dla której nie
+   ma ustalonej metody wykazania zgodności.
+
+### Wdrożenia — maszyna staje sama, gdy centrala zamilknie
+
+![Wdrożenia](docs/screenshots/deployment.png)
+
+ERP publikuje **stan pożądany**, a robot pobiera go na czas ograniczony
+**dzierżawą** i raportuje, co faktycznie robi. Ten zrzut pokazuje sytuację,
+którą trzeba było zaprojektować, zanim się wydarzy: cztery przypisania, **zero
+z ważnym mandatem**, cztery *zatrzymane dzierżawą* — *„centrala nic nie
+zapisała, mandat po prostu upłynął"*.
+
+To jest różnica między „fail-open" a „fail-closed". Gdyby stan pożądany był
+poleceniem bez terminu ważności, awaria łącza zostawiłaby cztery maszyny
+pracujące bez nadzoru. Tu maszyna zatrzymuje się sama, a operator widzi dokładny
+powód, zamiast zgadywać.
+
+Rozjazd między tym, co robot ma robić, a tym, co robi, jest wykrywany **zboczem**
+— ogłaszany raz, przy zmianie, a nie przy każdym raporcie. Raporty przychodzą
+z częstotliwością maszynową; alarm powtarzany co kilkadziesiąt sekund przez cały
+czas trwania awarii przestaje być alarmem.
+
+### Rejestr polityk — **tożsamością jest skrót artefaktów, nie numer**
+
+![Polityki](docs/screenshots/policies.png)
+
+Podpisy pod kafelkami są tu ważniejsze niż same liczby:
+
+- *„tożsamością jest skrót artefaktów, nie numer"* — `v2` z odciskiem
+  `137069a4929b` to konkretne wagi, nie etykieta, którą ktoś może przykleić do
+  innego pliku;
+- *„Wypuszczone: tylko te da się wdrożyć"* — status jest bramką, nie opisem;
+- *„Rozjazd embodimentu: w zdrowym rejestrze zero — każda inna wartość jest
+  awarią"*. Rozjazd znaczy, że polityka była uczona pod inny kontrakt sprzętu,
+  niż ten, na którym ma pracować. Nie ostrzegamy — pokazujemy to jako liczbę,
+  która **ma być zerem**.
+
+Kolumna `sprzęt` (`ur10e-pick@r1`) wiąże wersję z **konkretną rewizją**
+embodimentu. To jest jedyna rzecz, której nie widać w żadnym repozytorium
+modeli: czy ta polityka ma pod sobą sprzęt, na którym wolno ją uruchomić.
+
+### Epizody i interwencje — jedna liczba, która mówi, czy idzie do przodu
+
+![Epizody](docs/screenshots/episodes.png)
+
+**2,4 tys. epizodów, 57 interwencji, 42,9 epizodu na interwencję, 98%
+autonomii.** Podpis pod pierwszym kafelkiem nie jest ozdobnikiem: *„jedyna
+liczba, która mówi, czy wdrożenie idzie do przodu"*. Liczba epizodów rośnie
+zawsze; liczba interwencji na epizod rośnie tylko wtedy, gdy jest lepiej.
+
+Rozbicia poniżej są tam, gdzie zwykle leży przyczyna:
+
+| Rozbicie | Po co | Co widać na zrzucie |
+| --- | --- | --- |
+| **per polityka** | *ta sama polityka na różnym sprzęcie bywa różną polityką* | `pick-bin-ur10e v2`: 275 epizodów, 8,1 na interwencję, skuteczność 87% |
+| **per cela** | *różnica między celami tej samej klasy to zwykle oświetlenie albo ustawienie pojemnika* | Cela A: 2200 epizodów, 81,5 na interwencję |
+| **per robot** | *jeden robot odstający od reszty to prawie zawsze kalibracja, a nie polityka* | `UR10E-0002`: 5,6 na interwencję przy 8,2 u bliźniaka `UR10E-0001` |
+
+Interwencje są też rozbite **po etapie** (*„stąd bierze się lista demonstracji
+do następnego treningu"*) i **po ciężarze** (*„same poprawki otoczenia i same
+zatrzymania awaryjne to dwa różne wdrożenia"*) — bo jeden próg na wszystko
+zrównuje dojrzałość z zagrożeniem.
+
+### Wdrożenie etapowe — brama, która wycofuje **bez pytania człowieka**
+
+![Rollout](docs/screenshots/rollout.png)
+
+Dziesięć wdrożeń, pięć w biegu, **pięć wycofanych**. Najciekawszy jest wiersz
+`Dowód 4A`:
+
+> **WYCOFAJ** — *próg przekroczony: interwencje 25,0% > 10,0%; skuteczność
+> 75,0% < 80,0%.* Kolumna „kto": **automat**. Etap 2: **wstrzymane**.
+
+Obok, dla kontrastu, `Dowód 4B`: *„25 epizodów, interwencje 0,0%, skuteczność
+100,0% — w granicach"* → **przepuść**.
+
+Trzy reguły, które ta tabela wymusza:
+
+1. **Brama odwołuje się do liczb z księgi epizodów, nie do opinii.** Nie ma tu
+   pola „zatwierdził kierownik". Człowiek może zatrzymać wdrożenie w każdej
+   chwili, ale nie może go przepchnąć obok liczb.
+2. **Wycofanie jest tańsze niż diagnoza, więc jest domyślne** — podpis pod
+   kafelkiem „Wycofane" mówi to wprost. Przy przekroczeniu progu nie
+   wstrzymujemy do wyjaśnienia; wycofujemy i wyjaśniamy potem.
+3. **Za mało danych to nie jest zgoda.** Etap poniżej progu 20 epizodów
+   dostaje `hold`, nie `advance`.
+
+---
+
+## Efekt finansowy
+
+Nie podajemy jednej liczby „oszczędności", bo byłaby zmyślona. Podajemy
+**model z jawnymi wejściami**: to, co system już mierzy, jest wypełnione
+wartościami z żywej instancji; to, co musi podać zakład, jest oznaczone jako
+parametr. Dyrektor zakładu może policzyć własny wynik w pięć minut.
+
+### Źródło 1 — należności, których nie było gdzie zobaczyć
+
+Stary system kończył ewidencję na wydaniu z magazynu. Nie wiedział, czy
+faktura została zapłacona.
+
+| Wielkość | Wartość zmierzona | Źródło |
+| --- | --- | --- |
+| Wystawione | 199 004 zł | pulpit, rozrachunki |
+| Wpłacone | 46 381 zł | pulpit, rozrachunki |
+| **Zaległe** | **152 624 zł** | 40 dokumentów, najstarszy 28 dni |
+
+Efekt nie polega na tym, że pieniądze się pojawiają — tylko na tym, że
+**wiadomo, u kogo leżą i od jak dawna**. Przy koszcie kapitału `k` (parametr
+zakładu) i skróceniu średniego wieku należności o `d` dni, roczna korzyść to
+mniej więcej `152 624 zł × k × d / 365`. Dla `k = 8%` i `d = 14` daje to około
+**468 zł rocznie na obecnym wolumenie** — i skaluje się wprost proporcjonalnie
+do obrotu. Dla zakładu obracającego 20 mln zł rocznie ten sam mechanizm to
+rząd wielkości **kilkudziesięciu tysięcy złotych**.
+
+### Źródło 2 — załadunek bez pokrycia
+
+System odmawia rezerwacji, gdy w magazynie nie ma masy. W przebiegu
+weryfikacyjnym **5 zamówień dostało rezerwację na 27,555 t, a jedno zostało
+odrzucone z braku pokrycia** — czyli jeden załadunek, który w starym systemie
+wyjechałby po towar, którego nie ma.
+
+Koszt jednego nieudanego załadunku = `transport w obie strony` + `przestój
+naczepy` + `koszt relacji z odbiorcą`. **Świadomie nie podstawiamy tu własnej
+liczby** — stawka za kurs zależy od dystansu, taryfy przewoźnika i tego, czy
+naczepa jest własna. Zakład zna te trzy wielkości i podstawia je sam.
+
+Częstotliwość zdarzenia natomiast **zmierzyliśmy**: 1 na 6 otwartych zamówień
+w przebiegu weryfikacyjnym. Jeśli u kogoś wychodzi 1 na 50, oszczędność jest
+odpowiednio mniejsza — i to też jest wynik, bo znaczy, że ewidencja działała.
+
+### Źródło 3 — identyfikowalność partii
+
+Każde przyjęcie zakłada partię z dostawcą i datą. 109 partii w bazie, każdy
+ruch magazynowy wskazuje partię. To jest warunek, a nie wygoda:
+
+- **reklamacja frakcji** — odbiorca zwraca partię zanieczyszczoną; bez
+  identyfikowalności koszt bierze na siebie sortownia, z nią wraca do dostawcy;
+- **karta przekazania odpadu** — 40 kart, 0 niekompletnych. Brak danych na
+  karcie to ryzyko administracyjne po stronie zakładu;
+- **wycena per dostawca** — widać, który dostawca przywozi masę o jakiej
+  wartości wyjściowej (0,61 zł/kg średnio, od 0,03 do 1,55 zł/kg zależnie od
+  frakcji).
+
+### Źródło 4 — warstwa Physical AI
+
+Tu efekt jest **warunkowy i jeszcze nieudowodniony** — piszemy to wprost.
+Roboty sortujące zwiększają przepustowość linii, ale w tym hackathonie nie
+zamknęliśmy autonomicznego chwytu (patrz sekcja o tym, czego nie zdążyliśmy).
+To, co platforma daje **już teraz, niezależnie od skuteczności robota**, to:
+
+- **dopuszczenie maszyny do pracy jest decyzją z podpisem i datą**, a nie
+  ustaleniem ustnym — co przy rozporządzeniu maszynowym (UE) 2023/1230
+  (obowiązuje od 20 stycznia 2027) jest różnicą między dokumentacją a jej
+  brakiem;
+- **wdrożenie nowej wersji sterownika wycofuje się samo**, gdy udział
+  interwencji ciężkich przekroczy próg — zamiast pracować na podejrzanej
+  polityce przez czas trwania dochodzenia;
+- **nagrania z osobą w kadrze mają wymuszoną retencję trzymiesięczną**
+  (art. 22² Kodeksu pracy) — alarm o przeterminowanym klipie nie cichnie sam.
+
+Wartość tych trzech pozycji to koszt unikniętego zdarzenia (wypadek, kara,
+wstrzymanie linii przez inspekcję), którego prawdopodobieństwa nie znamy i nie
+będziemy zmyślać. Znamy natomiast koszt ich braku: w razie wypadku pytanie
+„która wersja sterownika pracowała i kto ją dopuścił" musi mieć odpowiedź.
+
+---
+
+## Co jest w tym repozytorium
+
+Symulator systemu legacy (Python), **piętnaście modułów Open Mercato**
+(TypeScript), narzędzie fizycznego odbioru ramienia SO-101 (Python)
+i dokumentacja decyzji projektowych. Repozytorium **nie zawiera samej
+platformy** — moduły kopiuje się do klonu Open Mercato skryptem
 `mercato/install.sh`.
+
+---
+
+# Dokumentacja techniczna
+
+Od tego miejsca zaczyna się pełny opis techniczny. Wszystko, co jest niżej,
+powstało w trakcie hackathonu 18–19 września 2026; commity i ich kolejność są
+w historii `git log`.
 
 ## Po co to powstało
 
@@ -19,10 +399,15 @@ w magazynie, ani czy faktura została zapłacona. Księga ruchów potrafi zejś�
 poniżej zera i nikt się o tym nie dowie przed załadunkiem.
 
 Równolegle na halę wchodzą roboty sortujące, których sterowanie jest wyuczone,
-a nie zaprogramowane. Od 20 stycznia 2027 obowiązuje rozporządzenie maszynowe
-(UE) 2023/1230; AI Act od 2 lutego 2025 zakazuje pewnych klas detekcji
-w miejscu pracy; Kodeks pracy nakazuje zniszczyć nagrania z hali po trzech
-miesiącach. Regulator, odbiorca frakcji i ubezpieczyciel będą pytać: która
+a nie zaprogramowane. Trzy akty prawne rozstrzygają, co wolno, a czego nie:
+
+| Akt | Co z niego wynika dla hali | Od kiedy |
+| --- | --- | --- |
+| **Rozporządzenie (UE) 2023/1230** o maszynach, Annex I część A | maszyna, w której funkcję bezpieczeństwa pełni element uczący się, trafia do oceny przez jednostkę notyfikowaną | 20 stycznia 2027 |
+| **Rozporządzenie (UE) 2024/1689** (AI Act), art. 5 ust. 1 lit. f) i g) | zakaz rozpoznawania emocji w miejscu pracy i kategoryzacji biometrycznej wg cech wrażliwych | 2 lutego 2025 |
+| **Kodeks pracy, art. 22²** § 1 i § 3 | zamknięty katalog celów monitoringu i **trzymiesięczny limit retencji** nagrań | obowiązuje |
+
+Każdy z nich jest w kodzie bramką, nie akapitem w polityce firmy. Regulator, odbiorca frakcji i ubezpieczyciel będą pytać: która
 wersja sterownika pracowała na której maszynie, kto ją dopuścił, na jakiej
 podstawie, ile razy człowiek musiał interweniować i co się stało z nagraniem.
 
@@ -170,7 +555,7 @@ openmercato_garbagekind/
 │   ├── install.sh     kopiuje moduły do klonu Open Mercato i włącza je w modules.ts
 │   ├── embodiments/   so101_follower.json — opis sprzętu manipulatora SO-101
 │   ├── README.md      moduł sortownia w szczegółach
-│   └── modules/       14 modułów
+│   └── modules/       15 modułów
 └── physical-ai/       README (dowody faz 0–6), ROADMAP, EVENTS, ERP-BRIDGE, VISION,
                        HMI, COMPUTE, PLANT-VIEW, OPERATIONS, EMBODIMENTS, HANDOFF-PHYSICAL
 ```
@@ -585,12 +970,18 @@ Jedyne endpointy bez sesji użytkownika — uwierzytelnienie podpisem Ed25519
 kluczem, którego centrala nie ma:
 
 ```
-POST /api/edge/enroll
-POST /api/edge/connect
-POST /api/edge/heartbeat
-POST /api/deployment/lease
-POST /api/deployment/report
+POST /api/edge/enroll       edge.enroll:<token>:<odcisk klucza>
+POST /api/edge/connect      edge.connect:<agentId>:<czas ISO>
+POST /api/edge/heartbeat    edge.heartbeat:<sesja>:<nr kolejny>:<czas ISO>
+POST /api/edge/telemetry    edge.telemetry:<sesja>:<nr>:<czas>:<rodzaj>:<sha256 ładunku>
+POST /api/deployment/lease  deployment.lease:<sesja>:<nr kolejny>:<czas ISO>
+POST /api/deployment/report deployment.report:<sesja>:<stan>:<czas ISO>
 ```
+
+Każdy kanał ma **własny przedrostek podpisu**. To jest wiązanie kontekstu:
+podpis zebrany przy uderzeniu serca nie może zostać przedstawiony jako żądanie
+dzierżawy ani jako zgłoszenie stanu. Bez przedrostka ktoś, kto przechwyci
+jeden heartbeat, przedłużyłby sobie mandat do pracy.
 
 Człowiek wchodzi inną trasą (`fleet/lib/commandRoute.ts`): sesją, ze
 strażnikiem mutacji, przez szynę komend — a więc z wpisem do dziennika audytu.
@@ -660,52 +1051,72 @@ Testy modułów:
 ```bash
 cd apps/mercato
 yarn jest src/modules/sortownia            # 245
-yarn jest src/modules/fleet                # i tak dalej: 14 modułów, razem 780 testów
+yarn jest src/modules/fleet                # i tak dalej: 15 modułów
 ```
 
-## Granice i dług
+## Czego nie zdążyliśmy i co nie jest udowodnione
+
+Sekcja pisana wprost, bo hackathon łatwo sprzedać ładniej, niż wyszedł.
+Poniższe **nie jest** zrobione albo **nie jest** dowiedzione:
+
+**Warstwa fizyczna — największa dziura.**
+
+- **Nie ma zaliczonego autonomicznego chwytu.** Model G0.5 w żadnej
+  obserwowanej próbie nie wyemitował akcji chwytaka; zamknięcie chwytaka było
+  skryptowane. Kto opowiada to jako „robot sam sortuje", mówi nieprawdę.
+- **E-stop nie został przetestowany fizycznie.** SO-101 w obecnej postaci nie
+  ma deterministycznej warstwy zatrzymania — bez sprzętowego E-stopu nie da
+  się prawdziwie wypełnić uzasadnienia bezpieczeństwa, a więc maszyna nie
+  przejdzie dopuszczenia. Szczegóły i warunki odbioru:
+  [`GREG_HANDOFF.md`](GREG_HANDOFF.md).
+- **Zasięg i udźwig ramienia są niezmierzone**, w kontrakcie embodimentu stoją
+  jako `unknown`. Nie wpisujemy wartości katalogowej.
+- **Żaden moduł nie widział prawdziwej wagi ani prawdziwej kamery.** Epizody,
+  masy i zliczenia w dowodach pochodzą z komend `prove`, nie ze stanowiska.
+- Testy mostu do ramienia (56/56) przeszły **na atrapach**, bez sprzętu.
+
+**Ewidencja — granice zakresu.**
 
 - Karty przekazania odpadu są wewnętrznym odzwierciedleniem KPO powiązanym
-  z wysyłką; nie ma połączenia z rządowym API rejestru BDO.
+  z wysyłką; **nie ma połączenia z rządowym API rejestru BDO**.
 - Przyjęcie odpadu na plac jest operacją magazynową. Nie ma księgi zakupowej
   ani fakturowania opłat bramowych od dostawców.
-- Sprzedaż frakcji nalicza 23 % VAT bez podzielonej płatności i odwrotnego
+- Sprzedaż frakcji nalicza 23% VAT bez podzielonej płatności i odwrotnego
   obciążenia.
-- Uruchamianie importu z panelu Data Sync nie było jeszcze przechodzone
-  end-to-end; przebiegi szły komendą CLI.
-- Platforma nie wysyła poleceń trajektorii do sterowników robotów.
-  Zatrzymanie natychmiastowe należy do deterministycznej warstwy
-  bezpieczeństwa, która nie przechodzi przez tę platformę.
-- Żaden moduł nie widział prawdziwej wagi, prawdziwego robota ani prawdziwej
-  kamery. Epizody, masy i zliczenia w dowodach pochodzą z komend `prove`.
-- Epizody, interwencje i okna detekcji wchodzą wyłącznie szyną komend i CLI.
-  Warstwa HTTP dla telemetrii agenta nie istnieje.
-- Kolejność, jednostki i układy odniesienia wektora obserwacji i akcji są
-  kontraktem słownym. System sprawdza liczbę wymiarów, nie ich znaczenie —
-  polityka licząca w złych jednostkach przejdzie każdą bramkę.
-- Kategoria przyczyny interwencji jest wolnym tekstem do czasu, aż zespół
-  robotyczny dostarczy zamkniętą listę.
+- Uruchamianie importu z panelu Data Sync nie było przechodzone end-to-end;
+  przebiegi szły komendą CLI.
 
-Pełna lista tego, co zespół uczący roboty musi dostarczyć, z podziałem na
-bramki twarde, ostrzeżenia i jakość:
+**Architektura — świadome granice, nie dług.**
+
+- Platforma **nie wysyła poleceń trajektorii** do sterowników robotów.
+  Zatrzymanie natychmiastowe należy do deterministycznej warstwy
+  bezpieczeństwa, która nie przechodzi przez tę platformę. Endpoint, który
+  „przerywa" zadanie, oznacza rekord — nie hamuje maszyny.
+- Platforma **nie uczy polityki**. Przechodzą przez nią fakty (epizody,
+  interwencje, liczniki), a nie tensory i obraz.
+
+Pełna lista tego, co zespół uczący roboty musi dostarczyć, z kryteriami
+zaliczenia: [`GREG_HANDOFF.md`](GREG_HANDOFF.md) oraz
 [`physical-ai/HANDOFF-PHYSICAL.md`](physical-ai/HANDOFF-PHYSICAL.md).
 
 ## Liczby
 
 | | |
 | --- | --- |
-| Moduły Open Mercato | 14 |
+| Moduły Open Mercato | 15 |
 | Tabele w migracjach | 40 |
-| Własne komendy | 48 |
+| Własne komendy | 49 |
 | Zdarzenia z typowanym ładunkiem | 59 |
-| Testy TypeScript | 780 |
-| Testy Python | 19 |
-| Zweryfikowane na żywej instancji | 8 kontrahentów, 46 zamówień, 46 faktur, 29 kart przekazania, 11 wpłat, 80 partii, 239 ruchów legacy → 174 operacje WMS bez błędów; bilans masy domknięty co do kilograma |
+| Pliki testowe TypeScript | 58 |
+| Testy TypeScript (cały stack) | 1385 w 154 zestawach |
+| Testy Python | 37 |
+| Klucze tłumaczeń (pl/en) | 425 |
+| Zweryfikowane na żywej instancji | 8 kontrahentów, 46 zamówień, 46 faktur, 40 kart przekazania, 11 wpłat, 109 partii, 299 wierszy legacy → 217 kwitów → 309 ruchów WMS bez błędów; powtórny import: 0 zapisanych, 217 duplikatów; bilans masy domknięty co do kilograma |
 
 Liczby policzone z `migrations/`, `commands/`, `events.ts` i `__tests__/`
 każdego modułu na gałęzi `main`.
 
-## Dokumentacja
+## Spis dokumentów
 
 - [`mercato/README.md`](mercato/README.md) — moduł `sortownia`
 - [`physical-ai/README.md`](physical-ai/README.md) — decyzje i dowody faz 0–6

@@ -66,6 +66,22 @@ export async function GET(req: Request): Promise<Response> {
   const container = await createRequestContainer()
   const em = container.resolve('em') as EntityManager
 
+  try {
+    return await czytajRejestr(em, tenantId)
+  } catch (error) {
+    /**
+     * Bez tego bloku wyjatek konczyl sie pustym 500 bez naglowka typu, a
+     * przegladarka pokazywala „Unexpected end of JSON input" — komunikat,
+     * ktory mowi o parserze, a nie o przyczynie. Najczestsza przyczyna jest
+     * prozaiczna: modul doinstalowany bez `db migrate`, wiec zapytanie siega
+     * po kolumne, ktorej jeszcze nie ma.
+     */
+    console.error('[policy_registry] GET /api/policy_registry/policies', error)
+    return json({ error: error instanceof Error ? error.message : String(error) }, 500)
+  }
+}
+
+async function czytajRejestr(em: EntityManager, tenantId: string): Promise<Response> {
   const policies = await em.getConnection().execute<Array<{
     id: string
     policy_key: string
