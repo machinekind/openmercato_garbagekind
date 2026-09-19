@@ -273,6 +273,17 @@ Uwaga: to nie znaczy „wszystkie ważne" — znaczy „nic nowego do ogłoszeni
 Idempotencja potwierdzona na prawdziwych wierszach, nie tylko na atrapie
 w testach.
 
+**Emisja przez realną szynę, nie przez atrapę.** Agentowi ustawiono „ostatnio
+widziany" dwie godziny wstecz; harmonogram `edge-sessions-sweep` w działającym
+serwerze wykonał przebieg o `10:42:42`, zamknął sesję (otwartych: 1 → 0)
+i wyemitował `edge.agent.lost`. W dzienniku serwera **zero** ostrzeżeń
+`Event bus not available` — czyli emisja trafiła na uzbrojoną szynę, a nie
+w pustkę.
+
+Uczciwa granica tego dowodu: nie ma jeszcze żadnego subskrybenta, więc pełny
+obieg „zdarzenie → reakcja" nie jest obserwowalny. Potwierdzone jest, że
+zdarzenie powstaje, jest zadeklarowane i dociera do szyny.
+
 **Testy**: 1314 przechodzi, w tym 11 nowych zestawów emisji.
 **Typecheck**: `tsc --noEmit` czysty poza sześcioma wcześniejszymi błędami
 w `sortownia`, niezwiązanymi z tą zmianą.
