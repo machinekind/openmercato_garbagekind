@@ -38,5 +38,21 @@
   "digital_twins.layer.chairs": "Chairs",
   "digital_twins.layer.plants": "Plants",
   "digital_twins.layer.services": "Services",
-  "digital_twins.layer.roof": "Ceiling"
+  "digital_twins.layer.roof": "Ceiling",
+  "digital_twins.cameras.title": "Cameras and worker tracking",
+  "digital_twins.cameras.description": "Local video analysis with anonymous tracks projected onto the 3D model.",
+  "digital_twins.cameras.count": "cameras",
+  "digital_twins.cameras.private": "local processing",
+  "digital_twins.cameras.selectRecording": "Choose an industrial camera recording. The file stays in this browser.",
+  "digital_twins.cameras.chooseFile": "Choose recording",
+  "digital_twins.cameras.start": "Start tracking",
+  "digital_twins.cameras.pause": "Pause",
+  "digital_twins.cameras.loadingModel": "Loading AI…",
+  "digital_twins.cameras.codecError": "The browser cannot play this MOV codec. Convert it to MP4/H.264 without changing the resolution.",
+  "digital_twins.cameras.trackerError": "The person detector could not start. Reload the page and try again.",
+  "digital_twins.cameras.activeTracks": "Active anonymous tracks",
+  "digital_twins.cameras.privacyHelp": "No face identification. The recording is not uploaded to the ERP and tracks are removed when the session ends.",
+  "digital_twins.cameras.loadingRegistry": "Loading camera registry…",
+  "digital_twins.cameras.calibration.estimated": "estimated calibration",
+  "digital_twins.cameras.calibration.verified": "verified calibration"
 }

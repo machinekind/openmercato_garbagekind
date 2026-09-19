@@ -24,6 +24,9 @@ export async function create(container, buffer, manifest, onSelect, onError) {
   let frame = 0
   let controls
   let model
+  const telemetry = new THREE.Group()
+  telemetry.name = 'physical-ai-telemetry'
+  scene.add(telemetry)
   const selection = new THREE.Box3Helper(new THREE.Box3(), 0xec8800)
   selection.visible = false
   scene.add(selection)
@@ -135,6 +138,42 @@ export async function create(container, buffer, manifest, onSelect, onError) {
     renderer.forceContextLoss()
     renderer.domElement.remove()
   }
+  const clearGroup = (group) => {
+    while (group.children.length) {
+      const object = group.children.pop()
+      object.geometry?.dispose()
+      const materials = Array.isArray(object.material) ? object.material : [object.material]
+      materials.forEach((material) => material?.dispose())
+    }
+  }
+  const cameraGroup = new THREE.Group()
+  const tracksGroup = new THREE.Group()
+  telemetry.add(cameraGroup, tracksGroup)
+  const setCamera = (entry) => {
+    clearGroup(cameraGroup)
+    if (!entry) return requestRender()
+    const origin = new THREE.Vector3(...entry.calibration.cameraPosition)
+    const target = new THREE.Vector3(...entry.calibration.target)
+    const body = new THREE.Mesh(new THREE.BoxGeometry(.42, .28, .5), new THREE.MeshStandardMaterial({ color: 0x2563eb }))
+    body.position.copy(origin); body.lookAt(target); cameraGroup.add(body)
+    const points = [origin, target]
+    for (const point of entry.calibration.twinFloorPolygon) points.push(origin, new THREE.Vector3(point[0], .04, point[1]))
+    const lines = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: .7 }))
+    cameraGroup.add(lines)
+    requestRender()
+  }
+  const setTracks = (tracks) => {
+    clearGroup(tracksGroup)
+    for (const track of tracks) {
+      const marker = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, 1.72, 16), new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0x6b3c00 }))
+      marker.position.set(track.x, .86, track.z); marker.userData.trackId = track.id; tracksGroup.add(marker)
+      if (track.trail?.length > 1) {
+        const points = track.trail.map((point) => new THREE.Vector3(point[0], .045, point[1]))
+        tracksGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xf59e0b })))
+      }
+    }
+    requestRender()
+  }
   try {
     model = (await new GLTFLoader().parseAsync(buffer, '')).scene
     scene.add(model)
@@ -150,7 +189,7 @@ export async function create(container, buffer, manifest, onSelect, onError) {
     renderer.domElement.addEventListener('pointerup', up)
     renderer.domElement.addEventListener('webglcontextlost', contextLost)
     return {
-      dispose, fit, select,
+      dispose, fit, select, setCamera, setTracks,
       setView(mode) { camera = mode === 'top' ? top : perspective; resetControls(); resize(); fit() },
       setLayer(id, visible) {
         manifest.elements.filter((element) => element.layerId === id).forEach((element) => { nodes.get(element.id).visible = visible })

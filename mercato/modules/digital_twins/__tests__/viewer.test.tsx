@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { apiCallOrThrow } from '@open-mercato/ui/backend/utils/apiCall'
 import DigitalTwinViewer from '../components/DigitalTwinViewer'
 import manifest from '../assets/room.manifest.json'
+import cameraManifest from '../assets/cameras.manifest.json'
 
 jest.mock('@open-mercato/shared/lib/i18n/context', () => ({ useT: () => (key: string, fallback?: string) => fallback ?? key }))
 jest.mock('@open-mercato/ui/backend/utils/apiCall', () => ({ apiCallOrThrow: jest.fn() }))
@@ -18,12 +19,12 @@ jest.mock('@open-mercato/ui/backend/detail', () => ({
 }))
 
 const mockApi = jest.mocked(apiCallOrThrow)
-const engine = { dispose: jest.fn(), fit: jest.fn(), setView: jest.fn(), setLayer: jest.fn(), select: jest.fn() }
+const engine = { dispose: jest.fn(), fit: jest.fn(), setView: jest.fn(), setLayer: jest.fn(), select: jest.fn(), setCamera: jest.fn(), setTracks: jest.fn() }
 const create = jest.fn()
 
 beforeEach(() => {
   jest.clearAllMocks()
-  mockApi.mockImplementation(async (url) => ({ result: String(url).endsWith('/room') ? manifest : new ArrayBuffer(8) }) as Awaited<ReturnType<typeof apiCallOrThrow>>)
+  mockApi.mockImplementation(async (url) => ({ result: String(url).endsWith('/room') ? manifest : String(url).endsWith('/cameras') ? cameraManifest : new ArrayBuffer(8) }) as Awaited<ReturnType<typeof apiCallOrThrow>>)
   create.mockResolvedValue(engine)
   window.DigitalTwinRenderer = { create }
 })
@@ -40,7 +41,11 @@ test('floor plan and layers control the engine, and unmount releases it', async 
 })
 
 test('failed requests expose a retry and recover without mounting a broken renderer', async () => {
-  mockApi.mockRejectedValueOnce(new Error('offline'))
+  let roomAttempts = 0
+  mockApi.mockImplementation(async (url) => {
+    if (String(url).endsWith('/room') && roomAttempts++ === 0) throw new Error('offline')
+    return { result: String(url).endsWith('/room') ? manifest : String(url).endsWith('/cameras') ? cameraManifest : new ArrayBuffer(8) } as Awaited<ReturnType<typeof apiCallOrThrow>>
+  })
   render(<DigitalTwinViewer />)
   await screen.findByRole('alert')
   expect(create).not.toHaveBeenCalled()

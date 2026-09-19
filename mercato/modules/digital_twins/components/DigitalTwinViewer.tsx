@@ -9,7 +9,8 @@ import { Checkbox } from '@open-mercato/ui/primitives/checkbox'
 import { Input } from '@open-mercato/ui/primitives/input'
 import { Badge } from '@open-mercato/ui/primitives/badge'
 import { apiCallOrThrow } from '@open-mercato/ui/backend/utils/apiCall'
-import { roomManifestSchema, type RoomManifest } from '../data/validators'
+import { roomManifestSchema, type CameraDefinition, type RoomManifest } from '../data/validators'
+import CameraManagement, { type WorkerTrack } from './CameraManagement'
 
 type Viewer = {
   dispose(): void
@@ -17,6 +18,8 @@ type Viewer = {
   setView(mode: 'top' | '3d'): void
   setLayer(id: string, visible: boolean): void
   select(id: string | null, focus?: boolean): void
+  setCamera(camera: CameraDefinition | null): void
+  setTracks(tracks: WorkerTrack[]): void
 }
 type RendererModule = {
   create(container: HTMLElement, buffer: ArrayBuffer, manifest: RoomManifest, onSelect: (id: string | null) => void, onError: (reason: string) => void): Promise<Viewer>
@@ -42,6 +45,8 @@ export default function DigitalTwinViewer() {
   const t = useT()
   const host = React.useRef<HTMLDivElement>(null)
   const viewer = React.useRef<Viewer | null>(null)
+  const activeCamera = React.useRef<CameraDefinition | null>(null)
+  const activeTracks = React.useRef<WorkerTrack[]>([])
   const [manifest, setManifest] = React.useState<RoomManifest | null>(null)
   const [ready, setReady] = React.useState(false)
   const [error, setError] = React.useState(false)
@@ -70,6 +75,8 @@ export default function DigitalTwinViewer() {
         current = await renderer.create(host.current, model.result, room, setSelectedId, () => { setError(true); setReady(false) })
         if (controller.signal.aborted) { current.dispose(); return }
         viewer.current = current
+        current.setCamera(activeCamera.current)
+        current.setTracks(activeTracks.current)
         setReady(true)
       } catch {
         if (!controller.signal.aborted) { current?.dispose(); setError(true) }
@@ -83,6 +90,8 @@ export default function DigitalTwinViewer() {
   const visibleElements = manifest?.elements.filter((element) => layers[element.layerId] && element.label.toLocaleLowerCase().includes(query.toLocaleLowerCase())) ?? []
   const changeView = (mode: 'top' | '3d') => { setView(mode); viewer.current?.setView(mode) }
   const toggleLayer = (id: string, visible: boolean) => { setLayers((previous) => ({ ...previous, [id]: visible })); viewer.current?.setLayer(id, visible) }
+  const handleCamera = React.useCallback((camera: CameraDefinition | null) => { activeCamera.current = camera; viewer.current?.setCamera(camera) }, [])
+  const handleTracks = React.useCallback((tracks: WorkerTrack[]) => { activeTracks.current = tracks; viewer.current?.setTracks(tracks) }, [])
 
   return <Page>
     <PageHeader title={t('digital_twins.title')} description={t('digital_twins.description')}
@@ -135,6 +144,7 @@ export default function DigitalTwinViewer() {
             </section>
           </aside>
         </div>
+        <CameraManagement onCamera={handleCamera} onTracks={handleTracks} />
       </div>
     </PageBody>
   </Page>
