@@ -241,12 +241,17 @@ export async function GET(req: Request): Promise<Response> {
     issues: string
     transfers: string
     total: string
+    kwity: string
     last_performed_at: string | null
   }>>(
     `select coalesce(sum(case when type = 'receipt' then quantity else 0 end), 0) as receipts,
             coalesce(sum(case when type = 'adjust' then abs(quantity) else 0 end), 0) as issues,
             coalesce(sum(case when type = 'transfer' then quantity else 0 end), 0) as transfers,
-            count(distinct (reference_id, type)) as total,
+            count(*) as total,
+            -- Jeden kwit legacy bywa kilkoma ruchami WMS, bo masa schodzi
+            -- z kilku partii. Do uzgodnienia z księgą starego systemu liczy
+            -- się kwit, a reference_id jest jego odciskiem.
+            count(distinct reference_id) as kwity,
             max(performed_at) as last_performed_at
        from wms_inventory_movements
       where organization_id = ?
@@ -473,7 +478,8 @@ export async function GET(req: Request): Promise<Response> {
         receipts30dKg: Number.parseFloat(flow?.receipts ?? '0'),
         issues30dKg: Number.parseFloat(flow?.issues ?? '0'),
         sorted30dKg: Number.parseFloat(flow?.transfers ?? '0'),
-        movements30d: Number.parseInt(flow?.total ?? '0', 10),
+        movements30d: Number.parseInt(flow?.kwity ?? '0', 10),
+        movementRows30d: Number.parseInt(flow?.total ?? '0', 10),
         lastMovementAt: flow?.last_performed_at ? new Date(flow.last_performed_at).toISOString() : null,
       },
       locations: locationRows,

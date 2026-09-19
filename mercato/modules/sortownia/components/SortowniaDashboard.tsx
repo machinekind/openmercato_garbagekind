@@ -57,7 +57,10 @@ type DashboardData = {
     receipts30dKg: number
     issues30dKg: number
     sorted30dKg: number
+    /** Kwity ze starego systemu — liczba do uzgodnienia z księgą legacy. */
     movements30d: number
+    /** Ruchy zapisane w WMS. Większa, gdy masa schodziła z kilku partii. */
+    movementRows30d: number
     lastMovementAt: string | null
   }
   locations: LocationRow[]
@@ -257,7 +260,13 @@ export default function SortowniaDashboard() {
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              {totals ? `${totals.movements30d} ruchów, ostatni ${formatMoment(totals.lastMovementAt)}` : '—'}
+              {totals
+                ? `${totals.movements30d} ${
+                    totals.movementRows30d > totals.movements30d
+                      ? `kwitów w ${totals.movementRows30d} ruchach`
+                      : 'ruchów'
+                  }, ostatni ${formatMoment(totals.lastMovementAt)}`
+                : '—'}
             </span>
           }
         />

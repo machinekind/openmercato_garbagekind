@@ -116,7 +116,8 @@ function defaultQueries(sql: string): unknown[] {
       receipts: '385384',
       issues: '164910',
       transfers: '235890',
-      total: '176',
+      total: '212',
+      kwity: '176',
       last_performed_at: '2026-09-18T22:14:50.000Z',
     },
   ]

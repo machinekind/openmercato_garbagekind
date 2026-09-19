@@ -245,7 +245,8 @@ const importCommand: ModuleCli = {
       console.log('  wpłaty: pominięto (brak pliku albo zamówień)')
     }
 
-    // 7. Księga ruchów — kanał plikowy, zapis przez komendy WMS.
+    // 7. Partie odpadu — zakładane przed księgą, bo przyjęcie na nie wskazuje.
+    // 8. Księga ruchów — kanał plikowy, zapis przez komendy WMS.
 
     const { warehouse, byCode } = await loadLocationIndex(em, scope)
     if (!warehouse) throw new Error('Magazyn nie powstał — przerwano.')
@@ -324,10 +325,13 @@ const importCommand: ModuleCli = {
     console.log(`  ruchy: przeczytane ${seen}, zapisane ${written}, duplikaty ${duplicates}, błędy ${failed}`)
     for (const error of errors) console.log(`    ! ${error}`)
 
-    // 8. Rezerwacje pod zamówienia jeszcze niezrealizowane — dopiero po księdze.
-    // Rezerwacja potrzebuje stanu: przed ruchami magazyn jest pusty i WMS
-    // odmówiłby każdej, a rezerwacja założona na placu przyjęć blokowałaby masę,
-    // która ma dopiero zostać wysortowana do boksu.
+    // 9. Rezerwacje pod zamówienia jeszcze niezrealizowane.
+    //
+    // Dopiero po księdze ruchów: rezerwacja blokuje masę, która musi już
+    // leżeć w magazynie. Puszczona wcześniej nie miałaby czego zablokować
+    // i każde otwarte zamówienie zgłaszałaby jako brak pokrycia — przy
+    // imporcie na pustą bazę odmowa WMS-u znaczyłaby wtedy tylko tyle, że
+    // pytamy o stan, którego sami jeszcze nie zapisaliśmy.
     if (salesOrderIndex.size > 0 && (await fileExists(ordersPath))) {
       const orderRows = await readOrders(ordersPath)
       // Wydane = ma swój ruch WZ w księdze. Reszta czeka i ma być zablokowana.
@@ -355,7 +359,7 @@ const importCommand: ModuleCli = {
       for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
     }
 
-    // 9. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
+    // 10. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
     await runCrmSync({ em, commandBus, commandContext, scope })
 
     const balances = await em.find(InventoryBalance, {

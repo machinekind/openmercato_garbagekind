@@ -23,27 +23,39 @@ function row(overrides: Partial<LegacyMovementRow> & { stkmoveno: number }): Leg
   }
 }
 
-type Bucket = { lot: { id: string } | null; quantityOnHand: string; quantityReserved?: string; quantityAllocated?: string }
+/** Partia leżąca w lokalizacji źródłowej — tyle, ile potrzebuje FIFO. */
+type Partia = { id: string; lotNumber: string; manufacturedAt: Date; dostepne: number }
 
-function bucket(lotId: string | null, onHand: number, reserved = 0): Bucket {
-  return { lot: lotId ? { id: lotId } : null, quantityOnHand: String(onHand), quantityReserved: String(reserved), quantityAllocated: '0' }
-}
-
-/** Domyślnie w każdej lokalizacji leży jedna partia z zapasem, żeby ruch miał co zdejmować. */
-const DEFAULT_BUCKETS: Bucket[] = [bucket('lot-a', 100000)]
+const PARTIA_BEZ_LIMITU: Partia[] = [
+  { id: 'lot-1', lotNumber: 'PZ/100001', manufacturedAt: new Date('2026-09-01T06:00:00'), dostepne: 1_000_000 },
+]
 
 function buildContext(
-  options: { existingMovement?: boolean; existingQuantity?: number; failOn?: string; buckets?: Bucket[] } = {},
+  options: {
+    existingMovement?: boolean
+    failOn?: string
+    /** Co leży w lokalizacji źródłowej. Kolejność podania celowo bywa inna niż FIFO. */
+    partie?: Partia[]
+    /** Ile masy z tego wiersza legacy siedzi już w księdze — wznowienie po przerwaniu. */
+    juzWKsiedze?: number
+  } = {},
 ) {
   const commands: RecordedCommand[] = []
+  const partie = options.partie ?? PARTIA_BEZ_LIMITU
   const context = {
     em: {
-      find: jest.fn(async (entity: { name?: string }) => {
-        if (entity?.name === 'InventoryMovement') {
-          if (options.existingMovement) return [{ quantity: String(options.existingQuantity ?? 1000000) }]
+      // Jedno `find` obsługuje dwa pytania. Rozróżniamy je po kształcie filtra:
+      // księga jest pytana o `referenceId`, salda o lokalizację.
+      find: jest.fn(async (_entity: unknown, where: Record<string, unknown>) => {
+        if ('referenceId' in where) {
+          if (options.existingMovement) return [{ quantity: '999999' }]
+          if (options.juzWKsiedze) return [{ quantity: String(options.juzWKsiedze) }]
           return []
         }
-        return options.buckets ?? DEFAULT_BUCKETS
+        return partie.map((partia) => ({
+          lot: { id: partia.id, lotNumber: partia.lotNumber, manufacturedAt: partia.manufacturedAt },
+          quantityAvailable: String(partia.dostepne),
+        }))
       }),
     },
     commandBus: {
@@ -144,10 +156,11 @@ describe('applyMovementBatch — mapowanie na komendy WMS', () => {
       fromLocationId: 'loc-przyj',
       toLocationId: 'loc-boks1',
       quantity: 4685.98,
-      lotId: 'lot-a',
       type: 'transfer',
       reasonCode: 'SORT',
       referenceId: legacyUuid('movement', 100011),
+      // Bez partii WMS szuka salda bezpartyjnego, które jest zerowe.
+      lotId: 'lot-1',
     })
     // Oba numery legacy zostają w metadanych: po nich wraca się do kwitu.
     expect((commands[0].input.metadata as { legacy: { stkmoveno: number[] } }).legacy.stkmoveno).toEqual([
@@ -169,87 +182,11 @@ describe('applyMovementBatch — mapowanie na komendy WMS', () => {
     expect(commands[0].input).toMatchObject({
       locationId: 'loc-boks1',
       delta: -9004.1,
-      lotId: 'lot-a',
       reasonCode: 'WZ',
       referenceType: 'so',
+      lotId: 'lot-1',
     })
     expect(String(commands[0].input.reason)).toContain('D005')
-  })
-
-  it('PZ zawsze zapisuje partię z indeksu, jeśli została założona', async () => {
-    const { context, commands } = buildContext()
-    context.lots = new Map([[100001, 'lot-pz-100001']])
-    await applyMovementBatch(context, [row({ stkmoveno: 100001 })], { final: true })
-    expect(commands[0].input.lotId).toBe('lot-pz-100001')
-  })
-})
-
-describe('applyMovementBatch — rozkład na partie', () => {
-  const pair = [
-    row({ stkmoveno: 100010, typ: 'SORT', loccode: 'PRZYJ', iloscKg: -5000, debtorno: '' }),
-    row({ stkmoveno: 100011, typ: 'SORT', loccode: 'BOKS1', iloscKg: 5000, debtorno: '' }),
-  ]
-
-  it('jedna para SORT schodzi z kilku partii w kolejności przyjęcia — po jednym ruchu na partię', async () => {
-    const { context, commands } = buildContext({
-      buckets: [bucket('lot-stara', 3000), bucket('lot-nowa', 4000)],
-    })
-    const { outcomes } = await applyMovementBatch(context, pair, { final: true })
-
-    expect(commands.map((command) => command.id)).toEqual(['wms.inventory.move', 'wms.inventory.move'])
-    expect(commands.map((command) => [command.input.lotId, command.input.quantity])).toEqual([
-      ['lot-stara', 3000],
-      ['lot-nowa', 2000],
-    ])
-    // Wszystkie kawałki niosą ten sam odcisk legacy — po numerze wraca się do kwitu.
-    const referenceIds = new Set(commands.map((command) => command.input.referenceId))
-    expect(referenceIds).toEqual(new Set([legacyUuid('movement', 100011)]))
-    expect(outcomes).toHaveLength(1)
-    expect(outcomes[0]).toMatchObject({ action: 'create', externalId: '100010+100011' })
-  })
-
-  it('masa zarezerwowana nie schodzi — liczy się dostępne, nie leżące', async () => {
-    const { context, commands } = buildContext({
-      buckets: [bucket('lot-a', 5000, 4000), bucket('lot-b', 1000)],
-    })
-    const { outcomes } = await applyMovementBatch(context, pair, { final: true })
-    expect(commands).toHaveLength(0)
-    expect(outcomes[0].action).toBe('failed')
-    expect(outcomes[0].error).toContain('insufficient_stock')
-  })
-
-  it('koszyk bez partii też jest źródłem — przyjęcia sprzed partii nie znikają', async () => {
-    const { context, commands } = buildContext({ buckets: [bucket(null, 5000)] })
-    await applyMovementBatch(context, pair, { final: true })
-    expect(commands).toHaveLength(1)
-    expect(commands[0].input.lotId).toBeUndefined()
-  })
-
-  it('import przerwany w połowie rozkładu dokłada przy powtórce tylko resztę', async () => {
-    const { context, commands } = buildContext({
-      existingMovement: true,
-      existingQuantity: 3000,
-      buckets: [bucket('lot-nowa', 4000)],
-    })
-    const { outcomes } = await applyMovementBatch(context, pair, { final: true })
-    expect(commands).toHaveLength(1)
-    expect(commands[0].input.quantity).toBe(2000)
-    expect(outcomes[0].action).toBe('create')
-  })
-
-  it('WZ z boksu schodzi z partii, więc wiadomo, czyj odpad pojechał do odbiorcy', async () => {
-    const { context, commands } = buildContext({
-      buckets: [bucket('lot-dostawca-1', 6000), bucket('lot-dostawca-2', 6000)],
-    })
-    await applyMovementBatch(
-      context,
-      [row({ stkmoveno: 100030, typ: 'WZ', loccode: 'BOKS1', iloscKg: -9000, debtorno: 'D005' })],
-      { final: true },
-    )
-    expect(commands.map((command) => [command.input.lotId, command.input.delta])).toEqual([
-      ['lot-dostawca-1', -6000],
-      ['lot-dostawca-2', -3000],
-    ])
   })
 
   it('masy jadą w kilogramach — megagramy są jednostką raportową, nie magazynową', async () => {
@@ -324,5 +261,106 @@ describe('applyMovementBatch — para rozcięta granicą partii', () => {
     const result = await applyMovementBatch(context, [first], { final: true })
     expect(result.outcomes[0]).toMatchObject({ action: 'failed', stkmoveno: 100010 })
     expect(result.outcomes[0].error).toContain('bez pary')
+  })
+})
+
+describe('applyMovementBatch — masa rozłożona na partie (FIFO)', () => {
+  /**
+   * Odkąd przyjęcie zakłada partię, WMS prowadzi saldo osobno dla każdej z nich
+   * i rozwiązuje je DOKŁADNIE. Ruch bez `lotId` trafia w saldo bezpartyjne —
+   * zerowe — i wraca z `insufficient_stock`, choć odpad leży na placu. Dlatego
+   * jeden kwit legacy bywa kilkoma ruchami magazynowymi.
+   *
+   * Partie podajemy w kolejności innej niż chronologiczna, żeby test sprawdzał
+   * sortowanie, a nie kolejność zwróconą przez bazę.
+   */
+  const partie = [
+    { id: 'lot-c', lotNumber: 'PZ/100005', manufacturedAt: new Date('2026-09-03T06:00:00'), dostepne: 400 },
+    { id: 'lot-a', lotNumber: 'PZ/100001', manufacturedAt: new Date('2026-09-01T06:00:00'), dostepne: 500 },
+    { id: 'lot-b', lotNumber: 'PZ/100003', manufacturedAt: new Date('2026-09-02T06:00:00'), dostepne: 300 },
+  ]
+
+  const paraSort = (kg: number) => [
+    row({ stkmoveno: 100010, typ: 'SORT', loccode: 'PRZYJ', iloscKg: -kg, debtorno: '' }),
+    row({ stkmoveno: 100011, typ: 'SORT', loccode: 'BOKS1', iloscKg: kg, debtorno: '' }),
+  ]
+
+  it('wysortowanie schodzi z partii od najstarszej, aż zbierze swoją masę', async () => {
+    const { context, commands } = buildContext({ partie })
+    const { outcomes } = await applyMovementBatch(context, paraSort(900), { final: true })
+
+    expect(commands.map((command) => [command.input.lotId, command.input.quantity])).toEqual([
+      ['lot-a', 500],
+      ['lot-b', 300],
+      ['lot-c', 100],
+    ])
+    // Rozbicie na partie nie rozbija kwitu: wynik pozycji jest nadal jeden.
+    expect(outcomes).toHaveLength(1)
+    expect(outcomes[0]).toMatchObject({ action: 'create', externalId: '100010+100011' })
+  })
+
+  it('podzielony ruch niesie licznik części — inaczej wygląda jak trzy wysortowania', async () => {
+    const { context, commands } = buildContext({ partie })
+    await applyMovementBatch(context, paraSort(900), { final: true })
+
+    expect(commands.map((command) => (command.input.metadata as { czescRuchu?: unknown }).czescRuchu)).toEqual([
+      { nr: 1, z: 3 },
+      { nr: 2, z: 3 },
+      { nr: 3, z: 3 },
+    ])
+    // Numery z legacy zostają na każdej części — po nich wraca się do kwitu.
+    for (const command of commands) {
+      expect((command.input.metadata as { legacy: { stkmoveno: number[] } }).legacy.stkmoveno).toEqual([100010, 100011])
+    }
+  })
+
+  it('ruch mieszczący się w jednej partii nie dostaje licznika części', async () => {
+    const { context, commands } = buildContext({ partie })
+    await applyMovementBatch(context, paraSort(400), { final: true })
+
+    expect(commands).toHaveLength(1)
+    expect((commands[0].input.metadata as { czescRuchu?: unknown }).czescRuchu).toBeUndefined()
+  })
+
+  it('wydanie też schodzi po partiach, ujemną korektą na każdej', async () => {
+    const { context, commands } = buildContext({ partie })
+    await applyMovementBatch(
+      context,
+      [row({ stkmoveno: 100030, typ: 'WZ', loccode: 'BOKS1', iloscKg: -700, debtorno: 'D005' })],
+      { final: true },
+    )
+
+    expect(commands.map((command) => [command.input.lotId, command.input.delta])).toEqual([
+      ['lot-a', -500],
+      ['lot-b', -200],
+    ])
+  })
+
+  it('brak pokrycia w partiach mówi, ile brakuje — zamiast gołego insufficient_stock', async () => {
+    const { context, commands } = buildContext({ partie })
+    const { outcomes } = await applyMovementBatch(context, paraSort(5000), { final: true })
+
+    // Nic nie idzie do magazynu: brak pokrycia rozstrzyga się przed pierwszą komendą.
+    expect(commands).toHaveLength(0)
+    expect(outcomes[0].action).toBe('failed')
+    expect(outcomes[0].error).toContain('insufficient_stock')
+    expect(outcomes[0].error).toContain('5000.00')
+    expect(outcomes[0].error).toContain('1200.00')
+  })
+
+  it('przerwany import dokłada brakującą resztę, nie powtarza całości', async () => {
+    const { context, commands } = buildContext({ partie, juzWKsiedze: 500 })
+    await applyMovementBatch(context, paraSort(900), { final: true })
+
+    // 500 kg już weszło, więc zostaje 400 — a nie 900 po raz drugi.
+    expect(commands.map((command) => command.input.quantity)).toEqual([400])
+  })
+
+  it('wiersz w całości zapisany zostaje pominięty przy powtórce', async () => {
+    const { context, commands } = buildContext({ partie, juzWKsiedze: 900 })
+    const { outcomes } = await applyMovementBatch(context, paraSort(900), { final: true })
+
+    expect(commands).toHaveLength(0)
+    expect(outcomes[0].action).toBe('skip')
   })
 })

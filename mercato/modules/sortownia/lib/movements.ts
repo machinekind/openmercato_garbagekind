@@ -1,7 +1,11 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
 import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib/commands'
 import type { TenantScope } from '@open-mercato/core/modules/data_sync/lib/adapter'
-import { InventoryBalance, InventoryMovement, type WarehouseLocation } from '@open-mercato/core/modules/wms/data/entities'
+import {
+  InventoryBalance,
+  InventoryMovement,
+  type WarehouseLocation,
+} from '@open-mercato/core/modules/wms/data/entities'
 import { legacyUuid, type LegacyMovementRow } from './legacyFiles'
 import type { FractionIndex } from './fractions'
 
@@ -19,19 +23,11 @@ import type { FractionIndex } from './fractions'
  *    się od bazy, a nie od naszej pamięci.
  * 3. Masy jadą w kilogramach, bo w takich jednostkach prowadzony jest magazyn;
  *    megagramy są przeliczane na ekranach i w raportach.
- *
- * Do tego dochodzi partia. WMS prowadzi saldo osobno dla każdej partii w danej
- * lokalizacji: przyjęcie ze wskazaną partią ląduje w koszyku tej partii, a
- * przesunięcie i korekta bez `lotId` patrzą wyłącznie na koszyk bez partii —
- * który jest pusty. Legacy nie zna partii, więc `SORT` i `WZ` mówią tylko
- * „ile" i „skąd". Rozstrzygamy to po stronie mostu: masa schodzi z partii
- * leżących w lokalizacji źródłowej w kolejności przyjęcia (FIFO) i jeden wiersz
- * legacy może stać się kilkoma ruchami WMS, po jednym na partię. Wszystkie
- * niosą ten sam `referenceId`, więc po numerze ze starego systemu nadal wraca
- * się do kwitu, a magazyn wie, czyj odpad wyjechał do odbiorcy.
+ * 4. Od chwili, gdy przyjęcie zakłada partię, WMS prowadzi saldo OSOBNO dla
+ *    każdej partii. Wysortowanie i wydanie zdejmują masę, która leży w kilku
+ *    partiach naraz, więc jeden wiersz legacy bywa kilkoma ruchami WMS —
+ *    po jednym na każdą ruszoną partię, najstarsze pierwsze.
  */
-
-const EPSILON = 0.000001
 
 export type MovementOutcome = {
   externalId: string
@@ -104,15 +100,24 @@ export function pairSortRows(rows: LegacyMovementRow[]): { pairs: SortPair[]; or
   return { pairs, orphans }
 }
 
+/** Masy poniżej tego progu to szum zmiennoprzecinkowy, nie odpad. */
+const EPSILON_KG = 0.000001
+
+/** Kawałek masy zdjęty z jednej partii. */
+type LotSlice = { lotId?: string; quantity: number }
+
 /**
  * Ile masy z tego wiersza legacy już siedzi w księdze WMS.
  *
- * Klucz idempotencji WMS obejmuje `lotId` i ilość, więc jeden wiersz legacy
- * rozłożony na partie ma w magazynie kilka kluczy — kontrola po kluczu nie
- * powiedziałaby, czy wiersz wszedł w całości. `referenceId` jest naszym
- * własnym, deterministycznym odciskiem `stkmoveno` i nie zmienia się nigdy,
- * dlatego to on rozstrzyga. Zwracamy sumę, a nie flagę: import przerwany w
- * połowie rozkładu na partie dokłada przy powtórce tylko brakującą resztę.
+ * Pytanie „czy ten wiersz już wszedł" ma odpowiedź ilościową, nie logiczną,
+ * bo jeden wiersz bywa kilkoma ruchami — po jednym na ruszoną partię. Przerwany
+ * import dokłada wtedy brakującą resztę, zamiast uznać wiersz za zrobiony
+ * (i zgubić masę) albo powtórzyć go w całości (i ją zdublować).
+ *
+ * Rozstrzyga `referenceId` — nasz własny, deterministyczny odcisk `stkmoveno`,
+ * który nie zmienia się nigdy. Klucz idempotencji WMS obejmuje `lotId` oraz
+ * ilość, więc sam w sobie nie odpowiada na pytanie o wiersz legacy: po zmianie
+ * podziału na partie ten sam wiersz policzyłby się jako nowy.
  */
 async function appliedQuantity(
   ctx: MovementContext,
@@ -128,72 +133,76 @@ async function appliedQuantity(
       tenantId: ctx.scope.tenantId,
     } as never,
     // Komendy WMS zapisują we własnej transakcji; mapa tożsamości EM mogłaby
-    // pamiętać stan sprzed niej.
+    // pamiętać stan sprzed niej, a wtedy powtórzony import dołożyłby masę
+    // drugi raz.
     { refresh: true } as never,
   )
-  let total = 0
-  for (const movement of existing as Array<{ quantity: string | number }>) {
-    total += Math.abs(Number.parseFloat(String(movement.quantity)))
-  }
-  return total
+  return existing.reduce((sum, movement) => sum + Math.abs(Number(movement.quantity ?? 0)), 0)
 }
 
-/** Kawałek masy do zdjęcia z jednej partii (albo z koszyka bez partii). */
-export type SourceChunk = { lotId: string | null; quantity: number }
-
 /**
- * Rozkłada masę do zdjęcia z lokalizacji na partie, które w niej leżą.
+ * Rozkłada masę na partie leżące w lokalizacji — najstarsze pierwsze (FIFO).
  *
- * Kolejność jest FIFO po chwili założenia koszyka salda, czyli po kolejności
- * przyjęć — tak schodzi odpad z placu naprawdę: najstarsza pryzma pierwsza.
- * Gdy partie nie pokrywają całej masy, odmawiamy tak samo jak WMS
- * (`insufficient_stock`), zamiast zdejmować część i udawać, że poszło całe.
+ * Powód jest twardy: `wms.inventory.move` i `wms.inventory.adjust` rozwiązują
+ * saldo DOKŁADNIE (`findExactBalanceForUpdate`), a `lotId` jest częścią jego
+ * tożsamości. Ruch bez partii trafia więc w saldo bezpartyjne — zerowe, odkąd
+ * przyjęcia księgują masę na partie — i wraca z `insufficient_stock`, choć
+ * odpad fizycznie leży. Platforma nie ma tu wyboru partii po strategii:
+ * schemat komendy przyjmuje jedno, opcjonalne `lotId`.
+ *
+ * FIFO liczymy po dacie przyjęcia partii (`manufacturedAt`, czyli data `PZ`
+ * w legacy), a nie po kolejności zapisu do bazy: w gospodarce odpadami liczy
+ * się, jak długo masa leży na placu. Masa bez partii pochodzi sprzed wdrożenia
+ * partii, więc w kolejce FIFO jest najstarsza.
+ *
+ * Bierzemy `quantityAvailable`, nie `quantityOnHand` — masa zarezerwowana pod
+ * odbiór nie jest do ruszenia i to samo sprawdzenie zrobi zaraz WMS.
  */
-export async function resolveSourceChunks(
+async function sliceByLots(
   ctx: MovementContext,
   locationId: string,
-  catalogVariantId: string,
+  variantId: string,
   quantity: number,
-): Promise<SourceChunk[]> {
+): Promise<LotSlice[]> {
   const balances = await ctx.em.find(
     InventoryBalance,
     {
-      warehouse: ctx.warehouseId,
       location: locationId,
-      catalogVariantId,
+      catalogVariantId: variantId,
       organizationId: ctx.scope.organizationId,
       tenantId: ctx.scope.tenantId,
     } as never,
-    { refresh: true, orderBy: { createdAt: 'asc' } } as never,
+    { populate: ['lot'] } as never,
   )
 
-  const chunks: SourceChunk[] = []
-  let remaining = quantity
-  for (const balance of balances as Array<{
-    lot?: { id: string } | string | null
-    quantityOnHand: string | number
-    quantityReserved: string | number
-    quantityAllocated: string | number
-  }>) {
-    if (remaining <= EPSILON) break
-    const available =
-      Number.parseFloat(String(balance.quantityOnHand)) -
-      Number.parseFloat(String(balance.quantityReserved)) -
-      Number.parseFloat(String(balance.quantityAllocated))
-    if (!(available > EPSILON)) continue
-    const lotRaw = balance.lot ?? null
-    const lotId = typeof lotRaw === 'string' ? lotRaw : lotRaw?.id ?? null
-    const take = Math.min(available, remaining)
-    chunks.push({ lotId, quantity: Math.round(take * 10000) / 10000 })
-    remaining -= take
+  const dostepne = balances
+    .map((balance) => ({ lot: balance.lot ?? null, quantity: Number(balance.quantityAvailable ?? 0) }))
+    .filter((entry) => entry.quantity > EPSILON_KG)
+    .sort((a, b) => {
+      const left = a.lot?.manufacturedAt?.getTime() ?? 0
+      const right = b.lot?.manufacturedAt?.getTime() ?? 0
+      if (left !== right) return left - right
+      // Numer partii niesie `stkmoveno`, więc rozstrzyga remisy w tej samej
+      // sekundzie deterministycznie — ten sam zbiór dzieli się zawsze tak samo.
+      return (a.lot?.lotNumber ?? '').localeCompare(b.lot?.lotNumber ?? '')
+    })
+
+  const slices: LotSlice[] = []
+  let left = quantity
+  for (const entry of dostepne) {
+    if (left <= EPSILON_KG) break
+    const take = Math.min(entry.quantity, left)
+    slices.push({ lotId: entry.lot?.id, quantity: take })
+    left -= take
   }
 
-  if (remaining > EPSILON) {
+  if (left > EPSILON_KG) {
+    const suma = dostepne.reduce((sum, entry) => sum + entry.quantity, 0)
     throw new Error(
-      `insufficient_stock: w lokalizacji brakuje ${remaining.toFixed(2)} kg z ${quantity.toFixed(2)} kg`,
+      `insufficient_stock: potrzeba ${quantity.toFixed(2)} kg, w partiach dostępne ${suma.toFixed(2)} kg`,
     )
   }
-  return chunks
+  return slices
 }
 
 function parseMoment(value: string): Date {
@@ -209,9 +218,10 @@ async function applyReceipt(ctx: MovementContext, row: LegacyMovementRow): Promi
 
   const performedAt = parseMoment(row.data)
   const referenceId = legacyUuid('movement', row.stkmoveno)
+  const total = Math.abs(row.iloscKg)
   // Przyjęcie wskazuje partię, a `lotId` wchodzi do klucza idempotencji WMS,
   // więc rozstrzygamy po `referenceId` — patrz komentarz przy `appliedQuantity`.
-  if ((await appliedQuantity(ctx, referenceId, 'receipt')) > EPSILON) {
+  if ((await appliedQuantity(ctx, referenceId, 'receipt')) >= total - EPSILON_KG) {
     return true
   }
 
@@ -223,7 +233,7 @@ async function applyReceipt(ctx: MovementContext, row: LegacyMovementRow): Promi
       warehouseId: ctx.warehouseId,
       locationId: location.id,
       catalogVariantId: fraction.variantId,
-      quantity: Math.abs(row.iloscKg),
+      quantity: total,
       // Partia niesie dostawcę i datę przyjęcia — bez niej przyjęcie jest
       // bezimienną masą i nie da się odpowiedzieć, czyj odpad gdzie trafił.
       lotId,
@@ -252,15 +262,16 @@ async function applyTransfer(ctx: MovementContext, pair: SortPair): Promise<bool
 
   const referenceId = legacyUuid('movement', pair.in.stkmoveno)
   const total = Math.abs(pair.in.iloscKg)
-  const remaining = total - (await appliedQuantity(ctx, referenceId, 'transfer'))
-  if (remaining <= EPSILON) {
+  const applied = await appliedQuantity(ctx, referenceId, 'transfer')
+  if (applied >= total - EPSILON_KG) {
     return true
   }
 
-  // Jedna para SORT może zejść z kilku partii: po jednym ruchu na partię,
-  // wszystkie z tym samym `referenceId` i tym samym śladem legacy.
-  const chunks = await resolveSourceChunks(ctx, from.id, fraction.variantId, remaining)
-  for (const chunk of chunks) {
+  // Masa schodząca z placu leży w partiach z konkretnych przyjęć. Przesuwamy ją
+  // partia po partii, żeby w boksie dało się powiedzieć, czyj to odpad — i żeby
+  // WMS w ogóle znalazł saldo, z którego ma zdjąć.
+  const slices = await sliceByLots(ctx, from.id, fraction.variantId, total - applied)
+  for (const [index, slice] of slices.entries()) {
     await ctx.commandBus.execute('wms.inventory.move', {
       input: {
         organizationId: ctx.scope.organizationId,
@@ -269,8 +280,8 @@ async function applyTransfer(ctx: MovementContext, pair: SortPair): Promise<bool
         fromLocationId: from.id,
         toLocationId: to.id,
         catalogVariantId: fraction.variantId,
-        lotId: chunk.lotId ?? undefined,
-        quantity: chunk.quantity,
+        lotId: slice.lotId,
+        quantity: slice.quantity,
         type: 'transfer',
         reason: `Wysortowanie frakcji (SORT ${pair.out.stkmoveno}/${pair.in.stkmoveno})`,
         reasonCode: 'SORT',
@@ -280,6 +291,9 @@ async function applyTransfer(ctx: MovementContext, pair: SortPair): Promise<bool
         performedAt: parseMoment(pair.in.data),
         metadata: {
           legacy: { stkmoveno: [pair.out.stkmoveno, pair.in.stkmoveno], typ: 'SORT' },
+          // Jeden kwit legacy, kilka ruchów magazynowych — bez tego licznika
+          // nie widać, że to nie są trzy osobne wysortowania.
+          ...(slices.length > 1 ? { czescRuchu: { nr: index + 1, z: slices.length } } : {}),
         },
       },
       ctx: ctx.commandContext,
@@ -296,15 +310,16 @@ async function applyIssue(ctx: MovementContext, row: LegacyMovementRow): Promise
 
   const referenceId = legacyUuid('movement', row.stkmoveno)
   const total = Math.abs(row.iloscKg)
-  const remaining = total - (await appliedQuantity(ctx, referenceId, 'adjust'))
-  if (remaining <= EPSILON) {
+  const applied = await appliedQuantity(ctx, referenceId, 'adjust')
+  if (applied >= total - EPSILON_KG) {
     return true
   }
 
-  // Wydanie schodzi z partii leżących w boksie — dzięki temu karta przekazania
-  // ma odpowiedź, czyj odpad pojechał do odbiorcy.
-  const chunks = await resolveSourceChunks(ctx, location.id, fraction.variantId, remaining)
-  for (const chunk of chunks) {
+  // Wydanie zdejmuje z boksu masę, która trafiła tam z różnych dostaw. Idziemy
+  // po partiach od najstarszej — dzięki temu karta przekazania wie, czyj odpad
+  // pojechał do odbiorcy, a nie tylko ile go było.
+  const slices = await sliceByLots(ctx, location.id, fraction.variantId, total - applied)
+  for (const [index, slice] of slices.entries()) {
     await ctx.commandBus.execute('wms.inventory.adjust', {
       input: {
         organizationId: ctx.scope.organizationId,
@@ -312,8 +327,8 @@ async function applyIssue(ctx: MovementContext, row: LegacyMovementRow): Promise
         warehouseId: ctx.warehouseId,
         locationId: location.id,
         catalogVariantId: fraction.variantId,
-        lotId: chunk.lotId ?? undefined,
-        delta: -chunk.quantity,
+        lotId: slice.lotId,
+        delta: -slice.quantity,
         reason: `Wydanie do odbiorcy ${row.debtorno || 'nieznany'} (WZ ${row.stkmoveno})`,
         reasonCode: 'WZ',
         referenceType: 'so',
@@ -331,6 +346,7 @@ async function applyIssue(ctx: MovementContext, row: LegacyMovementRow): Promise
           // `referenceId` jest zajęty przez klucz idempotencji liczony ze
           // `stkmoveno`, więc powiązanie z zamówieniem idzie metadanymi.
           salesOrderId: salesOrderIdFor(ctx, row) ?? null,
+          ...(slices.length > 1 ? { czescRuchu: { nr: index + 1, z: slices.length } } : {}),
         },
       },
       ctx: ctx.commandContext,

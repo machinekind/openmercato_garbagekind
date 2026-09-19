@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "open-mercato",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "C:\\Users\\pawlo\\AppData\\Local\\Temp\\claude\\C--github-repos-openmercato-garbagekind\\64244d87-46e2-4835-b1bf-dd6018b18b4d\\scratchpad\\start-mercato.cmd"],
+      "port": 3000
+    }
+  ]
+}
