@@ -11,7 +11,13 @@ import {
 import { computeContentDigest, validateArtifactSet, type ArtifactInput } from '../lib/digest'
 import { checkEmbodimentCompatibility, type EmbodimentContract } from '../lib/compatibility'
 import { emitPolicyRegistryEvent } from '../events'
-import { policyVectorSpecSchema, sameVectorSpec, vectorDimension, type PolicyVectorSpec } from '../lib/vectorContract'
+import {
+  leaseExpiryBehaviorSchema,
+  policyVectorSpecSchema,
+  sameVectorSpec,
+  vectorDimension,
+  type PolicyVectorSpec,
+} from '../lib/vectorContract'
 
 /**
  * Komendy rejestru polityk.
@@ -74,6 +80,7 @@ export const versionRegisterSchema = scoped.extend({
   observationSpec: policyVectorSpecSchema,
   actionSpec: policyVectorSpecSchema,
   controlFrequencyHz: z.number().positive().max(10_000),
+  leaseExpiryBehavior: leaseExpiryBehaviorSchema,
   provenance: z.record(z.string(), z.unknown()).optional(),
 }).superRefine((input, ctx) => {
   const actualObservationDim = vectorDimension(input.observationSpec)
@@ -249,6 +256,7 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
       observationSpec?: PolicyVectorSpec | null
       actionSpec?: PolicyVectorSpec | null
       controlFrequencyHz?: number | null
+      leaseExpiryBehavior?: string | null
     } | null
 
     if (duplicate) {
@@ -256,12 +264,13 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
         duplicate.observationDim === input.observationDim &&
         duplicate.actionDim === input.actionDim &&
         duplicate.controlFrequencyHz === input.controlFrequencyHz &&
+        duplicate.leaseExpiryBehavior === input.leaseExpiryBehavior &&
         sameVectorSpec(duplicate.observationSpec, input.observationSpec) &&
         sameVectorSpec(duplicate.actionSpec, input.actionSpec)
       if (!sameContract) {
         throw new Error(
           'Te same artefakty są już zarejestrowane z innym albo historycznie pustym kontraktem wektorów. ' +
-          'Nie wolno przypisać tym samym wagom nowych jednostek, układów odniesienia ani semantyki.',
+          'Nie wolno przypisać tym samym wagom nowych jednostek, układów odniesienia, semantyki ani zachowania po wygaśnięciu dzierżawy.',
         )
       }
       /**
@@ -305,6 +314,7 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
       observationSpec: input.observationSpec,
       actionSpec: input.actionSpec,
       controlFrequencyHz: input.controlFrequencyHz,
+      leaseExpiryBehavior: input.leaseExpiryBehavior,
       registeredBy: ctx.auth?.sub ?? null,
     } as never)
 

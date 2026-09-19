@@ -155,7 +155,7 @@ Ponowne wgranie tej samej treści jest deduplikowane i **nie emituje
 zdarzenia** — czyli potok CI może wgrywać wielokrotnie bez podwajania
 automatyzacji. Numer wersji jest tylko etykietą.
 
-### B4. ⚪ Zachowanie przy wygaśnięciu dzierżawy
+### B4. ✅ Zachowanie przy wygaśnięciu dzierżawy
 
 **Co dostarczyć:** opis tego, co polityka robi, gdy mandat z centrali wygaśnie
 i nie da się go odnowić.
@@ -166,9 +166,11 @@ pracował do końca mandatu — to jest projekt, nie luka. Zatrzymanie
 natychmiastowe należy do warstwy deterministycznej, która nie przechodzi przez
 tę platformę.
 
-Wasza strona musi rozstrzygnąć: czy po wygaśnięciu robot zatrzymuje się
-w miejscu, dokańcza chwyt, czy wraca do pozycji bazowej. Każda z tych
-odpowiedzi jest dopuszczalna; brak odpowiedzi nie jest.
+Każda nowa wersja polityki musi wybrać `leaseExpiryBehavior`:
+`hold_position`, `complete_grasp_then_hold` albo `return_home`. Wartość jest
+kopiowana do przypisania i zwracana agentowi z każdym mandatem. Brak wartości
+w wersji historycznej blokuje nowe przypisanie — platforma nie zgaduje
+zachowania maszyny.
 
 ---
 

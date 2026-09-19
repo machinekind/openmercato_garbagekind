@@ -34,6 +34,7 @@ type VersionRow = {
   observationSpec: Record<string, unknown> | null
   actionSpec: Record<string, unknown> | null
   controlFrequencyHz: number | null
+  leaseExpiryBehavior: string | null
   createdAt: string
 }
 
@@ -105,10 +106,11 @@ export async function GET(req: Request): Promise<Response> {
     observation_spec: Record<string, unknown> | null
     action_spec: Record<string, unknown> | null
     control_frequency_hz: number | null
+    lease_expiry_behavior: string | null
   }>>(
     `select v.id, v.policy_id, v.version, v.content_digest, v.status, v.status_reason,
             v.embodiment_spec_digest, v.created_at, v.observation_dim, v.action_dim,
-            v.observation_spec, v.action_spec, v.control_frequency_hz,
+            v.observation_spec, v.action_spec, v.control_frequency_hz, v.lease_expiry_behavior,
             e.embodiment_key, e.revision, e.spec_digest
        from policy_registry_policy_versions v
        left join fleet_embodiment_revisions e on e.id = v.embodiment_revision_id
@@ -150,6 +152,7 @@ export async function GET(req: Request): Promise<Response> {
       observationSpec: row.observation_spec,
       actionSpec: row.action_spec,
       controlFrequencyHz: row.control_frequency_hz == null ? null : Number(row.control_frequency_hz),
+      leaseExpiryBehavior: row.lease_expiry_behavior,
       createdAt: new Date(row.created_at).toISOString(),
     })
     versionsByPolicy.set(row.policy_id, list)

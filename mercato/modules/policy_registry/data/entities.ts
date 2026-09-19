@@ -1,5 +1,5 @@
 import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy'
-import type { PolicyVectorSpec } from '../lib/vectorContract'
+import type { LeaseExpiryBehavior, PolicyVectorSpec } from '../lib/vectorContract'
 
 /**
  * Rejestr polityk — wyuczonych sterowników i ich artefaktów.
@@ -186,6 +186,9 @@ export class PolicyVersion {
 
   @Property({ name: 'control_frequency_hz', type: 'double', nullable: true })
   controlFrequencyHz?: number | null
+
+  @Property({ name: 'lease_expiry_behavior', type: 'text', nullable: true })
+  leaseExpiryBehavior?: LeaseExpiryBehavior | null
 
   @Property({ name: 'registered_by', type: 'uuid', nullable: true })
   registeredBy?: string | null

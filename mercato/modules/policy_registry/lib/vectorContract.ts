@@ -28,6 +28,15 @@ export const POLICY_VALUE_SEMANTICS = [
   'encoded',
 ] as const
 
+export const LEASE_EXPIRY_BEHAVIORS = [
+  'hold_position',
+  'complete_grasp_then_hold',
+  'return_home',
+] as const
+
+export const leaseExpiryBehaviorSchema = z.enum(LEASE_EXPIRY_BEHAVIORS)
+export type LeaseExpiryBehavior = z.infer<typeof leaseExpiryBehaviorSchema>
+
 export const policyVectorFieldSchema = z.object({
   /** Stabilny klucz sygnału; pozycja w tablicy jest pozycją w wektorze. */
   key: z.string().trim().min(1).max(120).regex(/^[a-z0-9][a-z0-9._-]*$/),
@@ -76,6 +85,7 @@ export function demoJointContract(dofCount: number) {
     actionDim: dofCount,
     trainedDofCount: dofCount,
     controlFrequencyHz: 20,
+    leaseExpiryBehavior: 'hold_position' as const,
     observationSpec: {
       fields: [{ key: 'joint.position', size: dofCount, unit: 'rad' as const, frame: 'joint_space', semantics: 'absolute' as const }],
     },

@@ -269,6 +269,7 @@ describe('policy_registry.versions.register — zapis', () => {
     expect(version.observationSpec).toEqual(baseInput.observationSpec)
     expect(version.actionSpec).toEqual(baseInput.actionSpec)
     expect(version.controlFrequencyHz).toBe(20)
+    expect(version.leaseExpiryBehavior).toBe('hold_position')
   })
 
   it('odmawia, gdy polityka nie istnieje', async () => {
