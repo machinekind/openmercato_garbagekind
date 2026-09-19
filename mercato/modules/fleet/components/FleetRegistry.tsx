@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useRouter } from 'next/navigation'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
 import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
@@ -137,6 +138,7 @@ function describeCalibration(t: Tf, robot: Robot): { text: string; tone: string 
 
 export default function FleetRegistry() {
   const t = useT()
+  const router = useRouter()
   const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [edge, setEdge] = React.useState<EdgePayload | null>(null)
@@ -257,7 +259,19 @@ export default function FleetRegistry() {
               const calibration = describeCalibration(t, robot)
               const link = describeLink(t, edge?.byRobot?.[robot.id])
               return (
-                <div key={robot.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+                <div
+                  key={robot.id}
+                  role="link"
+                  tabIndex={0}
+                  /*
+                   * Cały wiersz jest wejściem w szczegóły, a nie osobny link
+                   * „otwórz" na końcu: operator hali trafia palcem w wiersz,
+                   * nie w ośmiopikselową ikonę.
+                   */
+                  onClick={() => router.push(`/backend/fleet/${robot.id}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/backend/fleet/${robot.id}`) }}
+                  className="flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted/50"
+                >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
                       <span className="truncate text-sm font-medium">{robot.name}</span>

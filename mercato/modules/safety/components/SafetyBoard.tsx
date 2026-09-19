@@ -4,6 +4,7 @@ import * as React from 'react'
 import { KpiCard } from '@open-mercato/ui/backend/charts'
 import { apiFetch } from '@open-mercato/ui/backend/utils/api'
 import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
+import { IncidentDialog } from './IncidentDialog'
 
 /**
  * Macierz dopuszczeń na ekranie.
@@ -88,6 +89,17 @@ function formatMoment(locale: string, value: string): string {
 
 export default function SafetyBoard() {
   const t = useT()
+  // Lista maszyn do wyboru w zgłoszeniu. Osobne pobranie, bo panel
+  // bezpieczeństwa nie potrzebuje rejestru floty do niczego innego.
+  const [roboty, setRoboty] = React.useState<Array<{ id: string; serialNumber: string }>>([])
+  React.useEffect(() => {
+    void (async () => {
+      const r = await apiFetch('/api/fleet/robots')
+      if (!r.ok) return
+      const d = (await r.json()) as { robots?: Array<{ id: string; serialNumber: string }> }
+      setRoboty((d.robots ?? []).map((x) => ({ id: x.id, serialNumber: x.serialNumber })))
+    })()
+  }, [])
   const locale = useLocale()
   const [data, setData] = React.useState<Payload | null>(null)
   const [error, setError] = React.useState<string | null>(null)
@@ -118,6 +130,10 @@ export default function SafetyBoard() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex justify-end">
+        <IncidentDialog robots={roboty} onDone={load} />
+      </div>
+
       {error ? (
         <div className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm">{error}</div>
       ) : null}
