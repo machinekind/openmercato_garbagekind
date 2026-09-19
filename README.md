@@ -25,6 +25,7 @@ robotyczną.
 | [`physical-ai/HMI.md`](physical-ai/HMI.md) | system wizualny wg ISA-101 — i dlaczego pierwsza wersja rzutu była źle zaprojektowana |
 | [`physical-ai/OPERATIONS.md`](physical-ai/OPERATIONS.md) | zadania cykliczne — i dlaczego automatyzacja oznaczania **nie** dawała zgodności |
 | [`physical-ai/EVENTS.md`](physical-ai/EVENTS.md) | co wtyczka **ogłasza**, czego świadomie nie ogłasza i dlaczego ruch o częstotliwości maszynowej nie jest faktem |
+| [`physical-ai/HANDOFF-PHYSICAL.md`](physical-ai/HANDOFF-PHYSICAL.md) | zadania dla zespołu physical: co wytrenować i udokumentować, **twarde bramki** kontra ostrzeżenia, i nasz własny dług |
 | `mercato/modules/` | trzynaście modułów Open Mercato (`sortownia` + jedenaście robotycznych + `hmi` jako system wizualny) |
 | `mercato/embodiments/` | opisy ramion; `so101_follower.json` z dokumentacji LeRobot |
 | `legacy/`, `client/`, `webui/` | system legacy z etapów wcześniejszych — opisany niżej |
