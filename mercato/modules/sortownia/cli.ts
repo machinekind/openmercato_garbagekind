@@ -361,7 +361,7 @@ const importCommand: ModuleCli = {
 
 <<<<<<< Updated upstream
 =======
-    // 9. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
+    // 10. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
     await runCrmSync({ em, commandBus, commandContext, scope })
 >>>>>>> Stashed changes
 
