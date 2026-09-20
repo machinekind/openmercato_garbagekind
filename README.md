@@ -104,7 +104,7 @@ finansowy. Trzy rzeczy, których stary system nie umiał pokazać:
 
 ![Rzut hali](docs/screenshots/plant.png)
 
-Zakład Wieliszew, 40 × 24 m, dwie cele, pięć maszyn — **rysowane w skali
+Zakład Wierzbowo, 40 × 24 m, dwie cele, pięć maszyn — **rysowane w skali
 z rzeczywistych wymiarów**, a nie jako ikonki na siatce. Pasek alarmów u góry
 jest tu najważniejszy: z pięciu maszyn **żadna nie pracuje**, i każda ma
 wypisany powód:
@@ -545,19 +545,33 @@ obieg „zdarzenie → reakcja" nie jest jeszcze obserwowalny.
 
 ```
 openmercato_garbagekind/
-├── legacy/            schema.sql, generate.py, server.py, spooler.py, xlsx.py
-├── client/            weberp_sync.py — XML-RPC + wsad/ → out/*.csv
-├── tests/             test_end_to_end.py — 19 testów kanału legacy
-├── webui/             simag.html — makieta ekranu starego systemu (SIMAG 3.11)
+├── LICENSE            Apache-2.0
+├── NOTICE             składniki obce i ich licencje; nota o danych fikcyjnych
+├── CONTRIBUTING.md    procedura i zasady inżynierskie obowiązujące w repozytorium
+├── SECURITY.md        zgłaszanie podatności, model zagrożeń kanału brzegowego
 ├── run_demo.sh        generator → serwer → spooler → klient pełny → przyrostowy
-├── docs/              architektura_sortowni_open_mercato.pptx
+│
+├── legacy/            symulator starego systemu: schema.sql, generate.py,
+│                      server.py (XML-RPC), spooler.py, xlsx.py
+├── client/            weberp_sync.py — XML-RPC + wsad/ → out/*.csv
+├── webui/             simag.html — makieta ekranu starego systemu (SIMAG 3.11)
+├── tests/             zestaw pythonowy: kanał legacy, paczka dowodowa,
+│                      odbiór SO-101, protokół i zgodność agenta brzegowego
+│
 ├── mercato/
 │   ├── install.sh     kopiuje moduły do klonu Open Mercato i włącza je w modules.ts
-│   ├── embodiments/   so101_follower.json — opis sprzętu manipulatora SO-101
 │   ├── README.md      moduł sortownia w szczegółach
-│   └── modules/       15 modułów
-└── physical-ai/       README (dowody faz 0–6), ROADMAP, EVENTS, ERP-BRIDGE, VISION,
-                       HMI, COMPUTE, PLANT-VIEW, OPERATIONS, EMBODIMENTS, HANDOFF-PHYSICAL
+│   ├── modules/       15 modułów — mapa i zależności w modules/README.md
+│   ├── embodiments/   so101_follower.json — kontrakt sprzętowy manipulatora
+│   └── hardware/
+│       ├── so101/     narzędzie odbioru fizycznego, sterowanie ruchem, serwer MCP
+│       └── edge_agent/ agent referencyjny kanału brzegowego + zestaw zgodności
+│
+├── physical-ai/       decyzje projektowe, mapa faz, kontrakty, materiał dowodowy
+├── docs/
+│   ├── handoff/       warunki odbioru fizycznego SO-101
+│   └── screenshots/   zrzuty z uruchomionej instancji
+└── .github/           CI i szablony
 ```
 
 Każdy moduł ma ten sam szkielet: `index.ts`, `acl.ts`, `setup.ts`,
@@ -1068,7 +1082,7 @@ Poniższe **nie jest** zrobione albo **nie jest** dowiedzione:
   ma deterministycznej warstwy zatrzymania — bez sprzętowego E-stopu nie da
   się prawdziwie wypełnić uzasadnienia bezpieczeństwa, a więc maszyna nie
   przejdzie dopuszczenia. Szczegóły i warunki odbioru:
-  [`GREG_HANDOFF.md`](GREG_HANDOFF.md).
+  [`docs/handoff/so101-odbior-fizyczny.md`](docs/handoff/so101-odbior-fizyczny.md).
 - **Zasięg i udźwig ramienia są niezmierzone**, w kontrakcie embodimentu stoją
   jako `unknown`. Nie wpisujemy wartości katalogowej.
 - **Żaden moduł nie widział prawdziwej wagi ani prawdziwej kamery.** Epizody,
@@ -1096,7 +1110,7 @@ Poniższe **nie jest** zrobione albo **nie jest** dowiedzione:
   interwencje, liczniki), a nie tensory i obraz.
 
 Pełna lista tego, co zespół uczący roboty musi dostarczyć, z kryteriami
-zaliczenia: [`GREG_HANDOFF.md`](GREG_HANDOFF.md) oraz
+zaliczenia: [`docs/handoff/so101-odbior-fizyczny.md`](docs/handoff/so101-odbior-fizyczny.md) oraz
 [`physical-ai/HANDOFF-PHYSICAL.md`](physical-ai/HANDOFF-PHYSICAL.md).
 
 ## Liczby
@@ -1118,6 +1132,15 @@ każdego modułu na gałęzi `main`.
 
 ## Spis dokumentów
 
+**Zacznij tutaj**
+
+- [`mercato/modules/README.md`](mercato/modules/README.md) — mapa piętnastu modułów, zależności i reguły, które je wiążą
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — jak uruchomić, co musi przejść przed pushem, zasady inżynierskie
+- [`SECURITY.md`](SECURITY.md) — model zagrożeń kanału brzegowego i czego platforma **nie** zapewnia
+- [`LICENSE`](LICENSE) (Apache-2.0) i [`NOTICE`](NOTICE) — składniki obce, nota o danych fikcyjnych
+
+**Szczegóły**
+
 - [`mercato/README.md`](mercato/README.md) — moduł `sortownia`
 - [`physical-ai/README.md`](physical-ai/README.md) — decyzje i dowody faz 0–6
 - [`physical-ai/ROADMAP.md`](physical-ai/ROADMAP.md) — mapa faz
@@ -1129,6 +1152,25 @@ każdego modułu na gałęzi `main`.
 - [`physical-ai/COMPUTE.md`](physical-ai/COMPUTE.md) — `compute` i DGX Spark
 - [`physical-ai/EMBODIMENTS.md`](physical-ai/EMBODIMENTS.md) — format opisu sprzętu
 - [`physical-ai/HANDOFF-PHYSICAL.md`](physical-ai/HANDOFF-PHYSICAL.md) — zadania dla zespołu uczącego roboty
-- [`GREG_HANDOFF.md`](GREG_HANDOFF.md) — warunki uznania SO-101 za zwalidowany fizycznie: procedura odbioru, kontrakty danych i 22 testy
+- [`docs/handoff/so101-odbior-fizyczny.md`](docs/handoff/so101-odbior-fizyczny.md) — warunki uznania SO-101 za zwalidowany fizycznie: procedura odbioru, kontrakty danych i 22 testy
 - [`physical-ai/MATERIAL-MERCATOXD.md`](physical-ai/MATERIAL-MERCATOXD.md) — inwentaryzacja materiału z hackathonu względem naszych bram
 - [`docs/architektura_sortowni_open_mercato.pptx`](docs/architektura_sortowni_open_mercato.pptx) — prezentacja architektury
+
+---
+
+## Licencja i pochodzenie
+
+Kod tego repozytorium jest udostępniany na licencji **Apache License 2.0**
+([`LICENSE`](LICENSE)). Składniki obce — model COCO-SSD i TensorFlow.js,
+three.js oraz archiwalny materiał dowodowy z hackathonu — podlegają własnym
+warunkom, wyliczonym w [`NOTICE`](NOTICE).
+
+**Wszystkie dane demonstracyjne są fikcyjne.** Nazwy podmiotów, miejscowości,
+adresy, numery NIP i numery rejestrowe BDO zostały wymyślone przez generator
+`legacy/generate.py`. Żaden wpis nie odnosi się do istniejącego
+przedsiębiorstwa, gminy ani jednostki organizacyjnej. Numery NIP mają poprawną
+cyfrę kontrolną wyłącznie po to, żeby przejść walidację formatu — bez tego
+pierwszy księgowy, który zobaczy dane, uznałby demonstrację za niepoważną.
+
+Repozytorium **nie zawiera platformy Open Mercato**, a jedynie moduły, które ją
+rozszerzają. Warunki licencyjne samej platformy określa jej własne repozytorium.

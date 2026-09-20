@@ -223,7 +223,7 @@ Dziennik operacji powstaje poza Git w
 procesem, który może zawisnąć. Zamknięcie serwera MCP nie zmienia stanu
 momentu — ramię zostaje tak, jak stało. Deterministyczną warstwą zatrzymania
 jest wyłącznie zewnętrzny przerywacz zasilania napędów, którego ten zestaw nie
-ma. Dopóki go nie ma, warunek Z5 z `GREG_HANDOFF.md` pozostaje niespełniony i
+ma. Dopóki go nie ma, warunek Z5 z `docs/handoff/so101-odbior-fizyczny.md` pozostaje niespełniony i
 poza demonstracją nie wolno na tym sprzęcie uruchamiać polityki.
 
 Przed każdym uruchomieniem: przestrzeń robocza pusta, ramię podparte,

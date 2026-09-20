@@ -1,0 +1,69 @@
+Sortownia i Physical AI
+Copyright 2026 Machinekind
+
+Ten produkt zawiera oprogramowanie opracowane przez Machinekind,
+udostępniane na licencji Apache License 2.0 (plik LICENSE).
+
+================================================================================
+Składniki obce
+================================================================================
+
+Poniższe pliki nie zostały wytworzone w tym projekcie i podlegają własnym
+warunkom licencyjnym. Teksty licencji leżą obok plików, których dotyczą.
+
+--------------------------------------------------------------------------------
+TensorFlow.js oraz model COCO-SSD
+--------------------------------------------------------------------------------
+Lokalizacja : mercato/modules/digital_twins/assets/
+Pliki       : tracker.js, detector.model.json, group1-shard1of5 … group1-shard5of5
+Licencja    : Apache License 2.0
+Tekst       : mercato/modules/digital_twins/assets/COCO-SSD-LICENSE.txt
+Właściciel  : Google LLC oraz współautorzy TensorFlow.js
+
+--------------------------------------------------------------------------------
+three.js
+--------------------------------------------------------------------------------
+Lokalizacja : mercato/modules/digital_twins/assets/
+Pliki       : viewer.js (zawiera spakowany three.js)
+Licencja    : MIT
+Tekst       : mercato/modules/digital_twins/assets/THREE-LICENSE.txt
+Właściciel  : three.js authors
+
+--------------------------------------------------------------------------------
+Materiał dowodowy z hackathonu — repozytorium mercatoXD
+--------------------------------------------------------------------------------
+Lokalizacja : physical-ai/evidence/hackathon-2026-09-18-19/mercatoXD/source/
+Pochodzenie : https://github.com/Bukareszt/mercatoXD, commit
+              fd5fe08f24ae35fe37c8053086327fdc1a14363a
+Autor       : Greg
+Charakter   : archiwalny materiał dowodowy, kopiowany bajt w bajt i opieczętowany
+              sumami SHA-256 (MANIFEST.sha256). NIE jest zależnością tego
+              produktu — żaden moduł go nie importuje ani nie uruchamia.
+Licencja    : README źródła deklaruje MIT dla kodu należącego do tamtego
+              repozytorium oraz odrębne warunki dla zasobów producenta robota.
+              Przed jakąkolwiek redystrybucją poza ten projekt należy
+              zweryfikować warunki upstream.
+Wyłączone   : plik środowiska (robot/.env) oraz jedenaście binarnych siatek STL
+              producenta — nie są wynikiem prac zespołu i podlegają odrębnym
+              warunkom.
+
+Pełny opis pochodzenia i granic tego materiału:
+physical-ai/evidence/hackathon-2026-09-18-19/mercatoXD/README.md
+
+--------------------------------------------------------------------------------
+Open Mercato
+--------------------------------------------------------------------------------
+To repozytorium zawiera moduły rozszerzające platformę Open Mercato, ale nie
+zawiera samej platformy. Moduły instaluje się do osobnego klonu Open Mercato
+skryptem mercato/install.sh. Warunki licencyjne platformy określa jej własne
+repozytorium.
+
+================================================================================
+Dane demonstracyjne
+================================================================================
+
+Wszystkie dane generowane przez legacy/generate.py są fikcyjne: nazwy podmiotów,
+miejscowości, adresy, numery NIP i numery rejestrowe BDO zostały wymyślone.
+Żaden wpis nie odnosi się do istniejącego przedsiębiorstwa, gminy ani jednostki
+organizacyjnej. Numery NIP mają poprawną cyfrę kontrolną wyłącznie po to, żeby
+przejść walidację formatu — nie są przypisane do żadnego podatnika.

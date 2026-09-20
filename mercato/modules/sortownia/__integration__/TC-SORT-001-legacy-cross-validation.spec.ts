@@ -23,7 +23,13 @@ export const integrationMeta = {
  * wszystko, co Mercato zdążyło zaimportować.
  */
 
-const LEGACY_OUT = process.env.SORTOWNIA_LEGACY_OUT ?? '/home/user/openmercato_garbagekind/out'
+/**
+ * Katalog zrzutu legacy. Wyliczany z polozenia tego pliku, a nie wpisany na
+ * sztywno: absolutna sciezka z jednej stacji roboczej czyni test
+ * nieuruchamialnym u kogokolwiek innego. `SORTOWNIA_LEGACY_OUT` nadpisuje.
+ */
+const LEGACY_OUT =
+  process.env.SORTOWNIA_LEGACY_OUT ?? path.resolve(__dirname, '../../../../out')
 const MOVEMENTS_CSV = path.join(LEGACY_OUT, 'ruchy.csv')
 const ORDERS_CSV = path.join(LEGACY_OUT, 'zamowienia.csv')
 const PAYMENTS_CSV = path.join(LEGACY_OUT, 'zaplaty.csv')

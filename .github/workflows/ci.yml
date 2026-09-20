@@ -1,0 +1,105 @@
+name: CI
+
+# Co ten przebieg sprawdza, a czego nie — powiedziane wprost, żeby zielona
+# odznaka nie znaczyła więcej, niż znaczy.
+#
+# SPRAWDZA: zestaw testów pythonowych (generator legacy, most, narzędzie
+# odbioru SO-101, agent brzegowy), zgodność podpisów agenta z prawdziwymi
+# modułami centrali pod Node oraz kontrole higieny repozytorium.
+#
+# NIE SPRAWDZA: modułów TypeScript. Wymagają one klonu platformy Open Mercato,
+# której to repozytorium nie zawiera. Za `yarn typecheck` i `yarn test` odpowiada
+# autor zmiany — procedura jest w CONTRIBUTING.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Testy pythonowe i zgodność agenta
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Node jest potrzebny do testu zgodności: agent pythonowy podpisuje
+      # komunikaty, a weryfikują je te same moduły TypeScript, których używa
+      # serwer. Bez tego kroku test sam się pominie i nie sprawdzi niczego.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Zależności
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Testy
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Test zgodności naprawdę się wykonał
+        # Pominięcie jest dopuszczalne lokalnie, ale nie w CI: zielony przebieg
+        # bez tej asercji znaczyłby „Node nie było", a nie „podpisy się zgadzają".
+        run: |
+          python -m unittest tests.test_edge_agent_conformance -v 2>&1 | tee wynik.txt
+          grep -q "Ran 1 test" wynik.txt
+          if grep -qi "skipped" wynik.txt; then
+            echo "::error::Test zgodności został pominięty — brak Node z --experimental-strip-types."
+            exit 1
+          fi
+
+  higiena:
+    name: Higiena repozytorium
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Składnia skryptów powłoki
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          # `git ls-files` zamiast `find`: sprawdzamy to, co jest w repozytorium.
+          mapfile -t skrypty < <(git ls-files '*.sh')
+          shellcheck --severity=warning "${skrypty[@]}"
+
+      - name: Składnia plików pythonowych
+        run: |
+          mapfile -t pliki < <(git ls-files '*.py' | grep -v '^physical-ai/evidence/')
+          python -m compileall -q "${pliki[@]}"
+
+      - name: Brak znaczników konfliktu
+        run: |
+          if git grep -nIE '^(<<<<<<< |>>>>>>> |=======$)' -- . ':(exclude)physical-ai/evidence'; then
+            echo "::error::Znaczniki konfliktu w drzewie."
+            exit 1
+          fi
+
+      - name: Dane demonstracyjne pozostają fikcyjne
+        # Regresja z audytu: generator zawierał nazwy istniejących gmin
+        # i przedsiębiorstw wraz z NIP-ami o poprawnej sumie kontrolnej.
+        run: |
+          if git grep -nIiE '(wieliszew|legionowo|serock|odolanow|ostroleka|jaroslaw|\bstora\b)' \
+               -- legacy mercato webui client docs README.md; then
+            echo "::error::Nazwa istniejącego podmiotu lub gminy w danych demonstracyjnych."
+            exit 1
+          fi
+
+      - name: Pliki licencyjne na miejscu
+        run: |
+          for plik in LICENSE NOTICE SECURITY.md CONTRIBUTING.md; do
+            test -s "$plik" || { echo "::error::Brak $plik"; exit 1; }
+          done

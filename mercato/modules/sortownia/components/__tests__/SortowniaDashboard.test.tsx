@@ -86,7 +86,7 @@ const payload = {
   traceability: {
     lots: 95,
     suppliers: [
-      { dostawca: 'Gmina Wieliszew', lots: 31, receivedKg: 142300 },
+      { dostawca: 'Gmina Wierzbowo', lots: 31, receivedKg: 142300 },
       { dostawca: 'PPHU Transbud', lots: 22, receivedKg: 98150 },
     ],
   },
@@ -247,7 +247,7 @@ describe('SortowniaDashboard', () => {
   it('pokazuje, czyj odpad przyjechał — tego stary system nie wiedział wcale', async () => {
     render(<SortowniaDashboard />)
     expect(await screen.findByText('Pochodzenie odpadu')).toBeInTheDocument()
-    expect(screen.getByText('Gmina Wieliszew')).toBeInTheDocument()
+    expect(screen.getByText('Gmina Wierzbowo')).toBeInTheDocument()
     expect(screen.getByText('95 partii')).toBeInTheDocument()
     expect(screen.getByText('142,300 t')).toBeInTheDocument()
   })

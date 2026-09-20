@@ -18,7 +18,7 @@ import type { LegacyLocation } from './legacyRpc'
  */
 
 export const WAREHOUSE_CODE = 'SORT-WLS'
-export const WAREHOUSE_NAME = 'Sortownia Wieliszew'
+export const WAREHOUSE_NAME = 'Sortownia Wierzbowo'
 
 type ZoneSpec = { code: string; name: string; priority: number }
 

@@ -1,0 +1,13 @@
+# Zależności potrzebne do uruchomienia zestawu testów tego repozytorium.
+#
+# Reszta kodu pythonowego (generator legacy, serwer XML-RPC, spooler, klient
+# synchronizacji, narzędzie odbioru SO-101) korzysta wyłącznie z biblioteki
+# standardowej. To jest decyzja, nie przypadek: symulator systemu legacy ma dać
+# się uruchomić na maszynie, na której nie wolno nic instalować.
+
+# Podpisy Ed25519 agenta brzegowego (mercato/hardware/edge_agent).
+cryptography>=42.0
+
+# Zależności WYŁĄCZNIE sprzętowe, nieinstalowane w CI — trzymane osobno:
+#   mercato/hardware/so101/requirements-hardware.txt   sterowanie SO-101
+#   mcp                                                serwer MCP ramienia

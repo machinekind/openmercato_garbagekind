@@ -9,12 +9,37 @@
 # Uzycie:
 #   ./mercato/install.sh            # wszystkie moduly z mercato/modules
 #   ./mercato/install.sh fleet      # wybrane
+#
+# Klon Open Mercato wskazuje zmienna MERCATO_ROOT. Bez niej skrypt szuka
+# w typowych miejscach obok tego repozytorium — absolutna sciezka z jednej
+# stacji roboczej nie ma prawa byc wartoscia domyslna w repozytorium.
 set -euo pipefail
 
-MERCATO_ROOT=${MERCATO_ROOT:-/home/user/open-mercato/open-mercato}
 HERE="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$HERE/.." && pwd)"
 
-[ -d "$MERCATO_ROOT" ] || { echo "Brak klonu Open Mercato: $MERCATO_ROOT" >&2; exit 1; }
+if [ -z "${MERCATO_ROOT:-}" ]; then
+  for kandydat in \
+    "$REPO/open-mercato" \
+    "$REPO/../open-mercato" \
+    "$REPO/../open-mercato/open-mercato" \
+    "$HOME/open-mercato" \
+    "$HOME/open-mercato/open-mercato"
+  do
+    if [ -d "$kandydat/apps/mercato" ]; then
+      MERCATO_ROOT="$(cd "$kandydat" && pwd)"
+      break
+    fi
+  done
+fi
+
+if [ -z "${MERCATO_ROOT:-}" ] || [ ! -d "$MERCATO_ROOT/apps/mercato" ]; then
+  echo "Nie znaleziono klonu Open Mercato." >&2
+  echo "Wskaz go zmienna, np.:  MERCATO_ROOT=~/open-mercato $0" >&2
+  exit 1
+fi
+
+echo "Klon Open Mercato: $MERCATO_ROOT"
 
 if [ "$#" -gt 0 ]; then
   MODULES=("$@")

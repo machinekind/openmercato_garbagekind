@@ -73,7 +73,7 @@ function defaultQueries(sql: string): unknown[] {
   }
   if (sql.includes('from wms_inventory_lots l')) {
     return [
-      { dostawca: 'Gmina Wieliszew', lots: '31', masa: '142300' },
+      { dostawca: 'Gmina Wierzbowo', lots: '31', masa: '142300' },
       { dostawca: 'nieznany', lots: '2', masa: '5000' },
     ]
   }
@@ -276,7 +276,7 @@ describe('GET /api/sortownia/dashboard — dane', () => {
     const body = await readBody(await GET(makeRequest()))
     expect(body.traceability.lots).toBe(33)
     expect(body.traceability.suppliers[0]).toMatchObject({
-      dostawca: 'Gmina Wieliszew',
+      dostawca: 'Gmina Wierzbowo',
       lots: 31,
       receivedKg: 142300,
     })

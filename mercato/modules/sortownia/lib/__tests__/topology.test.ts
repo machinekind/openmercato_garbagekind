@@ -82,14 +82,14 @@ describe('ensureTopology', () => {
   it('zapisuje nazwę i adres z legacy w metadanych, żeby ślad pochodzenia nie zginął', async () => {
     const { em, created } = fakeEm()
     await ensureTopology(em as never, scope, [
-      { loccode: 'PRZYJ', locationname: 'Plac przyjec', deladd1: 'ul. Skladowa 2, Wieliszew' },
+      { loccode: 'PRZYJ', locationname: 'Plac przyjec', deladd1: 'ul. Skladowa 2, Wierzbowo' },
     ])
 
     const location = created.find((row) => row.code === 'PRZYJ')
     expect(location?.metadata).toMatchObject({
       legacyLoccode: 'PRZYJ',
       legacyName: 'Plac przyjec',
-      legacyAddress: 'ul. Skladowa 2, Wieliszew',
+      legacyAddress: 'ul. Skladowa 2, Wierzbowo',
     })
   })
 

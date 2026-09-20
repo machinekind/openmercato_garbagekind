@@ -41,7 +41,7 @@ function makeCtx(existing: Array<{ id: string; lotNumber: string }> = []) {
       commandContext: {} as never,
       scope,
       fractions: new Map([['20 01 01', { productId: 'p-1', variantId: 'v-1' }]]),
-      supplierNames: new Map([['D001', 'Gmina Wieliszew']]),
+      supplierNames: new Map([['D001', 'Gmina Wierzbowo']]),
     },
   }
 }
@@ -73,7 +73,7 @@ describe('ensureLots', () => {
     const { ctx, calls } = makeCtx()
     await ensureLots(ctx, [move()])
     const metadata = calls[0].input.metadata as Record<string, unknown>
-    expect(metadata.dostawca).toBe('Gmina Wieliszew')
+    expect(metadata.dostawca).toBe('Gmina Wierzbowo')
   })
 
   it('gdy kontrahent nie jest znany, zostaje kod — lepszy niż puste pole', async () => {

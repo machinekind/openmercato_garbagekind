@@ -85,7 +85,8 @@ dzierżawa.
 `connect` → **100 uderzeń serca, sekwencja 1→100 bez luki** → dzierżawa
 (`desiredState: running`, `leaseExpiryBehavior: hold_position`) → podpisane
 zgłoszenie stanu z werdyktem `converged`. Ślad jest w `edge_agent_sessions`,
-`deployment_leases` i `deployment_state_reports`. To domyka **Z3** i **Z6**.
+`deployment_leases` i `deployment_state_reports`. To domyka **Z3** i **Z6**
+z [`docs/handoff/so101-odbior-fizyczny.md`](../../../docs/handoff/so101-odbior-fizyczny.md).
 
 Przebieg ujawnił usterkę po stronie centrali, której nie miał czym złapać
 żaden test jednostkowy: endpointy `/api/deployment/lease` i `/api/deployment/report`

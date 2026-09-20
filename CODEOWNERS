@@ -1,0 +1,22 @@
+# Właściciele przeglądu. Ścieżki niżej nadpisują wcześniejsze.
+
+*                                   @machinekind
+
+# Warstwa fizyczna i kanał brzegowy — zmiana tutaj dotyka dopuszczania maszyn
+# do pracy, więc przegląd nie jest formalnością.
+/mercato/hardware/                  @machinekind
+/mercato/modules/edge/              @machinekind
+/mercato/modules/safety/            @machinekind
+/mercato/modules/deployment/        @machinekind
+/mercato/modules/policy_registry/   @machinekind
+
+# Licencje, bezpieczeństwo i zasady współpracy.
+/LICENSE                            @machinekind
+/NOTICE                             @machinekind
+/SECURITY.md                        @machinekind
+/CONTRIBUTING.md                    @machinekind
+/.github/                           @machinekind
+
+# Materiał dowodowy jest archiwalny — zmiana treści pod source/ unieważnia
+# sumy kontrolne z MANIFEST.sha256.
+/physical-ai/evidence/              @machinekind

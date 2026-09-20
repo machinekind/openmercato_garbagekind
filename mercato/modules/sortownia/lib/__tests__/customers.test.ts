@@ -23,7 +23,7 @@ function customer(overrides: Partial<LegacyCustomerRow> = {}): LegacyCustomerRow
     debtorno: 'D005',
     nazwa: 'RecycleHub Sp. z o.o.',
     typ: 'ODB',
-    miasto: 'Ostroleka',
+    miasto: 'Zalesie',
     waluta: 'PLN',
     klientOd: '2012-04-02',
     nip: '7741130017',

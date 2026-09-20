@@ -1,6 +1,6 @@
-# GREG_HANDOFF — domknięcie SO-101 end-to-end z walidacją fizyczną
+# Odbiór fizyczny SO-101 — warunki uznania wtyczki za zwalidowaną
 
-Dokument dla zespołu physical. Opisuje **dokładnie**, co musi zostać wykonane
+Dokument dla zespołu physical AI. Opisuje **dokładnie**, co musi zostać wykonane
 na podłączonym SO-101, jakie dane wrócić do ERP i co musi przejść, żebyśmy
 mogli uczciwie powiedzieć: *wtyczka Physical AI działa end-to-end i jest
 zwalidowana fizycznie*.

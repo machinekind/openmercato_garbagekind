@@ -232,7 +232,7 @@
 
 <div class="win">
   <div class="titlebar">
-    <span class="app">SIMAG 3.11 &mdash; SYSTEM INFORMATYCZNY MAGAZYNU ODPADÓW [ZAKŁAD: WIELISZEW] &mdash; [demo@weberpdemo]</span>
+    <span class="app">SIMAG 3.11 &mdash; SYSTEM INFORMATYCZNY MAGAZYNU ODPADÓW [ZAKŁAD: WIERZBOWO] &mdash; [demo@weberpdemo]</span>
     <span class="spacer"></span>
     <span class="boxes"><span>_</span><span>□</span><span>X</span></span>
   </div>
@@ -307,14 +307,14 @@
   /* Te same rekordy, ktore trzyma baza systemu legacy: nazwy pol z webERP. */
 
   var DEBTORS = [
-    ["D001","GMINA WIELISZEW","ul. Modlinska 12","WIELISZEW","DOS","PLN","2011-03-14",0],
-    ["D002","SPOLDZ. MIESZK. ZORZA","ul. Sloneczna 4","LEGIONOWO","DOS","PLN","2013-09-01",0],
-    ["D003","PPHU TRANSBUD","ul. Przemyslowa 88","NOWY DWOR","DOS","PLN","2016-06-20",0],
-    ["D004","ZAKLAD KOMUNALNY SEROCK","ul. Nadrzeczna 3","SEROCK","DOS","PLN","2009-01-08",0],
-    ["D005","STORA PAPIER RECYKLING","ul. Fabryczna 21","OSTROLEKA","ODB","PLN","2012-04-02",250000],
-    ["D006","PLASTMET SP. Z O.O.","ul. Tworzywowa 7","PLOCK","ODB","PLN","2014-11-17",180000],
-    ["D007","HUTA SZKLA JAROSLAW","ul. Hutnicza 1","JAROSLAW","ODB","EUR","2018-02-05",120000],
-    ["D008","CEMENTOWNIA ODOLANOW RDF","ul. Wapienna 40","ODOLANOW","ODB","PLN","2019-08-22",300000]
+    ["D001","GMINA WIERZBOWO","ul. Modlinska 12","WIERZBOWO","DOS","PLN","2011-03-14",0],
+    ["D002","SPOLDZ. MIESZK. JUTRZENKA","ul. Sloneczna 4","NADRZECZE","DOS","PLN","2013-09-01",0],
+    ["D003","PPHU TRANSBUD","ul. Przemyslowa 88","STARY BROD","DOS","PLN","2016-06-20",0],
+    ["D004","ZAKLAD KOMUNALNY RZECZYCA","ul. Nadrzeczna 3","RZECZYCA","DOS","PLN","2009-01-08",0],
+    ["D005","RECYCLEHUB SP. Z O.O.","ul. Fabryczna 21","ZALESIE","ODB","PLN","2012-04-02",250000],
+    ["D006","PLASTMET SP. Z O.O.","ul. Tworzywowa 7","KAMIENIEC","ODB","PLN","2014-11-17",180000],
+    ["D007","HUTA SZKLA BOROWIEC","ul. Hutnicza 1","BOROWIEC","ODB","EUR","2018-02-05",120000],
+    ["D008","CEMENTOWNIA KAMIENIEC RDF","ul. Wapienna 40","DEBOWIEC","ODB","PLN","2019-08-22",300000]
   ].map(function (r) {
     return { debtorno:r[0], name:r[1], address1:r[2], address2:r[3], debtortype:r[4],
              currcode:r[5], clientsince:r[6], creditlimit:r[7] };
@@ -332,12 +332,12 @@
   });
 
   var LOCATIONS = [
-    ["BOKS1","BOKS 1 - PAPIER","ul. Skladowa 2, Wieliszew"],
-    ["BOKS2","BOKS 2 - TWORZYWA","ul. Skladowa 2, Wieliszew"],
-    ["BOKS3","BOKS 3 - SZKLO","ul. Skladowa 2, Wieliszew"],
-    ["BOKS4","BOKS 4 - METALE","ul. Skladowa 2, Wieliszew"],
-    ["MAGRDF","MAGAZYN RDF","ul. Skladowa 6, Wieliszew"],
-    ["PRZYJ","PLAC PRZYJEC","ul. Skladowa 2, Wieliszew"]
+    ["BOKS1","BOKS 1 - PAPIER","ul. Skladowa 2, Wierzbowo"],
+    ["BOKS2","BOKS 2 - TWORZYWA","ul. Skladowa 2, Wierzbowo"],
+    ["BOKS3","BOKS 3 - SZKLO","ul. Skladowa 2, Wierzbowo"],
+    ["BOKS4","BOKS 4 - METALE","ul. Skladowa 2, Wierzbowo"],
+    ["MAGRDF","MAGAZYN RDF","ul. Skladowa 6, Wierzbowo"],
+    ["PRZYJ","PLAC PRZYJEC","ul. Skladowa 2, Wierzbowo"]
   ].map(function (r) { return { loccode:r[0], locationname:r[1], deladd1:r[2] }; });
 
   var FRACTION_LOC = { "20 01 01":"BOKS1", "15 01 02":"BOKS2", "20 01 02":"BOKS3",

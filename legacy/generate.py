@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Generator bazy 'legacy' sortowni.
 
+WSZYSTKIE DANE SĄ FIKCYJNE — nazwy podmiotów, miejscowości, adresy, numery NIP
+i numery rejestrowe BDO zostały wymyślone. Żaden wpis nie odnosi się do
+istniejącego przedsiębiorstwa ani gminy.
+
 Tworzy plik SQLite ze zbiorem bazowym (historia, ktora "od lat siedzi
 w starym systemie") oraz ze zbiorem zapasowym ruchow, ktore ujawniaja sie
 stopniowo w czasie dzialania demo.
@@ -45,16 +49,30 @@ def nip(base9: str) -> str:
     return base9 + str(checksum)
 
 
+# ---------------------------------------------------------------------------
+# DANE SĄ W CAŁOŚCI FIKCYJNE.
+#
+# Nazwy podmiotów, miejscowości, adresy, numery NIP i numery rejestrowe BDO
+# zostały wymyślone na potrzeby demonstracji. Żaden wpis nie odnosi się do
+# istniejącego przedsiębiorstwa, gminy ani jednostki organizacyjnej, a każda
+# zbieżność jest przypadkowa.
+#
+# Numery NIP mają poprawną cyfrę kontrolną celowo — bez tego pierwszy
+# księgowy, który zobaczy dane, uzna całą demonstrację za niepoważną. Poprawna
+# suma kontrolna nie czyni jednak numeru przypisanym do kogokolwiek: to jest
+# ciąg cyfr spełniający wzór, a nie identyfikator podatnika.
+# ---------------------------------------------------------------------------
+
 DEBTORS = [
     # debtorno, name, address1, address2 (miasto), debtortype, currcode, clientsince, creditlimit, taxref, bdonumber
-    ("D001", "Gmina Wieliszew",              "ul. Modlinska 12",     "Wieliszew",  "DOS", "PLN", "2011-03-14", 0.0, nip("536178001"), "000012456"),
-    ("D002", "Spoldzielnia Mieszkaniowa Zorza", "ul. Sloneczna 4",   "Legionowo",  "DOS", "PLN", "2013-09-01", 0.0, nip("536241002"), "000023781"),
-    ("D003", "PPHU Transbud",                "ul. Przemyslowa 88",   "Nowy Dwor",  "DOS", "PLN", "2016-06-20", 0.0, nip("536310003"), "000031094"),
-    ("D004", "Zaklad Komunalny Serock",      "ul. Nadrzeczna 3",     "Serock",     "DOS", "PLN", "2009-01-08", 0.0, nip("536422004"), "000047215"),
-    ("D005", "RecycleHub Sp. z o.o.",        "ul. Fabryczna 21",     "Ostroleka",  "ODB", "PLN", "2012-04-02", 250000.0, nip("774113005"), "000118340"),
-    ("D006", "PlastMet Sp. z o.o.",          "ul. Tworzywowa 7",     "Plock",      "ODB", "PLN", "2014-11-17", 180000.0, nip("774250006"), "000126702"),
-    ("D007", "Huta Szkla Jaroslaw",          "ul. Hutnicza 1",       "Jaroslaw",   "ODB", "EUR", "2018-02-05", 120000.0, nip("795104007"), "000139518"),
-    ("D008", "Cementownia Odolanow RDF",     "ul. Wapienna 40",      "Odolanow",   "ODB", "PLN", "2019-08-22", 300000.0, nip("622187008"), "000145063"),
+    ("D001", "Gmina Wierzbowo",              "ul. Modlinska 12",     "Wierzbowo",  "DOS", "PLN", "2011-03-14", 0.0, nip("536178001"), "000012456"),
+    ("D002", "Spoldzielnia Mieszkaniowa Jutrzenka", "ul. Sloneczna 4",   "Nadrzecze",  "DOS", "PLN", "2013-09-01", 0.0, nip("536241002"), "000023781"),
+    ("D003", "PPHU Transbud",                "ul. Przemyslowa 88",   "Stary Brod",  "DOS", "PLN", "2016-06-20", 0.0, nip("536310003"), "000031094"),
+    ("D004", "Zaklad Komunalny Rzeczyca",      "ul. Nadrzeczna 3",     "Rzeczyca",     "DOS", "PLN", "2009-01-08", 0.0, nip("536422004"), "000047215"),
+    ("D005", "RecycleHub Sp. z o.o.",        "ul. Fabryczna 21",     "Zalesie",  "ODB", "PLN", "2012-04-02", 250000.0, nip("774113005"), "000118340"),
+    ("D006", "PlastMet Sp. z o.o.",          "ul. Tworzywowa 7",     "Kamieniec",      "ODB", "PLN", "2014-11-17", 180000.0, nip("774250006"), "000126702"),
+    ("D007", "Huta Szkla Borowiec",          "ul. Hutnicza 1",       "Borowiec",   "ODB", "EUR", "2018-02-05", 120000.0, nip("795104007"), "000139518"),
+    ("D008", "Cementownia Kamieniec RDF",     "ul. Wapienna 40",      "Debowiec",   "ODB", "PLN", "2019-08-22", 300000.0, nip("622187008"), "000145063"),
 ]
 
 STOCKS = [
@@ -73,12 +91,12 @@ STOCKS = [
 ]
 
 LOCATIONS = [
-    ("PRZYJ", "Plac przyjec",       "ul. Skladowa 2, Wieliszew"),
-    ("BOKS1", "Boks 1 - papier",    "ul. Skladowa 2, Wieliszew"),
-    ("BOKS2", "Boks 2 - tworzywa",  "ul. Skladowa 2, Wieliszew"),
-    ("BOKS3", "Boks 3 - szklo",     "ul. Skladowa 2, Wieliszew"),
-    ("BOKS4", "Boks 4 - metale",    "ul. Skladowa 2, Wieliszew"),
-    ("MAGRDF", "Magazyn RDF",       "ul. Skladowa 6, Wieliszew"),
+    ("PRZYJ", "Plac przyjec",       "ul. Skladowa 2, Wierzbowo"),
+    ("BOKS1", "Boks 1 - papier",    "ul. Skladowa 2, Wierzbowo"),
+    ("BOKS2", "Boks 2 - tworzywa",  "ul. Skladowa 2, Wierzbowo"),
+    ("BOKS3", "Boks 3 - szklo",     "ul. Skladowa 2, Wierzbowo"),
+    ("BOKS4", "Boks 4 - metale",    "ul. Skladowa 2, Wierzbowo"),
+    ("MAGRDF", "Magazyn RDF",       "ul. Skladowa 6, Wierzbowo"),
 ]
 
 # Do ktorego boksu trafia wysortowana frakcja i z ktorego jest wydawana.

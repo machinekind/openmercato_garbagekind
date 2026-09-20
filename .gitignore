@@ -1,6 +1,36 @@
+# --- wytwory uruchomienia -----------------------------------------------------
 __pycache__/
-*.pyc
+*.py[cod]
 *.db
 out/
 legacy/wsad/
 .runtime/
+
+# --- zależności i budowanie ---------------------------------------------------
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# --- środowisko (NIGDY nie commitujemy) ---------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+identity.json
+
+# --- narzędzia i system -------------------------------------------------------
+# Konfiguracja lokalna narzędzi jest z definicji związana z jedną maszyną —
+# śledzony launch.json niósł ścieżkę tymczasową wraz z nazwą użytkownika.
+.claude/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+.coverage
+htmlcov/
+.pytest_cache/

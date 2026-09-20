@@ -127,9 +127,9 @@ const seedCommand: ModuleCli = {
         organizationId: scope.organizationId,
         tenantId: scope.tenantId,
         code: 'ZAK1',
-        name: 'Zakład Wieliszew',
+        name: 'Zakład Wierzbowo',
         timezone: 'Europe/Warsaw',
-        address: 'ul. Składowa 2, Wieliszew',
+        address: 'ul. Składowa 2, Wierzbowo',
       } as never)
       em.persist(site)
       await em.flush()
