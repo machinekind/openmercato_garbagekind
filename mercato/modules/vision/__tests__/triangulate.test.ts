@@ -6,7 +6,7 @@ import { contamination, triangulate } from '../lib/triangulate'
  * Dwóch świadków mówi, ŻE coś się nie zgadza. Trzech zaczyna mówić, GDZIE.
  * Te testy pilnują przede wszystkim jednej rzeczy: że trzeci świadek umie
  * być podejrzanym. Implementacja, która zawsze obwinia robota, przechodzi
- * połowę z nich — i dlatego połowa tu jest.
+ * połowę z nich - i dlatego połowa tu jest.
  */
 
 const PET = 30
@@ -22,7 +22,7 @@ describe('triangulate', () => {
 
   it('wizja i robot zgodni, masa odstaje → winna masa nominalna, nie robot', () => {
     // 1000 sztuk naprawdę wpadło do pojemnika, ale ważą 24 kg zamiast 30.
-    // Materiał jest lżejszy, niż zakładano — zgnieciony, inny wsad.
+    // Materiał jest lżejszy, niż zakładano - zgnieciony, inny wsad.
     const wynik = triangulate({ ...base, depositedCount: 1000, claimedCount: 1000, weighedGrams: 24_000 })
     expect(wynik.suspect).toBe('nominal_mass')
     expect(wynik.reason).toMatch(/nie jest usterka robota/)
@@ -40,7 +40,7 @@ describe('triangulate', () => {
   })
 
   it('TRZECI ŚWIADEK UMIE BYĆ PODEJRZANYM: robot i masa zgodni, wizja nie widzi', () => {
-    // Materiał jest w pojemniku — potwierdza go waga. To kamera go nie widzi.
+    // Materiał jest w pojemniku - potwierdza go waga. To kamera go nie widzi.
     // Implementacja obwiniająca zawsze robota oblałaby ten test.
     const wynik = triangulate({ ...base, depositedCount: 800, claimedCount: 1000, weighedGrams: 30_000 })
     expect(wynik.suspect).toBe('vision')
@@ -52,7 +52,7 @@ describe('triangulate', () => {
     expect(wynik.suspect).toBe('foreign_material')
   })
 
-  it('robot zaniża zgłoszenia — materiał jest, brakuje meldunków', () => {
+  it('robot zaniża zgłoszenia - materiał jest, brakuje meldunków', () => {
     const wynik = triangulate({ ...base, depositedCount: 1000, claimedCount: 700, weighedGrams: 30_000 })
     expect(wynik.suspect).toBe('under_reporting')
   })

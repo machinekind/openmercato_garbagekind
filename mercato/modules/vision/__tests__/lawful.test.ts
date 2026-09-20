@@ -5,7 +5,7 @@ import { checkCamera, checkClassVocabulary, deleteAfterFor, MAX_RETENTION_DAYS }
  *
  * Wartość tych testów polega na tym, że opisują **odmowy**. Moduł, który
  * ostrzega i zapisuje, i moduł, który odmawia zapisu, wyglądają w dokumentacji
- * tak samo — różnią się dopiero w dniu kontroli.
+ * tak samo - różnią się dopiero w dniu kontroli.
  */
 
 describe('słownik klas detektora', () => {
@@ -85,7 +85,7 @@ describe('dopuszczalność kamery', () => {
 
   it('brak poinformowania załogi to wada usuwalna, nie unieważniająca', () => {
     // Rozdział na problems i warnings jest treścią: celu spoza katalogu nie
-    // naprawi żadna zgoda, a brak poinformowania owszem — byle przed startem.
+    // naprawi żadna zgoda, a brak poinformowania owszem - byle przed startem.
     const wynik = checkCamera({ ...poprawna, workforceNotifiedAt: null })
     expect(wynik.lawful).toBe(true)
     expect(wynik.warnings.join(' ')).toMatch(/§ 7/)

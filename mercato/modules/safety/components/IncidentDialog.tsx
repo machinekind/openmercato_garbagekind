@@ -12,12 +12,12 @@ import { useGuardedMutation } from '@open-mercato/ui/backend/injection/useGuarde
  * Zgłoszenie zdarzenia bezpieczeństwa.
  *
  * Formularz jest krótki celowo. Zgłoszenie, które zajmuje pięć minut,
- * nie powstaje przy zmianie zmiany — a zdarzenie potencjalnie wypadkowe
+ * nie powstaje przy zmianie zmiany - a zdarzenie potencjalnie wypadkowe
  * niezgłoszone jest zdarzeniem, którego nie ma w statystyce i przez to nie
  * ma go też w analizie przyczyn.
  *
  * Czego formularz **nie** pyta: o priorytet ani o to, czy wstrzymać wdrożenia.
- * To wylicza `classifyIncident` z samych faktów — skutku, udziału warstwy
+ * To wylicza `classifyIncident` z samych faktów - skutku, udziału warstwy
  * bezpieczeństwa i udziału polityki. Gdyby o ciężarze decydował zgłaszający,
  * ta sama sytuacja miałaby inny priorytet zależnie od tego, kto akurat stał
  * przy maszynie.
@@ -95,7 +95,7 @@ export function IncidentDialog({ robots, onDone }: { robots: Robot[]; onDone: ()
       /*
        * Werdykt wraca do zgłaszającego, zamiast znikać w bazie. Człowiek, który
        * właśnie zgłosił przygniecenie, ma od razu wiedzieć, że to wstrzymało
-       * wdrożenia dla całej klasy celi — inaczej dowie się o tym przypadkiem.
+       * wdrożenia dla całej klasy celi - inaczej dowie się o tym przypadkiem.
        */
       const w = odpowiedz as { priority?: string; haltDeployment?: boolean } | undefined
       flash(
@@ -138,10 +138,10 @@ export function IncidentDialog({ robots, onDone }: { robots: Robot[]; onDone: ()
 
             <label className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">
-                {t('safety.incident.robot', 'Maszyna')} — {t('safety.incident.robotOptional', 'jeśli zdarzenie jej dotyczy')}
+                {t('safety.incident.robot', 'Maszyna')} - {t('safety.incident.robotOptional', 'jeśli zdarzenie jej dotyczy')}
               </span>
               <select className="rounded border px-2 py-1" value={robotId} onChange={(e) => setRobotId(e.target.value)}>
-                <option value="">{t('safety.incident.noRobot', '— nie dotyczy konkretnej maszyny —')}</option>
+                <option value="">{t('safety.incident.noRobot', '- nie dotyczy konkretnej maszyny -')}</option>
                 {robots.map((r) => <option key={r.id} value={r.id}>{r.serialNumber}</option>)}
               </select>
             </label>
@@ -168,7 +168,7 @@ export function IncidentDialog({ robots, onDone }: { robots: Robot[]; onDone: ()
             <div className="text-xs text-muted-foreground">
               {t(
                 'safety.incident.classifyHint',
-                'Priorytetu nie ustala zgłaszający — wylicza go system ze skutku i z tego, czy zadziałała warstwa bezpieczeństwa.',
+                'Priorytetu nie ustala zgłaszający - wylicza go system ze skutku i z tego, czy zadziałała warstwa bezpieczeństwa.',
               )}
             </div>
 

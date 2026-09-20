@@ -5,16 +5,16 @@ import { createHash, createPublicKey, randomBytes, verify as verifySignature } f
  *
  * Założenie, które przesądza o kształcie całej reszty: **klucz prywatny nigdy
  * nie opuszcza robota**. Centrala zna wyłącznie klucz publiczny, więc nie da
- * się podszyć pod agenta wykradając bazę — co przy flocie maszyn poruszających
+ * się podszyć pod agenta wykradając bazę - co przy flocie maszyn poruszających
  * się w przestrzeni z ludźmi nie jest rozważaniem akademickim.
  *
  * Konsekwencja praktyczna: heartbeat nie jest deklaracją („jestem agentem X"),
  * tylko dowodem. Endpoint przyjmujący samą deklarację chroniłby dokładnie
- * przed niczym — każdy, kto zna identyfikator, mógłby utrzymywać martwego
+ * przed niczym - każdy, kto zna identyfikator, mógłby utrzymywać martwego
  * robota przy życiu na pulpicie.
  */
 
-/** Ed25519 — krótkie klucze, szybka weryfikacja, brak parametrów do pomylenia. */
+/** Ed25519 - krótkie klucze, szybka weryfikacja, brak parametrów do pomylenia. */
 export const SUPPORTED_ALGORITHM = 'ed25519'
 
 /** Bilet wpisowy: 32 bajty losowe w base64url. Zwracany raz, zapisywany tylko jako skrót. */
@@ -73,7 +73,7 @@ export function assertSupportedPublicKey(publicKeyPem: string): void {
   try {
     key = createPublicKey(publicKeyPem)
   } catch {
-    throw new Error('Klucz publiczny nie daje się odczytać — oczekiwano PEM/SPKI.')
+    throw new Error('Klucz publiczny nie daje się odczytać - oczekiwano PEM/SPKI.')
   }
   if (key.asymmetricKeyType !== SUPPORTED_ALGORITHM) {
     throw new Error(
@@ -87,7 +87,7 @@ export function assertSupportedPublicKey(publicKeyPem: string): void {
  *
  * Rozdzielone przedrostkiem celowo: podpis zebrany w jednym kontekście nie
  * może być użyty w innym. Bez przedrostka podpis heartbeatu dałoby się
- * przedstawić jako podpis wpisu — klasyczny błąd wiązania kontekstu.
+ * przedstawić jako podpis wpisu - klasyczny błąd wiązania kontekstu.
  */
 export const payloads = {
   enroll: (token: string, fingerprint: string): string => `edge.enroll:${token}:${fingerprint}`,
@@ -107,7 +107,7 @@ export const payloads = {
     payload: unknown,
   ): string =>
     `edge.telemetry:${sessionId}:${sequence}:${timestampIso}:${kind}:${sha256(canonicalJson(payload))}`,
-  /** Rotacja podpisywana NOWYM kluczem — dowodem jest posiadanie następcy, nie poprzednika. */
+  /** Rotacja podpisywana NOWYM kluczem - dowodem jest posiadanie następcy, nie poprzednika. */
   rotate: (agentId: string, fingerprint: string): string => `edge.rotate:${agentId}:${fingerprint}`,
 }
 

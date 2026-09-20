@@ -25,6 +25,6 @@ wyłącznie wartości z poniższej tabeli. Szczegóły zdarzenia pozostają w po
 | `other` | Wyjątek; pole `reason` musi jednoznacznie opisać przypadek do późniejszej klasyfikacji. |
 
 `kind` odpowiada na pytanie **co zrobił operator** (`adjust`, `manual_reset`,
-`teleop_takeover`, `abort`, `estop`), a `reasonCategory` — **dlaczego**. Dlatego
+`teleop_takeover`, `abort`, `estop`), a `reasonCategory` - **dlaczego**. Dlatego
 np. E-stop po wejściu człowieka ma `kind: estop` i
 `reasonCategory: person_in_safety_zone`.

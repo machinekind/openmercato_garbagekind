@@ -22,7 +22,7 @@ jest.mock('@open-mercato/ui/backend/charts', () => ({
   KpiCard: ({ title, value, suffix, footer }: { title: string; value: number | null; suffix?: string; footer?: React.ReactNode }) => (
     <div data-testid="kpi">
       <span>{title}</span>
-      <strong>{value === null ? '—' : `${value}${suffix ?? ''}`}</strong>
+      <strong>{value === null ? '-' : `${value}${suffix ?? ''}`}</strong>
       <div>{footer}</div>
     </div>
   ),
@@ -147,7 +147,7 @@ describe('SortowniaDashboard', () => {
     render(<SortowniaDashboard />)
     await screen.findByText('PRZYJ')
     expect(screen.getByText('78.4%')).toBeInTheDocument()
-    // 150 000 kg pojemności to 150,000 t — trzy miejsca po przecinku,
+    // 150 000 kg pojemności to 150,000 t - trzy miejsca po przecinku,
     // a nie sto pięćdziesiąt tysięcy. Ta pomyłka jest łatwa i kosztowna,
     // więc wiersz sprawdzamy w całości.
     const wiersz = screen.getByText('PRZYJ').closest('div')?.parentElement
@@ -180,7 +180,7 @@ describe('SortowniaDashboard', () => {
     expect(screen.getByText('PRZYJ → BOKS1')).toBeInTheDocument()
   })
 
-  it('niesie numer z systemu legacy — para SORT pokazuje oba', async () => {
+  it('niesie numer z systemu legacy - para SORT pokazuje oba', async () => {
     render(<SortowniaDashboard />)
     await screen.findByText('Ostatnie ruchy')
     expect(screen.getByText('#100240 + 100241')).toBeInTheDocument()
@@ -195,7 +195,7 @@ describe('SortowniaDashboard', () => {
     expect(screen.getByText('WZ')).toBeInTheDocument()
   })
 
-  it('pokazuje przychód ze sprzedaży frakcji — stary system nie umiał tego powiedzieć', async () => {
+  it('pokazuje przychód ze sprzedaży frakcji - stary system nie umiał tego powiedzieć', async () => {
     render(<SortowniaDashboard />)
     expect(await screen.findByText('Sprzedaż frakcji')).toBeInTheDocument()
     expect(screen.getByText('Przychód netto')).toBeInTheDocument()
@@ -244,7 +244,7 @@ describe('SortowniaDashboard', () => {
     expect(screen.getByText('wszystko rozliczone')).toBeInTheDocument()
   })
 
-  it('pokazuje, czyj odpad przyjechał — tego stary system nie wiedział wcale', async () => {
+  it('pokazuje, czyj odpad przyjechał - tego stary system nie wiedział wcale', async () => {
     render(<SortowniaDashboard />)
     expect(await screen.findByText('Pochodzenie odpadu')).toBeInTheDocument()
     expect(screen.getByText('Gmina Wierzbowo')).toBeInTheDocument()
@@ -259,7 +259,7 @@ describe('SortowniaDashboard', () => {
     expect(screen.queryByText('Pochodzenie odpadu')).not.toBeInTheDocument()
   })
 
-  it('odróżnia masę zarezerwowaną od wolnej — stary system znał tylko jedną liczbę', async () => {
+  it('odróżnia masę zarezerwowaną od wolnej - stary system znał tylko jedną liczbę', async () => {
     render(<SortowniaDashboard />)
     await screen.findByText('W boksach')
     expect(screen.getByText('w tym 24,500 t zarezerwowane (5 zamówień)')).toBeInTheDocument()
@@ -279,11 +279,11 @@ describe('SortowniaDashboard', () => {
     expect(screen.getByText('67.9%')).toBeInTheDocument()
   })
 
-  it('alarmuje, gdy bilans się nie domyka — ubytek masy to nie drobiazg', async () => {
+  it('alarmuje, gdy bilans się nie domyka - ubytek masy to nie drobiazg', async () => {
     respondWith({ ...payload, bilans: { ...payload.bilans, differenceKg: 1240.5 } })
     render(<SortowniaDashboard />)
     await screen.findByText('Bilans masy i sprawność sortowania')
-    expect(screen.getByText(/różnica 1,241 t — sprawdź ewidencję/)).toBeInTheDocument()
+    expect(screen.getByText(/różnica 1,241 t - sprawdź ewidencję/)).toBeInTheDocument()
   })
 
   it('pokazuje przychód per frakcja z ceną za kilogram', async () => {
@@ -320,7 +320,7 @@ describe('SortowniaDashboard', () => {
     await waitFor(() => expect(screen.getByTestId('chart')).toHaveAttribute('data-rows', '1'))
   })
 
-  it('mówi wprost, gdy dane się nie pobrały — pusty ekran niczego nie tłumaczy', async () => {
+  it('mówi wprost, gdy dane się nie pobrały - pusty ekran niczego nie tłumaczy', async () => {
     apiFetchMock.mockResolvedValue({ ok: false, status: 403, json: async () => ({ error: 'Forbidden' }) })
     render(<SortowniaDashboard />)
     expect(await screen.findByText('Forbidden')).toBeInTheDocument()

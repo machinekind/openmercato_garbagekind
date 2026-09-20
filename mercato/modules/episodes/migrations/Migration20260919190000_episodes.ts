@@ -1,13 +1,13 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Księga epizodów i interwencji — schemat początkowy.
+ * Księga epizodów i interwencji - schemat początkowy.
  *
  * Dwie rzeczy warte przeczytania:
  *
  * 1. **Unikat `(tenant_id, robot_id, external_ref)`.** Agent po utracie łącza
  *    dosyła zaległe epizody i nie może przez to rozmnożyć księgi. Idempotencja
- *    siedzi w bazie, nie w pamięci procesu — ta sama zasada, co przy skrócie
+ *    siedzi w bazie, nie w pamięci procesu - ta sama zasada, co przy skrócie
  *    wag w rejestrze polityk i przy pomiarze kalibracyjnym w rejestrze floty.
  *
  * 2. **`episode_id` na interwencji jest nullowalne.** Człowiek, który

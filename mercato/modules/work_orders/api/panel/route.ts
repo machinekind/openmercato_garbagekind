@@ -23,7 +23,7 @@ export const metadata = {
 type OrderRow = {
   id: string
   orderNumber: string
-  /** Potrzebne rzutowi hali do zsumowania wyniku per cela — po identyfikatorze,
+  /** Potrzebne rzutowi hali do zsumowania wyniku per cela - po identyfikatorze,
    *  nie po nazwie: nazwy się powtarzają i zmieniają. */
   cellId: string | null
   sku: string

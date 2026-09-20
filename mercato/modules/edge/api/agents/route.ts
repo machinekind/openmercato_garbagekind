@@ -9,7 +9,7 @@ import { evaluateLiveness, type LivenessState } from '../../lib/liveness'
  *
  * Kształt odpowiedzi (`byRobot`) jest podyktowany tym, kto ją czyta: pulpit
  * floty, który ma już listę robotów i potrzebuje ją tylko wzbogacić. Dzięki
- * temu `fleet` nie musi wiedzieć nic o `edge` — składanie dzieje się
+ * temu `fleet` nie musi wiedzieć nic o `edge` - składanie dzieje się
  * w przeglądarce, a rejestr działa również wtedy, gdy kanału brzegowego nie ma.
  */
 export const metadata = {
@@ -26,7 +26,7 @@ type AgentRow = {
   silenceSeconds: number | null
   lastSeenAt: string | null
   fingerprint: string | null
-  /** Liczba sesji w ostatniej dobie — miara migotania łącza, nie jego stanu. */
+  /** Liczba sesji w ostatniej dobie - miara migotania łącza, nie jego stanu. */
   sessionsLastDay: number
   reason: string
 }

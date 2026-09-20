@@ -11,7 +11,7 @@ import { interventionReasonCategorySchema } from '../lib/interventionReasons'
  * Dwie zasady, których ten plik pilnuje:
  *
  * 1. **Epizod jest niezmienny po zapisaniu.** Nie ma komendy edycji epizodu.
- *    Powtórne wysłanie tego samego `external_ref` zwraca istniejący wpis —
+ *    Powtórne wysłanie tego samego `external_ref` zwraca istniejący wpis -
  *    agent po utracie łącza wysyła zaległe epizody ponownie i nie może przez
  *    to rozmnożyć księgi. Ta sama zasada, co przy skrócie wag w rejestrze
  *    polityk: idempotencja siedzi w unikacie bazy, nie w pamięci procesu.
@@ -20,7 +20,7 @@ import { interventionReasonCategorySchema } from '../lib/interventionReasons'
  *    Licznik na epizodzie rośnie, ale wynik epizodu zostaje taki, jaki zgłosił
  *    robot. Zamiana wyniku na „przerwany" przy każdej interwencji skasowałaby
  *    rozróżnienie między „człowiek poprawił coś w locie, zadanie się udało"
- *    a „człowiek przerwał, zadanie przepadło" — a to jest różnica między
+ *    a „człowiek przerwał, zadanie przepadło" - a to jest różnica między
  *    wdrożeniem dojrzałym a niedziałającym.
  */
 
@@ -71,7 +71,7 @@ function resolveEm(ctx: { container: { resolve: (key: string) => unknown } }): E
  *
  * Alias istnieje, bo `as unknown as typeof episode` przy zmiennej
  * zainicjowanej na `null` zawęża typ do `null`, a po `if (!episode) throw`
- * do `never` — i każdy odczyt pola staje się błędem widocznym wyłącznie
+ * do `never` - i każdy odczyt pola staje się błędem widocznym wyłącznie
  * w `tsc --noEmit`, nigdy w teście. Atrapa EntityManagera jest typowana
  * luźno i przepuszcza to bez mrugnięcia.
  */
@@ -107,7 +107,7 @@ const recordEpisodeCommand: CommandHandler<EpisodeRecordInput, EpisodeRecordResu
     } as never)) as unknown as { id: string; sequence: number } | null
 
     if (existing) {
-      // Powtórka nie jest błędem — agent po utracie łącza dosyła zaległości.
+      // Powtórka nie jest błędem - agent po utracie łącza dosyła zaległości.
       return { episodeId: existing.id, sequence: Number(existing.sequence), duplicate: true }
     }
 
@@ -179,7 +179,7 @@ const recordInterventionCommand: CommandHandler<
        *
        * `as never` kompiluje się i zawęża typ do `never`, przez co **każdy**
        * odczyt pola z tego obiektu staje się błędem dopiero przy `tsc`, a nigdy
-       * w teście — atrapa `EntityManager` jest i tak typowana luźno. To był
+       * w teście - atrapa `EntityManager` jest i tak typowana luźno. To był
        * realny błąd znaleziony przez `tsc --noEmit` po zielonej suicie.
        */
       episode = (await em.findOne(Episode, {
@@ -255,7 +255,7 @@ const recordInterventionCommand: CommandHandler<
  *
  * Istnieje, bo denormalizacja bez drogi powrotnej jest długiem, który ktoś
  * kiedyś spłaci ręcznym UPDATE-em o drugiej w nocy. Komenda nie kasuje
- * niczego — ustawia licznik na to, co mówi tabela interwencji, i zwraca listę
+ * niczego - ustawia licznik na to, co mówi tabela interwencji, i zwraca listę
  * epizodów, które się rozjechały, żeby dało się o tym powiedzieć wprost.
  */
 export const reconcileCountsSchema = scoped.extend({

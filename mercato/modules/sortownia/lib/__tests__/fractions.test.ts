@@ -4,7 +4,7 @@ import type { LegacyFractionRow } from '../legacyFiles'
 /**
  * Frakcja odpadu zostaje pozycją katalogu, bo dopiero wtedy WMS może prowadzić
  * dla niej stany, a sprzedaż wystawić wydanie. Profil zapasu dokłada próg
- * wysyłki — wiedzę, której `stockmaster` nie miał gdzie trzymać.
+ * wysyłki - wiedzę, której `stockmaster` nie miał gdzie trzymać.
  */
 
 type FakeRow = Record<string, unknown> & { id?: string }
@@ -55,7 +55,7 @@ describe('ensureFractions', () => {
     expect(result.index.get('20 01 01')).toBeDefined()
   })
 
-  it('kod odpadu staje się SKU wariantu — po nim odnajdzie się go w każdym module', async () => {
+  it('kod odpadu staje się SKU wariantu - po nim odnajdzie się go w każdym module', async () => {
     const { em, created } = fakeEm()
     await ensureFractions(em as never, scope, [fraction()])
 

@@ -15,7 +15,7 @@ export const metadata: ModuleInfo = {
    *
    * Kierunek jest jednostronny i taki ma zostać. Gdyby `policy_registry`
    * zaczął wiedzieć o zbiorach, rejestracja wersji wymagałaby istnienia zbioru
-   * — a wersja wgrana ręcznie, bez potoku treningowego, jest normalnym
+   * - a wersja wgrana ręcznie, bez potoku treningowego, jest normalnym
    * przypadkiem w pierwszym miesiącu każdego wdrożenia.
    */
   requires: ['fleet', 'policy_registry', 'episodes'],

@@ -12,7 +12,7 @@ import type { LegacyPaymentRow } from './legacyFiles'
  * Stary system kończył się na fakturze: czy odbiorca zapłacił, wiedziała
  * wyłącznie księgowa i wyłącznie z wyciągu bankowego. Dopóki zapłata nie jest
  * przypięta do dokumentu, nie da się odpowiedzieć na pytanie, które w sortowni
- * pada najczęściej — „ile nam wiszą i od kiedy".
+ * pada najczęściej - „ile nam wiszą i od kiedy".
  *
  * Wpłata idzie komendą `sales.payments.create` wraz z alokacją na konkretną
  * fakturę. Sama kwota bez alokacji utworzyłaby płatność wiszącą w powietrzu,
@@ -34,7 +34,7 @@ export type PaymentOutcome = {
   error?: string
 }
 
-/** Wpłaty znaczymy numerem legacy — po nim poznajemy, że już weszły. */
+/** Wpłaty znaczymy numerem legacy - po nim poznajemy, że już weszły. */
 export function paymentReferenceFor(transno: number): string {
   return `ZAPL/${transno}`
 }
@@ -45,7 +45,7 @@ export function paymentReferenceFor(transno: number): string {
  * Kwota jest tu nie bez powodu. Import jest z założenia dopisujący: raz
  * zaksięgowanej wpłaty nie nadpisujemy, bo dokument księgowy nie zmienia się
  * po cichu. Ale jeżeli po stronie legacy kwota tej samej wpłaty jest już inna,
- * to znaczy, że ktoś ruszył dane u źródła — i milczenie byłoby najgorszą
+ * to znaczy, że ktoś ruszył dane u źródła - i milczenie byłoby najgorszą
  * z możliwych odpowiedzi. Zgłaszamy rozjazd zamiast go przemilczeć.
  */
 export async function loadPaymentAmounts(
@@ -119,7 +119,7 @@ export async function applyPayments(
       outcomes.push({
         transno: row.transno,
         action: 'failed',
-        error: `zamówienie ${row.orderno} nie jest w Mercato — zaimportuj sprzedaż przed wpłatami`,
+        error: `zamówienie ${row.orderno} nie jest w Mercato - zaimportuj sprzedaż przed wpłatami`,
       })
       continue
     }

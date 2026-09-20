@@ -5,7 +5,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  *
  * Jedna nieobecność wymaga uzasadnienia: **nie ma zdarzenia na sprawdzenie
  * dopuszczenia** (`safety.clearance.check`). Ta komenda jest pytaniem, nie
- * faktem — wołają ją bramki przed każdym przypisaniem, a odmowa jest jej
+ * faktem - wołają ją bramki przed każdym przypisaniem, a odmowa jest jej
  * normalną odpowiedzią, nie zdarzeniem w świecie. Zdarzenie na odczyt
  * generowałoby strumień proporcjonalny do liczby sprawdzeń i mówiło o tym,
  * jak często pytamy, a nie o tym, co się stało.
@@ -36,7 +36,7 @@ const events = [
   {
     id: 'safety.case.approved',
     label: 'Uzasadnienie bezpieczeństwa zatwierdzone',
-    description: 'Od tej chwili wersja polityki ma dopuszczenie w tej klasie celi — do daty ważności, nie bezterminowo.',
+    description: 'Od tej chwili wersja polityki ma dopuszczenie w tej klasie celi - do daty ważności, nie bezterminowo.',
     entity: 'safety_case',
     category: 'lifecycle',
     payloadSchema: {
@@ -103,14 +103,14 @@ const events = [
   {
     /**
      * `error` idzie tu razem z `fail` i to nie jest niedbałość. Zestaw, który
-     * się wywrócił, **nie wykazał** zgodności — tak samo jak zestaw oblany.
+     * się wywrócił, **nie wykazał** zgodności - tak samo jak zestaw oblany.
      * Rozdzielenie ich zachęcałoby do traktowania awarii potoku jako „jeszcze
      * nie porażka", a to jest dokładnie ten nawyk, który kończy się polityką
      * dopuszczoną bez dowodu.
      */
     id: 'safety.run.failed',
     label: 'Przebieg ewaluacyjny nie wykazał zgodności',
-    description: 'Wynik `fail` albo `error`. Awaria potoku nie jest łagodniejsza niż oblany zestaw — w obu wypadkach dowodu nie ma.',
+    description: 'Wynik `fail` albo `error`. Awaria potoku nie jest łagodniejsza niż oblany zestaw - w obu wypadkach dowodu nie ma.',
     entity: 'eval_run',
     category: 'lifecycle',
     payloadSchema: {

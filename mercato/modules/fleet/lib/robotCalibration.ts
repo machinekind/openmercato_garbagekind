@@ -3,7 +3,7 @@ import { Calibration, EmbodimentRevision } from '../data/entities'
 import { evaluateCalibration } from './calibration'
 
 /**
- * Werdykt kalibracyjny dla robota — wymagania bierze z jego rewizji embodimentu.
+ * Werdykt kalibracyjny dla robota - wymagania bierze z jego rewizji embodimentu.
  *
  * Mieszkał wcześniej w `commands/robots.ts` i stamtąd importowały go zarówno
  * komendy, jak i wiersz poleceń. To był błąd o skutku niewidocznym do czasu,

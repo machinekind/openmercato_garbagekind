@@ -10,7 +10,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  *
  * Przy każdym etapie stoi ostatni werdykt bramy **razem ze zmierzonymi
  * liczbami i progiem**. Sam status („wycofany") zmusza do przeliczenia księgi
- * wstecz, żeby powiedzieć dlaczego — a księga w międzyczasie urosła.
+ * wstecz, żeby powiedzieć dlaczego - a księga w międzyczasie urosła.
  *
  * Kolumna „kto" przy werdykcie pokazuje `automat` albo nazwisko. W poprawnie
  * działającym wdrożeniu zawsze jest tam automat; podpis człowieka przy
@@ -85,7 +85,7 @@ const STATUS_TONE: Record<string, string> = {
 
 const DECISION_LABEL: Record<string, [string, string]> = {
   advance: ['rollout.label.decision.advance', "przepuść"],
-  hold: ['rollout.label.decision.hold', "wstrzymaj — za mało danych"],
+  hold: ['rollout.label.decision.hold', "wstrzymaj - za mało danych"],
   rollback: ['rollout.label.decision.rollback', "WYCOFAJ"],
 }
 
@@ -206,7 +206,7 @@ export default function RolloutBoard() {
                   <td
                     className={`px-4 py-2 ${stage.lastGate?.decision === 'rollback' ? 'text-red-600' : stage.lastGate?.decision === 'hold' ? 'text-amber-600' : ''}`}
                   >
-                    {stage.lastGate ? DECISION_LABEL[stage.lastGate.decision] ? t(...DECISION_LABEL[stage.lastGate.decision]) : stage.lastGate.decision : '—'}
+                    {stage.lastGate ? DECISION_LABEL[stage.lastGate.decision] ? t(...DECISION_LABEL[stage.lastGate.decision]) : stage.lastGate.decision : '-'}
                     {stage.lastGate ? (
                       <div className="text-xs text-muted-foreground">{stage.lastGate.reason}</div>
                     ) : null}
@@ -221,7 +221,7 @@ export default function RolloutBoard() {
                         skut. {pct(stage.lastGate.successRate)}
                       </>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
@@ -233,7 +233,7 @@ export default function RolloutBoard() {
                     skut. ≥ {pct(stage.thresholds.minSuccessRate)}
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
-                    {stage.lastGate ? (stage.lastGate.automatic ? 'automat' : t('rollout.ui.human', "człowiek")) : '—'}
+                    {stage.lastGate ? (stage.lastGate.automatic ? 'automat' : t('rollout.ui.human', "człowiek")) : '-'}
                   </td>
                 </tr>
               ))}

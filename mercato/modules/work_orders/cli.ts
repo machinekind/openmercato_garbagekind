@@ -9,7 +9,7 @@ import { User } from '@open-mercato/core/modules/auth/data/entities'
  * Komendy operatorskie mostu.
  *
  * `weigh` jest tą, której używa człowiek na hali: pojemnik staje na wadze,
- * wpisuje się kilogramy. Reszta dzieje się sama — partia magazynowa, przyjęcie
+ * wpisuje się kilogramy. Reszta dzieje się sama - partia magazynowa, przyjęcie
  * i uzgodnienie z deklaracją robota.
  */
 
@@ -37,7 +37,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -51,7 +51,7 @@ function buildCommandContext(
    * Osiem modułów robotycznych wołało dotąd wyłącznie własne komendy i uszło im
    * płazem `{ selectedId, filterIds }`. Ten moduł jako pierwszy woła komendy
    * rdzenia platformy (`wms.lots.create`, `wms.inventory.receive`), a te
-   * sprawdzają zakres przez `allowedIds` i `tenantId` — skrócony kształt
+   * sprawdzają zakres przez `allowedIds` i `tenantId` - skrócony kształt
    * kończy się na nich odmową `Forbidden` bez wskazania przyczyny.
    *
    * Ten sam komplet pól niesie moduł `sortownia`, bo on od początku pisał
@@ -76,20 +76,20 @@ function buildCommandContext(
  *
  * Wiersz poleceń nie ma sesji, a magazyn wymaga wykonawcy. Zamiast
  * podstawiać kogokolwiek po cichu, komenda **wypisuje**, komu przypisała
- * ruch — w prawdziwym wdrożeniu waży zalogowany człowiek, a nie skrypt.
+ * ruch - w prawdziwym wdrożeniu waży zalogowany człowiek, a nie skrypt.
  */
 async function resolveOperator(em: EntityManager, scope: Scope, args: Record<string, string | boolean>): Promise<{ id: string; email: string }> {
   /*
    * Adresy użytkowników są szyfrowane w spoczynku, więc surowy SELECT zwraca
    * szyfrogram i wypisałby go operatorowi na ekran. Ta sama pomyłka złapana
-   * już raz w pulpicie sortowni — odczyt idzie `findWithDecryption`.
+   * już raz w pulpicie sortowni - odczyt idzie `findWithDecryption`.
    */
   const wanted = typeof args.as === 'string' ? args.as : null
   const users = (await findWithDecryption(em, User, { tenantId: scope.tenantId } as never, {
     orderBy: { createdAt: 'asc' },
   } as never)) as unknown as Array<{ id: string; email: string }>
 
-  if (!users?.length) throw new Error('Brak użytkownika w tenancie — nie ma komu przypisać ruchów magazynowych.')
+  if (!users?.length) throw new Error('Brak użytkownika w tenancie - nie ma komu przypisać ruchów magazynowych.')
   const chosen = wanted ? users.find((u) => u.email === wanted) : users[0]
   if (!chosen) throw new Error(`Nie ma użytkownika ${wanted}.`)
   return { id: chosen.id, email: chosen.email }
@@ -149,10 +149,10 @@ const statusCommand: ModuleCli = {
     console.log('  zlecenie            frakcja    stan        wyprodukowano   rozjazd')
     console.log('  ' + '-'.repeat(78))
     for (const row of rows) {
-      const drift = row.drift_grams === null ? '—' : `${kg(Number(row.drift_grams))} kg`
+      const drift = row.drift_grams === null ? '-' : `${kg(Number(row.drift_grams))} kg`
       /*
        * Liczba partii, nie sam wykrzyknik. Rozjazd zbiorczy potrafi wyjść
-       * dodatni, gdy jedna partia miała nadwyżkę, a druga niedobór — i wtedy
+       * dodatni, gdy jedna partia miała nadwyżkę, a druga niedobór - i wtedy
        * „brakuje materiału" obok dodatniej liczby wyglądało na sprzeczność,
        * choć flaga była poprawna. Wydruk ma mówić, ile partii, a nie sugerować
        * kierunek sumy.
@@ -195,7 +195,7 @@ const weighCommand: ModuleCli = {
         ...scope,
         batchId: batches[0].id,
         performedBy: operator.id,
-        // Gramy jako liczba całkowita — kilogramy zmiennoprzecinkowe kończą się
+        // Gramy jako liczba całkowita - kilogramy zmiennoprzecinkowe kończą się
         // bilansem, który nie domyka się o kilkaset gramów na tysiąc ruchów.
         weighedGrams: Math.round(kilograms * 1000),
       },
@@ -270,7 +270,7 @@ const proveCommand: ModuleCli = {
     const k = kontekst[0]
     const operator = await resolveOperator(em, scope, args)
 
-    console.log('DOWÓD MOSTU — waga rozstrzyga o zapasie, deklaracja robota o ocenie robota\n')
+    console.log('DOWÓD MOSTU - waga rozstrzyga o zapasie, deklaracja robota o ocenie robota\n')
     console.log(`   cela ${k.cell}, frakcja ${k.sku}, waży ${operator.email}`)
 
     const PET_GRAMOW = 30
@@ -296,7 +296,7 @@ const proveCommand: ModuleCli = {
      * Napełnia pojemnik w **jawnym oknie czasowym**, nie „od teraz do teraz".
      *
      * Pierwsza wersja rozstawiała epizody względem `openedAt`, a zamykała
-     * partię bieżącym czasem — przez co okno zależało od tego, jak szybko
+     * partię bieżącym czasem - przez co okno zależało od tego, jak szybko
      * szyna komend przemieli tysiąc zapisów. Skutek: 749 epizodów partii A
      * wypadło poza jej okno i doliczyło się do partii B, a dowód mierzył
      * wydajność maszyny, na której akurat działa, zamiast zachowania systemu.
@@ -375,14 +375,14 @@ const proveCommand: ModuleCli = {
      * Sprzątanie po poprzednim przebiegu dowodu.
      *
      * Liczba chwytów w partii to liczba epizodów sukcesu w **oknie czasowym**
-     * celi — i tak ma być, bo w ruchu każdy epizod w tym oknie naprawdę trafił
+     * celi - i tak ma być, bo w ruchu każdy epizod w tym oknie naprawdę trafił
      * do tego pojemnika. Skutkiem ubocznym jest to, że drugi przebieg dowodu
      * doliczał epizody pierwszego (2000 zamiast 1000) i pokazywał werdykt,
      * którego nie dotyczył.
      *
      * Usuwamy **wyłącznie epizody zapisane przez ten dowód**, rozpoznane po
      * przedrostku odniesienia zewnętrznego. Żadnych masowych kasowań i żadnego
-     * dotykania epizodów z innego źródła — te same zasady, co przy poprawkach
+     * dotykania epizodów z innego źródła - te same zasady, co przy poprawkach
      * w księdze ruchów magazynowych.
      */
     const usuniete = await em.getConnection().execute<Array<{ count: string }>>(
@@ -397,7 +397,7 @@ const proveCommand: ModuleCli = {
     const ile = Number(usuniete?.[0]?.count ?? 0)
     if (ile > 0) console.log(`   (usunięto ${ile} epizodów z poprzedniego przebiegu dowodu)`)
 
-    // Dwie zmiany po dwie godziny, wczoraj — żeby okna nie zahaczały o siebie
+    // Dwie zmiany po dwie godziny, wczoraj - żeby okna nie zahaczały o siebie
     // ani o bieżący czas.
     const baza = new Date(Date.now() - 24 * 3600_000)
     const oknoA = { od: baza, do: new Date(baza.getTime() + 2 * 3600_000) }
@@ -417,7 +417,7 @@ const proveCommand: ModuleCli = {
     ).result as { producedGrams: number; batches: number }
 
     console.log(`\nZlecenie zamknięte: ${kg(zamkniete.producedGrams)} kg w ${zamkniete.batches} partiach.`)
-    console.log('\nWniosek: obie partie weszły do magazynu w masie z wagi — bo materiał')
+    console.log('\nWniosek: obie partie weszły do magazynu w masie z wagi - bo materiał')
     console.log('fizycznie leży w pojemniku. Różnica między nimi nie jest w magazynie,')
     console.log('tylko w ocenie maszyny, i nie widać jej w żadnej telemetrii robota.')
   },

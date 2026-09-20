@@ -4,7 +4,7 @@
 Klucz prywatny **nigdy nie opuszcza tej maszyny**. Centrala zna wyłącznie
 publiczny, więc wyciek jej bazy nie pozwala podszyć się pod robota. Z tego
 samego powodu plik tożsamości zakładamy z prawami 0600 i nie logujemy jego
-zawartości — ani w całości, ani fragmentami.
+zawartości - ani w całości, ani fragmentami.
 
 Odcisk klucza liczymy z postaci DER/SPKI, nie z tekstu PEM: ten sam klucz
 zapisany z innymi końcami wierszy dałby inny skrót tekstowy, a operator
@@ -65,7 +65,7 @@ class Identity:
     """Stan agenta między uruchomieniami procesu.
 
     `sequence` jest wspólny dla uderzeń serca i telemetrii, bo centrala trzyma
-    jeden licznik na sesję. `lease_sequence` jest osobny — dzierżawy mają własny
+    jeden licznik na sesję. `lease_sequence` jest osobny - dzierżawy mają własny
     licznik po stronie centrali i mieszanie ich kończy się odrzuceniem żądania.
     """
 
@@ -91,7 +91,7 @@ class Identity:
         return self.lease_sequence
 
     def start_session(self, session_id: str) -> None:
-        """Nowa sesja zeruje oba liczniki — centrala liczy je per sesja, nie globalnie."""
+        """Nowa sesja zeruje oba liczniki - centrala liczy je per sesja, nie globalnie."""
         self.session_id = session_id
         self.sequence = 0
         self.lease_sequence = 0

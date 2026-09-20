@@ -102,7 +102,7 @@ describe('evaluateCalibration', () => {
     expect(verdict.complete).toBe(false)
   })
 
-  it('pusta lista wymagań dopuszcza — rewizja bez kalibracji jest dozwolona', () => {
+  it('pusta lista wymagań dopuszcza - rewizja bez kalibracji jest dozwolona', () => {
     expect(evaluateCalibration([], [], NOW).complete).toBe(true)
   })
 
@@ -130,7 +130,7 @@ describe('expiringWithin', () => {
     expect(wkrotce.map((s) => s.kind)).toEqual(['camera_extrinsics'])
   })
 
-  it('nie zgłasza tego, co już wygasło — to jest blokada, nie ostrzeżenie', () => {
+  it('nie zgłasza tego, co już wygasło - to jest blokada, nie ostrzeżenie', () => {
     const verdict = evaluateCalibration(
       ['camera_extrinsics'],
       [record({ validUntil: new Date('2026-09-10T12:00:00Z') })],

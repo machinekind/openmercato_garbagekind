@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generator bazy 'legacy' sortowni.
 
-WSZYSTKIE DANE SĄ FIKCYJNE — nazwy podmiotów, miejscowości, adresy, numery NIP
+WSZYSTKIE DANE SĄ FIKCYJNE - nazwy podmiotów, miejscowości, adresy, numery NIP
 i numery rejestrowe BDO zostały wymyślone. Żaden wpis nie odnosi się do
 istniejącego przedsiębiorstwa ani gminy.
 
@@ -57,7 +57,7 @@ def nip(base9: str) -> str:
 # istniejącego przedsiębiorstwa, gminy ani jednostki organizacyjnej, a każda
 # zbieżność jest przypadkowa.
 #
-# Numery NIP mają poprawną cyfrę kontrolną celowo — bez tego pierwszy
+# Numery NIP mają poprawną cyfrę kontrolną celowo - bez tego pierwszy
 # księgowy, który zobaczy dane, uzna całą demonstrację za niepoważną. Poprawna
 # suma kontrolna nie czyni jednak numeru przypisanym do kogokolwiek: to jest
 # ciąg cyfr spełniający wzór, a nie identyfikator podatnika.

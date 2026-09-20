@@ -19,7 +19,7 @@ export MERCATO_ROOT=~/open-mercato
 (cd "$MERCATO_ROOT/apps/mercato" && yarn generate && yarn mercato db migrate)
 ```
 
-Moduły są **kopiowane**, nie dowiązywane — Turbopack nie rozwiązuje dowiązań
+Moduły są **kopiowane**, nie dowiązywane - Turbopack nie rozwiązuje dowiązań
 poza katalogiem projektu. Źródłem prawdy zostaje to repozytorium; po każdej
 zmianie uruchom `install.sh` ponownie.
 
@@ -43,12 +43,12 @@ odpowiedzialność za nią leży po stronie autora zmiany.
 2. **Uprawnienia w `acl.ts` i `setup.ts`**, encje przez MikroORM z jawną
    migracją, ekran przez `backend/<nazwa>/page.tsx`.
 3. **Każda decyzja z kuszącą alternatywą trafia do komentarza wraz z powodem
-   odrzucenia.** Komentarz ma tłumaczyć *dlaczego*, nie *co* — „co" widać
+   odrzucenia.** Komentarz ma tłumaczyć *dlaczego*, nie *co* - „co" widać
    w kodzie.
 4. **Moduł nie importuje encji innego modułu.** Klasa encji zarejestrowana pod
    dwiema ścieżkami daje „Metadata for entity X not found" po stronie, która
    zgubi kolejność ładowania. Odczyt z obcej tabeli idzie surowym SQL-em,
-   logika współdzielona — przez plik czystych funkcji w `lib/`.
+   logika współdzielona - przez plik czystych funkcji w `lib/`.
 5. **Plik z komendami nie jest biblioteką.** Funkcje pomocnicze wołane spoza
    komend przenosimy do `lib/`, inaczej leniwy loader szyny zarejestruje
    komendę drugi raz.
@@ -60,10 +60,10 @@ Pełne uzasadnienia: [`README.md`](README.md), sekcja „Zasady inżynierskie".
 
 Trzy reguły częstotliwości, których nie wolno naruszać:
 
-- **ruch nie jest faktem** — uderzenie serca nie emituje zdarzenia, jego brak tak;
-- **wyzwalanie zboczem** — rozjazd trwający pół godziny to jedno zdarzenie,
+- **ruch nie jest faktem** - uderzenie serca nie emituje zdarzenia, jego brak tak;
+- **wyzwalanie zboczem** - rozjazd trwający pół godziny to jedno zdarzenie,
   nie sto;
-- **odhaczanie w danych** — wygaśnięcie kalibracji ogłaszane raz na kalibrację.
+- **odhaczanie w danych** - wygaśnięcie kalibracji ogłaszane raz na kalibrację.
 
 Zdarzenie zadeklarowane w `events.ts` bez `emit` w kodzie jest błędem.
 
@@ -83,10 +83,10 @@ Zdarzenie zadeklarowane w `events.ts` bez `emit` w kodzie jest błędem.
 ## Język
 
 Dokumentacja i komentarze są po polsku, bo zespół i odbiorca produktu są
-polskojęzyczni. Identyfikatory w kodzie — nazwy zmiennych, funkcji, pól bazy,
-kluczy zdarzeń — są po angielsku. Ta granica jest celowa i prosimy jej nie
+polskojęzyczni. Identyfikatory w kodzie - nazwy zmiennych, funkcji, pól bazy,
+kluczy zdarzeń - są po angielsku. Ta granica jest celowa i prosimy jej nie
 zacierać w żadną stronę.
 
 ## Zgłaszanie podatności
 
-Nie przez zgłoszenie publiczne — patrz [`SECURITY.md`](SECURITY.md).
+Nie przez zgłoszenie publiczne - patrz [`SECURITY.md`](SECURITY.md).

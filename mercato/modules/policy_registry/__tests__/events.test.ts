@@ -7,7 +7,7 @@ import { demoJointContract } from '../lib/vectorContract'
  *
  * Kluczowa reguła: ponowne wgranie tej samej treści z potoku CI **nie**
  * emituje. Odcisk treści rozstrzyga o tożsamości wersji, więc drugie wgranie
- * nie jest drugą wersją — a zdarzenie nadane przy każdym przebiegu potoku
+ * nie jest drugą wersją - a zdarzenie nadane przy każdym przebiegu potoku
  * uruchamiałoby automatyzacje kolejny raz na tym samym artefakcie.
  *
  * Druga: zwolnienie i wycofanie dostają własne zdarzenia obok ogólnego

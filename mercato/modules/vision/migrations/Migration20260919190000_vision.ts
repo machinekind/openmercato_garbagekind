@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Wzrok maszynowy — schemat początkowy.
+ * Wzrok maszynowy - schemat początkowy.
  *
  * Czego tu **nie ma** i nie ma przybyć: kolumny z bajtami wideo. Klip jest
  * adresem i terminem usunięcia. Art. 22² § 3 Kodeksu pracy nakazuje zniszczenie

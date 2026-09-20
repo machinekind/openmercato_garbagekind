@@ -1,21 +1,21 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Most hala ↔ przedsiębiorstwo — schemat początkowy.
+ * Most hala ↔ przedsiębiorstwo - schemat początkowy.
  *
  * Trzy rzeczy warte uwagi przy czytaniu:
  *
  * 1. Masy są w **gramach jako `bigint`**, nie w kilogramach zmiennoprzecinkowych.
  *    Bilans masy w sortowni pokazał już raz, że suma stu wartości po 3803,73
  *    zależy od kolejności sumowania. Przeliczenie na kilogramy dzieje się
- *    na granicy — przy komendzie magazynowej i na ekranie.
+ *    na granicy - przy komendzie magazynowej i na ekranie.
  *
  * 2. `work_orders_reconciliations` nie ma unikatu na partię. To celowe:
  *    ponowne ważenie tworzy kolejny wpis, a nie zmienia poprzedniego.
  *
  * 3. Indeks częściowy na otwartej partii wymusza jedną naraz na zlecenie.
  *    Epizody wiąże z partią okno czasowe, więc dwie otwarte partie
- *    przypisałyby ten sam chwyt do dwóch pojemników — i baza ma to odbić,
+ *    przypisałyby ten sam chwyt do dwóch pojemników - i baza ma to odbić,
  *    a nie nasza pamięć.
  */
 export class Migration20260919170000_work_orders extends Migration {

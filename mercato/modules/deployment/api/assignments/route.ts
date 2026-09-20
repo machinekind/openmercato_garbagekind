@@ -7,11 +7,11 @@ import { evaluateAuthorization } from '../../lib/lease'
 /**
  * Stan pożądany floty dla pulpitu.
  *
- * `getAuthFromRequest`, nie wariant ciastkowy — po ten endpoint sięgają
+ * `getAuthFromRequest`, nie wariant ciastkowy - po ten endpoint sięgają
  * skrypty dowodowe niosące sesję w nagłówku `Authorization`.
  *
  * Ekran odpowiada na jedno pytanie, którego nie da się zadać nigdzie indziej:
- * **czy ta maszyna ma w tej chwili prawo pracować** — i przez ile jeszcze
+ * **czy ta maszyna ma w tej chwili prawo pracować** - i przez ile jeszcze
  * sekund. Liczba sekund jest tu ważniejsza od nazwy stanu: „pracuje" bez niej
  * nie mówi, czy pracuje dlatego, że wszystko gra, czy dlatego, że mandat
  * jeszcze nie zdążył wygasnąć.
@@ -121,7 +121,7 @@ export async function GET(req: Request): Promise<Response> {
       secondsLeft: authorization.secondsLeft,
       reportedState: row.reported_state,
       reportedAt: row.reported_at ? new Date(row.reported_at).toISOString() : null,
-      // `unknown` gdy robot nigdy nic nie zgłosił — to nie to samo, co zgodność.
+      // `unknown` gdy robot nigdy nic nie zgłosił - to nie to samo, co zgodność.
       reconciliation: row.reconciliation ?? 'unknown',
     }
   })
@@ -132,7 +132,7 @@ export async function GET(req: Request): Promise<Response> {
       totals: {
         assignments: assignments.length,
         working: assignments.filter((a) => a.working).length,
-        // Robot z przypisaniem, ale bez ważnego mandatu — sam siebie zatrzymał.
+        // Robot z przypisaniem, ale bez ważnego mandatu - sam siebie zatrzymał.
         haltedByLease: assignments.filter((a) => !a.working && a.desiredState === 'running').length,
         drift: assignments.filter((a) => a.reconciliation === 'drift').length,
         unknown: assignments.filter((a) => a.reconciliation === 'unknown').length,

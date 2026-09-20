@@ -2,14 +2,14 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
 import type { LeaseExpiryBehavior, PolicyVectorSpec } from '../lib/vectorContract'
 
 /**
- * Rejestr polityk — wyuczonych sterowników i ich artefaktów.
+ * Rejestr polityk - wyuczonych sterowników i ich artefaktów.
  *
  * Trzy rozstrzygnięcia przesądzone przed pierwszą tabelą:
  *
  * 1. **Tożsamością wersji jest skrót artefaktów, nie numer.** Numer jest
  *    etykietą dla ludzi; to, co naprawdę odróżnia dwie wersje, to bity wag.
  *    Dwa wgrania tych samych wag są jedną wersją, bo fizycznie są jedną
- *    polityką. Alternatywa — numer nadawany przy każdym wgraniu — odrzucona,
+ *    polityką. Alternatywa - numer nadawany przy każdym wgraniu - odrzucona,
  *    bo tworzy dwa rekordy dla jednego zachowania i unieważnia każdą statystykę
  *    liczoną per wersja (a na tych statystykach stoi cała faza 4).
  *
@@ -22,7 +22,7 @@ import type { LeaseExpiryBehavior, PolicyVectorSpec } from '../lib/vectorContrac
  *    nowa wersja; zmiana statusu to osobna kolumna z własnym dziennikiem.
  *
  * Czego tu świadomie nie ma: wdrożenia (to `deployment`), stanu pożądanego,
- * wyników ewaluacji (to `safety`) i — co najważniejsze — **samych binariów**.
+ * wyników ewaluacji (to `safety`) i - co najważniejsze - **samych binariów**.
  * W tabeli leży wskaźnik do magazynu obiektów i skrót; bajty wag nigdy nie
  * przechodzą przez MikroORM ani przez szynę komend. To jest granica
  * control plane / data plane zapisana w warunku trzecim raportu.
@@ -34,12 +34,12 @@ export type LearningMethod = 'rl' | 'il' | 'offline_rl' | 'vla' | 'classical'
 /**
  * Status wersji polityki.
  *
- * `registered` — istnieje, artefakty policzone, embodiment zweryfikowany.
- * `released`   — dopuszczona do użycia przez wdrożenia.
- * `deprecated` — wycofana z użycia; istniejące wdrożenia nie znikają, ale
+ * `registered` - istnieje, artefakty policzone, embodiment zweryfikowany.
+ * `released`   - dopuszczona do użycia przez wdrożenia.
+ * `deprecated` - wycofana z użycia; istniejące wdrożenia nie znikają, ale
  *                nowe przypisanie się nie uda.
  *
- * Nie ma tu `approved` — dopuszczenie bezpieczeństwa jest funkcją pary
+ * Nie ma tu `approved` - dopuszczenie bezpieczeństwa jest funkcją pary
  * (wersja, klasa celi) i mieszka w module `safety`. Trzymanie jednego pola
  * „zatwierdzona" sugerowałoby, że dopuszczenie jest własnością globalną wersji,
  * a to jest dokładnie ten błąd, który każe pisać osobne uzasadnienie dla każdej
@@ -73,7 +73,7 @@ export class Policy {
   /**
    * Rodzina embodimentu, dla której polityka w ogóle powstała.
    *
-   * Pole obowiązkowe — to jest treść zdania „polityka bez zadeklarowanego
+   * Pole obowiązkowe - to jest treść zdania „polityka bez zadeklarowanego
    * embodimentu nie daje się zapisać". Rewizję sprawdzamy dopiero przy wersji,
    * ale rodzinę deklaruje się od razu, żeby nie dało się założyć rejestru
    * polityk, o których nie wiadomo, czym mają ruszać.
@@ -107,7 +107,7 @@ export class Policy {
  * `content_digest` jest tożsamością: liczony z kompletu artefaktów w postaci
  * kanonicznej (patrz `lib/digest.ts`). Unikat `(tenant_id, policy_id,
  * content_digest)` sprawia, że drugie wgranie tych samych wag odbija się
- * od **bazy**, a nie od naszej pamięci — ta sama zasada, co przy unikacie
+ * od **bazy**, a nie od naszej pamięci - ta sama zasada, co przy unikacie
  * pomiaru kalibracyjnego w rejestrze floty.
  */
 @Entity({ tableName: 'policy_registry_policy_versions' })
@@ -141,12 +141,12 @@ export class PolicyVersion {
   embodimentRevisionId!: string
 
   /**
-   * Kopia `spec_digest` rewizji z chwili rejestracji — celowa denormalizacja.
+   * Kopia `spec_digest` rewizji z chwili rejestracji - celowa denormalizacja.
    *
    * Rewizja embodimentu jest w innym module i teoretycznie niezmienna, ale
    * „teoretycznie niezmienna" to za mało dla zapisu, który ma odpowiedzieć
    * regulatorowi po trzech latach. Robot porównuje tę wartość lokalnie przed
-   * załadowaniem wag i odmawia startu przy rozjeździe — bez pytania centrali.
+   * załadowaniem wag i odmawia startu przy rozjeździe - bez pytania centrali.
    */
   @Property({ name: 'embodiment_spec_digest', type: 'text' })
   embodimentSpecDigest!: string
@@ -170,14 +170,14 @@ export class PolicyVersion {
   @Property({ type: 'json', nullable: true })
   provenance?: Record<string, unknown> | null
 
-  /** Deklarowane wymiary wejścia/wyjścia — najtańsza kontrola zdrowego rozsądku. */
+  /** Deklarowane wymiary wejścia/wyjścia - najtańsza kontrola zdrowego rozsądku. */
   @Property({ name: 'observation_dim', type: 'int', nullable: true })
   observationDim?: number | null
 
   @Property({ name: 'action_dim', type: 'int', nullable: true })
   actionDim?: number | null
 
-  /** Uporządkowane pola są częścią kontraktu — kolejność tablicy jest kolejnością wektora. */
+  /** Uporządkowane pola są częścią kontraktu - kolejność tablicy jest kolejnością wektora. */
   @Property({ name: 'observation_spec', type: 'json', nullable: true })
   observationSpec?: PolicyVectorSpec | null
 
@@ -204,7 +204,7 @@ export class PolicyVersion {
  * Pojedynczy plik składający się na wersję: wagi, konfiguracja, preprocesor.
  *
  * `uri` wskazuje magazyn obiektów. Binarium nie leży w bazie i nie przechodzi
- * przez szynę komend — to nie jest optymalizacja, tylko warunek brzegowy
+ * przez szynę komend - to nie jest optymalizacja, tylko warunek brzegowy
  * projektu. Baza trzyma skrót, żeby dało się stwierdzić, że plik pod tym
  * adresem to wciąż ten sam plik.
  */
@@ -245,7 +245,7 @@ export class PolicyArtifact {
   @Property({ name: 'media_type', type: 'text', nullable: true })
   mediaType?: string | null
 
-  /** Wskaźnik do magazynu obiektów — `s3://…`, `file://…`. Nigdy bajty. */
+  /** Wskaźnik do magazynu obiektów - `s3://…`, `file://…`. Nigdy bajty. */
   @Property({ type: 'text' })
   uri!: string
 
@@ -254,7 +254,7 @@ export class PolicyArtifact {
 }
 
 /**
- * Dziennik zmian statusu wersji — dopisywany, nigdy nadpisywany.
+ * Dziennik zmian statusu wersji - dopisywany, nigdy nadpisywany.
  *
  * Ta sama zasada, co w księdze przejść robota: poprawka jest kolejnym wpisem.
  * Tutaj chroni odpowiedź na pytanie „kto i kiedy wypuścił tę wersję na flotę".

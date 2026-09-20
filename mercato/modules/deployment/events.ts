@@ -13,7 +13,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * 2. **Nie ma zdarzenia na raport stanu.** Z tego samego powodu. Faktem nie
  *    jest raport, tylko **zmiana werdyktu**: chwila, w której maszyna rozjeżdża
  *    się ze stanem pożądanym, i chwila, w której wraca. Dlatego oba zdarzenia
- *    niżej są wyzwalane zboczem — porównaniem z poprzednim raportem tej samej
+ *    niżej są wyzwalane zboczem - porównaniem z poprzednim raportem tej samej
  *    maszyny, a nie samym faktem nadejścia raportu. Bez tego „rozjazd" wracałby
  *    co kilkadziesiąt sekund przez cały czas jego trwania i przestałby cokolwiek
  *    znaczyć.
@@ -44,7 +44,7 @@ const events = [
   {
     id: 'deployment.assignment.revoked',
     label: 'Odwołano przypisanie polityki',
-    description: 'Odwołanie skraca czas, do którego sięga łącze. Nie jest zatrzymaniem maszyny — to należy do deterministycznej warstwy bezpieczeństwa.',
+    description: 'Odwołanie skraca czas, do którego sięga łącze. Nie jest zatrzymaniem maszyny - to należy do deterministycznej warstwy bezpieczeństwa.',
     entity: 'assignment',
     category: 'lifecycle',
     payloadSchema: {
@@ -80,7 +80,7 @@ const events = [
   {
     id: 'deployment.state.converged',
     label: 'Maszyna wróciła do stanu pożądanego',
-    description: 'Domknięcie rozjazdu. Bez tego zdarzenia odbiorca wiedziałby, kiedy się zepsuło, i nigdy — kiedy naprawiło.',
+    description: 'Domknięcie rozjazdu. Bez tego zdarzenia odbiorca wiedziałby, kiedy się zepsuło, i nigdy - kiedy naprawiło.',
     entity: 'state_report',
     category: 'lifecycle',
     payloadSchema: {

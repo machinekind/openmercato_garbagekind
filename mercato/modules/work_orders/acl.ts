@@ -4,7 +4,7 @@
  * `work_orders.weigh` jest osobne od `work_orders.manage` i to jest tu
  * najważniejszy podział: wpisanie masy z wagi tworzy zapas magazynowy
  * i jednocześnie wystawia ocenę maszynie. Kto może zważyć pojemnik,
- * ten może jednym wpisem dodać towar do stanu — to nie jest uprawnienie
+ * ten może jednym wpisem dodać towar do stanu - to nie jest uprawnienie
  * do rozdawania razem z podglądem.
  */
 export const features = [

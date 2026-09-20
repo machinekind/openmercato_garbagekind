@@ -33,7 +33,7 @@ export type CadenceReport = {
   /**
    * Średnia liczba epizodów przypadająca na jedną interwencję.
    *
-   * `null`, gdy interwencji nie było wcale — i to **nie** jest to samo, co
+   * `null`, gdy interwencji nie było wcale - i to **nie** jest to samo, co
    * nieskończoność ani co bardzo duża liczba. Brak interwencji w serii
    * pięciu epizodów nie jest dowodem autonomii, tylko brakiem danych,
    * i raport ma to mówić wprost zamiast wypisywać imponujący ułamek.
@@ -47,7 +47,7 @@ export type CadenceReport = {
   streaks: number[]
   /** Udział epizodów przeprowadzonych bez człowieka. */
   autonomyRate: number
-  /** Udział sukcesów — osobno, bo epizod bywa nieudany bez żadnej interwencji. */
+  /** Udział sukcesów - osobno, bo epizod bywa nieudany bez żadnej interwencji. */
   successRate: number
 }
 
@@ -56,7 +56,7 @@ export type CadenceReport = {
  *
  * Niezmiennik, którego trzyma się cała reszta: `cleanEpisodes` równa się sumie
  * długości serii, a `intervenedEpisodes + cleanEpisodes` równa się liczbie
- * epizodów. Bez tego raport byłby osobną opowieścią obok księgi — a księga
+ * epizodów. Bez tego raport byłby osobną opowieścią obok księgi - a księga
  * epizodów ma być jedynym źródłem.
  */
 export function cadence(entries: EpisodeEntry[]): CadenceReport {
@@ -74,7 +74,7 @@ export function cadence(entries: EpisodeEntry[]): CadenceReport {
       intervenedEpisodes += 1
       // Seria kończy się na epizodzie z interwencją, a sam ten epizod do niej
       // nie należy. Zaliczenie go do serii zawyżałoby wynik o jeden przy
-      // każdym przerwaniu — czyli najbardziej tam, gdzie wdrożenie idzie źle.
+      // każdym przerwaniu - czyli najbardziej tam, gdzie wdrożenie idzie źle.
       if (run > 0) streaks.push(run)
       run = 0
     } else {
@@ -129,7 +129,7 @@ export function verifyAgainstLedger(
     problems.push(`sumy serii ${streakSum} nie zgadzają się z epizodami bez interwencji ${report.cleanEpisodes}`)
   }
   if (report.interventions < report.intervenedEpisodes) {
-    problems.push('interwencji mniej niż epizodów z interwencją — to niemożliwe')
+    problems.push('interwencji mniej niż epizodów z interwencją - to niemożliwe')
   }
 
   return { consistent: problems.length === 0, problems }
@@ -174,7 +174,7 @@ export function trend(
   const b = later.meanEpisodesBetweenInterventions
 
   if (a === null && b === null) {
-    return { direction: 'unknown', reason: 'w żadnym okresie nie było interwencji — brak podstawy do porównania' }
+    return { direction: 'unknown', reason: 'w żadnym okresie nie było interwencji - brak podstawy do porównania' }
   }
   if (a === null) {
     return { direction: 'down', reason: 'wcześniej nie było interwencji, teraz są' }

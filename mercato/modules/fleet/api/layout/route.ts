@@ -6,10 +6,10 @@ import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 /**
  * Rzut hali: obiekty, cele, roboty i ich stan.
  *
- * Endpoint zwraca **wyłącznie to, co należy do rejestru floty** — geometrię
+ * Endpoint zwraca **wyłącznie to, co należy do rejestru floty** - geometrię
  * i stan maszyn. Łączności agentów, wyniku produkcyjnego ani zliczeń wizji tu
  * nie ma, mimo że rzut je pokazuje: składa je przeglądarka z osobnych
- * endpointów. Ta sama zasada, co przy pulpicie floty i z tego samego powodu —
+ * endpointów. Ta sama zasada, co przy pulpicie floty i z tego samego powodu -
  * rejestr ma działać na świeżej instalacji, gdzie z całej reszty nie ma nic.
  *
  * Cele bez kompletu współrzędnych wracają w osobnej liście `unplacedCells`,
@@ -75,7 +75,7 @@ export async function GET(req: Request): Promise<Response> {
   /**
    * Roboty ze stanem kalibracji policzonym jednym zapytaniem.
    *
-   * `distinct on (robot_id, kind)` bierze najnowszy pomiar każdego rodzaju —
+   * `distinct on (robot_id, kind)` bierze najnowszy pomiar każdego rodzaju -
    * ta sama konstrukcja, co w pulpicie floty. Wariant z zapytaniem per robot
    * przy flocie liczonej w tysiącach zmieniłby rzut w klepsydrę.
    */
@@ -179,7 +179,7 @@ export async function GET(req: Request): Promise<Response> {
         floorHeightM: s.floor_height_m,
       })),
       cells: placed.map(mapCell),
-      // Osobno i jawnie — nie z podstawioną pozycją.
+      // Osobno i jawnie - nie z podstawioną pozycją.
       unplacedCells: cells.filter((c) => !placed.includes(c)).map(mapCell),
       // Roboty bez celi też są prawdą o flocie: stoją gdzieś na hali,
       // a rejestr nie wie gdzie.

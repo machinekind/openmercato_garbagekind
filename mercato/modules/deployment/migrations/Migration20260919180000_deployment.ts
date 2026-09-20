@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Kanał stanu pożądanego — schemat początkowy.
+ * Kanał stanu pożądanego - schemat początkowy.
  *
  * Dwie rzeczy warte przeczytania:
  *
@@ -9,7 +9,7 @@ import { Migration } from '@mikro-orm/migrations'
  *    najwyżej jedno czynne przypisanie i egzekwuje to baza, nie pamięć
  *    komendy. Dwaj inżynierowie przypisujący dwie polityki temu samemu ramieniu
  *    w tej samej minucie to nie jest przypadek teoretyczny. `where superseded_at
- *    is null and revoked_at is null` zostawia całą historię nietkniętą —
+ *    is null and revoked_at is null` zostawia całą historię nietkniętą -
  *    unikat pełny wymuszałby kasowanie, a kasowanie zabiera odpowiedź na
  *    pytanie „co ta maszyna robiła w zeszły wtorek".
  *

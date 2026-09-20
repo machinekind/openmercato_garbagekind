@@ -11,7 +11,7 @@ import { emitWorkOrdersEvent } from '../events'
  * Wszystko idzie szyną komend, tak jak w pozostałych modułach. Tutaj dochodzi
  * powód dodatkowy: zamknięcie partii **wywołuje komendy magazynowe platformy**
  * (`wms.lots.create`, `wms.inventory.receive`), a nie pisze do tabel magazynu.
- * Identyfikowalność prowadzi magazyn, nie my obok niego — ta sama zasada,
+ * Identyfikowalność prowadzi magazyn, nie my obok niego - ta sama zasada,
  * co przy imporcie z systemu legacy w module `sortownia`.
  */
 
@@ -113,7 +113,7 @@ const openBatchCommand: CommandHandler<OpenBatchInput, { batchId: string; opened
       deletedAt: null,
     } as never)) as unknown as { id: string; status: WorkOrderStatus; organizationId: string } | null
     if (!order) throw new Error('Zlecenie robocze nie istnieje.')
-    if (order.status !== 'open') throw new Error(`Zlecenie jest w stanie ${order.status} — nie przyjmuje partii.`)
+    if (order.status !== 'open') throw new Error(`Zlecenie jest w stanie ${order.status} - nie przyjmuje partii.`)
 
     /*
      * Jedna otwarta partia na zlecenie. Dwie naraz nie dałyby się rozdzielić:
@@ -124,7 +124,7 @@ const openBatchCommand: CommandHandler<OpenBatchInput, { batchId: string; opened
       workOrderId: input.workOrderId,
       status: 'filling',
     } as never)
-    if (otwarta) throw new Error('Zlecenie ma już otwartą partię — zamknij ją przed otwarciem następnej.')
+    if (otwarta) throw new Error('Zlecenie ma już otwartą partię - zamknij ją przed otwarciem następnej.')
 
     const openedAt = input.openedAt ?? new Date()
     const batch = em.create(WorkBatch, {
@@ -164,7 +164,7 @@ export const closeBatchSchema = scoped.extend({
    * Kto zważył. Magazyn platformy wymaga realnego użytkownika przy ruchu
    * i ma rację: przyjęcie bez wykonawcy jest zapisem, za który nikt nie
    * odpowiada. Pole jest tu opcjonalne wyłącznie dlatego, że przy wywołaniu
-   * z sesji wystarcza `ctx.auth` — komenda nigdy nie podstawia aktora sama.
+   * z sesji wystarcza `ctx.auth` - komenda nigdy nie podstawia aktora sama.
    */
   performedBy: z.string().uuid().optional(),
 })
@@ -207,7 +207,7 @@ const closeBatchCommand: CommandHandler<CloseBatchInput, CloseBatchResult> = {
       lotNumber?: string | null
     } | null
     if (!batch) throw new Error('Partia nie istnieje.')
-    if (batch.status !== 'filling') throw new Error(`Partia jest w stanie ${batch.status} — nie da się jej zamknąć.`)
+    if (batch.status !== 'filling') throw new Error(`Partia jest w stanie ${batch.status} - nie da się jej zamknąć.`)
     if (closedAt.getTime() <= batch.openedAt.getTime()) {
       throw new Error('Moment zamknięcia partii musi być późniejszy niż jej otwarcie.')
     }
@@ -232,7 +232,7 @@ const closeBatchCommand: CommandHandler<CloseBatchInput, CloseBatchResult> = {
     /**
      * Deklaracja robota: epizody zakończone powodzeniem w oknie partii.
      *
-     * Wiązanie po oknie czasowym i celi, a nie po kluczu obcym — robot nie wie,
+     * Wiązanie po oknie czasowym i celi, a nie po kluczu obcym - robot nie wie,
      * do którego pojemnika trafiła sztuka, i udawanie, że wie, byłoby
      * wymyślaniem danych. Filtr po wersji polityki zawęża rachunek, gdy
      * zlecenie ją wskazuje: wtedy błąd przypisuje się **tej** wersji.
@@ -277,7 +277,7 @@ const closeBatchCommand: CommandHandler<CloseBatchInput, CloseBatchResult> = {
     /**
      * Materiał wchodzi do magazynu **niezależnie od werdyktu**.
      *
-     * Kusi, żeby wstrzymać przyjęcie przy rozjeździe — i byłby to błąd.
+     * Kusi, żeby wstrzymać przyjęcie przy rozjeździe - i byłby to błąd.
      * Pojemnik stoi na wadze, materiał fizycznie istnieje. Magazyn, który
      * go nie przyjmuje, zapisuje nieprawdę, a operator i tak wysypie
      * zawartość na hałdę. Werdykt dotyczy maszyny, nie materiału.
@@ -327,7 +327,7 @@ const closeBatchCommand: CommandHandler<CloseBatchInput, CloseBatchResult> = {
            * z własnej produkcji dostawę od kontrahenta, którego nie ma.
            */
           referenceType: 'manual',
-          // Identyfikatorem odniesienia jest partia robocza — to ona jest
+          // Identyfikatorem odniesienia jest partia robocza - to ona jest
           // rzeczą, do której można wrócić z magazynu.
           referenceId: batch.id,
           performedBy,
@@ -462,7 +462,7 @@ const closeOrderCommand: CommandHandler<
     if (otwarta) {
       // Pojemnik w trakcie napełniania niesie materiał, którego nikt nie zważył.
       // Zamknięcie zlecenia ponad nim zgubiłoby tę masę bez śladu.
-      throw new Error('Zlecenie ma otwartą partię — zamknij ją (zważ) przed zamknięciem zlecenia.')
+      throw new Error('Zlecenie ma otwartą partię - zamknij ją (zważ) przed zamknięciem zlecenia.')
     }
 
     const suma = (await em.find(WorkBatch, {

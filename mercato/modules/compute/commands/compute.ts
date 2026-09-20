@@ -22,7 +22,7 @@ export const registerNodeSchema = scoped.extend({
   memoryGb: z.number().int().positive(),
   memoryBandwidthGbs: z.number().int().positive(),
   computeTflops: z.number().positive(),
-  /** Bez precyzji liczba TFLOPS nie znaczy nic — patrz komentarz przy encji. */
+  /** Bez precyzji liczba TFLOPS nie znaczy nic - patrz komentarz przy encji. */
   computePrecision: z.enum(['fp4', 'fp8', 'int8', 'fp16', 'bf16', 'fp32']),
   roles: z.array(z.string()).min(1),
   sharedGeneralPurpose: z.boolean().default(true),

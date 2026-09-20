@@ -2,4 +2,4 @@ blank_issues_enabled: true
 contact_links:
   - name: Zgłoszenie podatności
     url: https://github.com/machinekind/openmercato_garbagekind/blob/main/SECURITY.md
-    about: Podatności nie zgłaszamy publicznie — procedura jest w SECURITY.md.
+    about: Podatności nie zgłaszamy publicznie - procedura jest w SECURITY.md.

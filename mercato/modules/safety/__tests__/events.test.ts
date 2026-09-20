@@ -8,10 +8,10 @@ import { approveCaseCommand, recordRunCommand, reportIncidentCommand } from '../
  *
  * 1. `error` w przebiegu ewaluacyjnym idzie razem z `fail` do zdarzenia
  *    „nie wykazał zgodności". Rozdzielenie ich zachęca do traktowania awarii
- *    potoku jako „jeszcze nie porażki" — a to jest nawyk, który kończy się
+ *    potoku jako „jeszcze nie porażki" - a to jest nawyk, który kończy się
  *    polityką dopuszczoną bez dowodu.
  * 2. Zdarzenie o wycofaniu dopuszczenia pada pod tym samym warunkiem, co samo
- *    wycofanie — nie pod samą flagą `haltDeployment`. Incydent bez wskazanej
+ *    wycofanie - nie pod samą flagą `haltDeployment`. Incydent bez wskazanej
  *    wersji polityki niczego nie wycofał i ogłaszanie, że wycofał, byłoby
  *    nieprawdą zapisaną w szynie zdarzeń.
  */
@@ -96,7 +96,7 @@ describe('emisja zdarzeń warstwy bezpieczeństwa', () => {
     expect(seen.map((e) => e.id)).toEqual(['safety.run.recorded', 'safety.run.failed'])
   })
 
-  it('AWARIA POTOKU JEST TRAKTOWANA JAK PORAŻKA — dowodu nie ma tak samo', async () => {
+  it('AWARIA POTOKU JEST TRAKTOWANA JAK PORAŻKA - dowodu nie ma tak samo', async () => {
     const seen = captureEvents()
     await recordRunCommand.execute({ ...przebieg, result: 'error' }, makeCtx())
     expect(seen.map((e) => e.id)).toEqual(['safety.run.recorded', 'safety.run.failed'])
@@ -105,7 +105,7 @@ describe('emisja zdarzeń warstwy bezpieczeństwa', () => {
 
   it('zatwierdzenie uzasadnienia niesie rodzaj warstwy deterministycznej', async () => {
     // Bez tego pola odbiorca nie odróżnia dopuszczenia od dokumentu
-    // opisującego nadzieję — a to jest cała różnica.
+    // opisującego nadzieję - a to jest cała różnica.
     const seen = captureEvents()
     await approveCaseCommand.execute(
       {
@@ -148,7 +148,7 @@ describe('emisja zdarzeń warstwy bezpieczeństwa', () => {
     expect(seen[1].payload).toMatchObject({ cellClass: 'fenced-pick-place', policyVersionId: VERSION_ID })
   })
 
-  it('incydent bez wskazanej wersji polityki niczego nie wycofał — i tak to ogłasza', async () => {
+  it('incydent bez wskazanej wersji polityki niczego nie wycofał - i tak to ogłasza', async () => {
     const seen = captureEvents()
     const result = await reportIncidentCommand.execute(
       {
@@ -160,7 +160,7 @@ describe('emisja zdarzeń warstwy bezpieczeństwa', () => {
       },
       makeCtx(),
     )
-    // Werdykt nadal każe wstrzymać, ale nie ma czego wycofać — i zdarzenie
+    // Werdykt nadal każe wstrzymać, ale nie ma czego wycofać - i zdarzenie
     // o wycofaniu nie może paść, bo byłoby nieprawdą.
     expect(result.haltDeployment).toBe(true)
     expect(seen.map((e) => e.id)).toEqual(['safety.incident.reported'])

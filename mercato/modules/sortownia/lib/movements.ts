@@ -17,7 +17,7 @@ import type { FractionIndex } from './fractions'
  *
  * 1. `SORT` w legacy to PARA wierszy (minus na placu, plus w boksie), które
  *    nic nie wiąże poza tym, że mają tę samą sekundę. W WMS to jeden ruch
- *    `transfer` z `locationFrom` i `locationTo` — przesunięcie jest atomowe.
+ *    `transfer` z `locationFrom` i `locationTo` - przesunięcie jest atomowe.
  * 2. `stkmoveno` wchodzi w deterministyczny `referenceId`, z którego WMS buduje
  *    `idempotency_key` pilnowany unikalnym indeksem. Powtórzony import odbija
  *    się od bazy, a nie od naszej pamięci.
@@ -25,7 +25,7 @@ import type { FractionIndex } from './fractions'
  *    megagramy są przeliczane na ekranach i w raportach.
  * 4. Od chwili, gdy przyjęcie zakłada partię, WMS prowadzi saldo OSOBNO dla
  *    każdej partii. Wysortowanie i wydanie zdejmują masę, która leży w kilku
- *    partiach naraz, więc jeden wiersz legacy bywa kilkoma ruchami WMS —
+ *    partiach naraz, więc jeden wiersz legacy bywa kilkoma ruchami WMS -
  *    po jednym na każdą ruszoną partię, najstarsze pierwsze.
  */
 
@@ -68,7 +68,7 @@ type SortPair = { out: LegacyMovementRow; in: LegacyMovementRow }
 
 /**
  * Składa wiersze SORT w pary. Kluczem jest frakcja, czas i wartość bezwzględna
- * ilości — dokładnie to, co w legacy „wiąże" oba wiersze nieformalnie.
+ * ilości - dokładnie to, co w legacy „wiąże" oba wiersze nieformalnie.
  * Wiersz bez pary zostaje zgłoszony jako błąd pozycji, nie wywraca importu.
  */
 export function pairSortRows(rows: LegacyMovementRow[]): { pairs: SortPair[]; orphans: LegacyMovementRow[] } {
@@ -110,11 +110,11 @@ type LotSlice = { lotId?: string; quantity: number }
  * Ile masy z tego wiersza legacy już siedzi w księdze WMS.
  *
  * Pytanie „czy ten wiersz już wszedł" ma odpowiedź ilościową, nie logiczną,
- * bo jeden wiersz bywa kilkoma ruchami — po jednym na ruszoną partię. Przerwany
+ * bo jeden wiersz bywa kilkoma ruchami - po jednym na ruszoną partię. Przerwany
  * import dokłada wtedy brakującą resztę, zamiast uznać wiersz za zrobiony
  * (i zgubić masę) albo powtórzyć go w całości (i ją zdublować).
  *
- * Rozstrzyga `referenceId` — nasz własny, deterministyczny odcisk `stkmoveno`,
+ * Rozstrzyga `referenceId` - nasz własny, deterministyczny odcisk `stkmoveno`,
  * który nie zmienia się nigdy. Klucz idempotencji WMS obejmuje `lotId` oraz
  * ilość, więc sam w sobie nie odpowiada na pytanie o wiersz legacy: po zmianie
  * podziału na partie ten sam wiersz policzyłby się jako nowy.
@@ -141,12 +141,12 @@ async function appliedQuantity(
 }
 
 /**
- * Rozkłada masę na partie leżące w lokalizacji — najstarsze pierwsze (FIFO).
+ * Rozkłada masę na partie leżące w lokalizacji - najstarsze pierwsze (FIFO).
  *
  * Powód jest twardy: `wms.inventory.move` i `wms.inventory.adjust` rozwiązują
  * saldo DOKŁADNIE (`findExactBalanceForUpdate`), a `lotId` jest częścią jego
- * tożsamości. Ruch bez partii trafia więc w saldo bezpartyjne — zerowe, odkąd
- * przyjęcia księgują masę na partie — i wraca z `insufficient_stock`, choć
+ * tożsamości. Ruch bez partii trafia więc w saldo bezpartyjne - zerowe, odkąd
+ * przyjęcia księgują masę na partie - i wraca z `insufficient_stock`, choć
  * odpad fizycznie leży. Platforma nie ma tu wyboru partii po strategii:
  * schemat komendy przyjmuje jedno, opcjonalne `lotId`.
  *
@@ -155,7 +155,7 @@ async function appliedQuantity(
  * się, jak długo masa leży na placu. Masa bez partii pochodzi sprzed wdrożenia
  * partii, więc w kolejce FIFO jest najstarsza.
  *
- * Bierzemy `quantityAvailable`, nie `quantityOnHand` — masa zarezerwowana pod
+ * Bierzemy `quantityAvailable`, nie `quantityOnHand` - masa zarezerwowana pod
  * odbiór nie jest do ruszenia i to samo sprawdzenie zrobi zaraz WMS.
  */
 async function sliceByLots(
@@ -183,7 +183,7 @@ async function sliceByLots(
       const right = b.lot?.manufacturedAt?.getTime() ?? 0
       if (left !== right) return left - right
       // Numer partii niesie `stkmoveno`, więc rozstrzyga remisy w tej samej
-      // sekundzie deterministycznie — ten sam zbiór dzieli się zawsze tak samo.
+      // sekundzie deterministycznie - ten sam zbiór dzieli się zawsze tak samo.
       return (a.lot?.lotNumber ?? '').localeCompare(b.lot?.lotNumber ?? '')
     })
 
@@ -220,7 +220,7 @@ async function applyReceipt(ctx: MovementContext, row: LegacyMovementRow): Promi
   const referenceId = legacyUuid('movement', row.stkmoveno)
   const total = Math.abs(row.iloscKg)
   // Przyjęcie wskazuje partię, a `lotId` wchodzi do klucza idempotencji WMS,
-  // więc rozstrzygamy po `referenceId` — patrz komentarz przy `appliedQuantity`.
+  // więc rozstrzygamy po `referenceId` - patrz komentarz przy `appliedQuantity`.
   if ((await appliedQuantity(ctx, referenceId, 'receipt')) >= total - EPSILON_KG) {
     return true
   }
@@ -234,7 +234,7 @@ async function applyReceipt(ctx: MovementContext, row: LegacyMovementRow): Promi
       locationId: location.id,
       catalogVariantId: fraction.variantId,
       quantity: total,
-      // Partia niesie dostawcę i datę przyjęcia — bez niej przyjęcie jest
+      // Partia niesie dostawcę i datę przyjęcia - bez niej przyjęcie jest
       // bezimienną masą i nie da się odpowiedzieć, czyj odpad gdzie trafił.
       lotId,
       referenceType: 'po',
@@ -268,7 +268,7 @@ async function applyTransfer(ctx: MovementContext, pair: SortPair): Promise<bool
   }
 
   // Masa schodząca z placu leży w partiach z konkretnych przyjęć. Przesuwamy ją
-  // partia po partii, żeby w boksie dało się powiedzieć, czyj to odpad — i żeby
+  // partia po partii, żeby w boksie dało się powiedzieć, czyj to odpad - i żeby
   // WMS w ogóle znalazł saldo, z którego ma zdjąć.
   const slices = await sliceByLots(ctx, from.id, fraction.variantId, total - applied)
   for (const [index, slice] of slices.entries()) {
@@ -291,7 +291,7 @@ async function applyTransfer(ctx: MovementContext, pair: SortPair): Promise<bool
         performedAt: parseMoment(pair.in.data),
         metadata: {
           legacy: { stkmoveno: [pair.out.stkmoveno, pair.in.stkmoveno], typ: 'SORT' },
-          // Jeden kwit legacy, kilka ruchów magazynowych — bez tego licznika
+          // Jeden kwit legacy, kilka ruchów magazynowych - bez tego licznika
           // nie widać, że to nie są trzy osobne wysortowania.
           ...(slices.length > 1 ? { czescRuchu: { nr: index + 1, z: slices.length } } : {}),
         },
@@ -316,7 +316,7 @@ async function applyIssue(ctx: MovementContext, row: LegacyMovementRow): Promise
   }
 
   // Wydanie zdejmuje z boksu masę, która trafiła tam z różnych dostaw. Idziemy
-  // po partiach od najstarszej — dzięki temu karta przekazania wie, czyj odpad
+  // po partiach od najstarszej - dzięki temu karta przekazania wie, czyj odpad
   // pojechał do odbiorcy, a nie tylko ile go było.
   const slices = await sliceByLots(ctx, location.id, fraction.variantId, total - applied)
   for (const [index, slice] of slices.entries()) {
@@ -355,7 +355,7 @@ async function applyIssue(ctx: MovementContext, row: LegacyMovementRow): Promise
   return false
 }
 
-/** Zamówienie, które realizuje to wydanie — o ile import objął sprzedaż. */
+/** Zamówienie, które realizuje to wydanie - o ile import objął sprzedaż. */
 function salesOrderIdFor(ctx: MovementContext, row: LegacyMovementRow): string | undefined {
   if (!row.orderno) return undefined
   return ctx.salesOrders?.get(row.orderno)
@@ -429,7 +429,7 @@ export async function applyMovementBatch(
       outcomes.push({
         externalId: String(orphan.stkmoveno),
         action: 'failed',
-        error: 'Wiersz SORT bez pary — para rozjechała się w eksporcie legacy.',
+        error: 'Wiersz SORT bez pary - para rozjechała się w eksporcie legacy.',
         stkmoveno: orphan.stkmoveno,
       })
     }

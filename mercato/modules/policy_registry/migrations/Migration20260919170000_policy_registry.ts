@@ -1,16 +1,16 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Rejestr polityk — schemat początkowy.
+ * Rejestr polityk - schemat początkowy.
  *
  * Trzy unikaty niosą całą treść fazy i warto je przeczytać razem:
  *
- * 1. `(tenant_id, policy_id, content_digest)` — drugie wgranie tych samych wag
+ * 1. `(tenant_id, policy_id, content_digest)` - drugie wgranie tych samych wag
  *    odbija się od **bazy**, nie od naszej pamięci. Gdyby deduplikacja żyła
  *    wyłącznie w kodzie komendy, dwa równoległe potoki CI wgrałyby ten sam
  *    model dwa razy i nikt by tego nie zauważył.
- * 2. `(tenant_id, policy_id, version)` — numer jest etykietą i ma być gęsty.
- * 3. `(policy_version_id, role)` — komplet ma jedne wagi. Dwa pliki w tej samej
+ * 2. `(tenant_id, policy_id, version)` - numer jest etykietą i ma być gęsty.
+ * 3. `(policy_version_id, role)` - komplet ma jedne wagi. Dwa pliki w tej samej
  *    roli uzależniłyby skrót treści od kolejności wgrywania.
  *
  * Czego tu nie ma: kolumny na bajty. Artefakt jest adresem i skrótem.

@@ -85,7 +85,7 @@ def command_status(args: argparse.Namespace) -> int:
 def command_run(args: argparse.Namespace) -> int:
     """Pętla pracy: serce, dzierżawa, zgłoszenie stanu.
 
-    Zgłaszamy `stopped`, dopóki centrala nie każe czegoś innego — robot bez
+    Zgłaszamy `stopped`, dopóki centrala nie każe czegoś innego - robot bez
     przypisania to normalny stan świeżo uruchomionej maszyny, a nie awaria.
     """
     identity, client = with_identity(args)

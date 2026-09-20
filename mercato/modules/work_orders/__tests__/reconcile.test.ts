@@ -41,7 +41,7 @@ describe('reconcile', () => {
     const result = reconcile({ claimedPieces: 1000, nominalPieceGrams: PET, weighedGrams: 40_000 })
     expect(result.verdict).toBe('underclaim')
     // Nadwyżka jest sygnałem o masie nominalnej albo o zanieczyszczeniu,
-    // a nie o gubieniu materiału — nie ma powodu wstrzymywać przyjęcia.
+    // a nie o gubieniu materiału - nie ma powodu wstrzymywać przyjęcia.
     expect(result.requiresReview).toBe(false)
   })
 

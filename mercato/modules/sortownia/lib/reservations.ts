@@ -10,7 +10,7 @@ import type { LegacyOrderRow } from './legacyFiles'
  * Rezerwacja frakcji pod zamówienie, którego jeszcze nie wydano.
  *
  * Problem jest codzienny i kosztowny: odbiorca zamawia 8 ton szkła z odbiorem
- * za tydzień, a magazynier — nie wiedząc o tym — obiecuje ten sam boks komuś
+ * za tydzień, a magazynier - nie wiedząc o tym - obiecuje ten sam boks komuś
  * innemu. Stary system nie miał gdzie tego zapisać, bo `locstock` zna tylko
  * jedną liczbę: ile leży. Nie zna różnicy między „leży" a „leży i jest wolne".
  *
@@ -27,7 +27,7 @@ export type ReservationContext = {
   warehouseId: string
   fractions: FractionIndex
   orders: SalesOrderIndex
-  /** Numery wydań, które już zaszły — te rezerwacji nie potrzebują. */
+  /** Numery wydań, które już zaszły - te rezerwacji nie potrzebują. */
   fulfilled: Set<number>
 }
 
@@ -40,7 +40,7 @@ export type ReservationOutcome = {
 /**
  * Odmowa rezerwacji z braku towaru to nie awaria importu.
  *
- * WMS odmawia zablokowania masy, której nie ma — i właśnie po to tam jest.
+ * WMS odmawia zablokowania masy, której nie ma - i właśnie po to tam jest.
  * Stary system przyjąłby takie zamówienie bez słowa, a brak wyszedłby dopiero
  * przy załadunku, przy kierowcy czekającym pod bramą. Odróżniamy to od błędu
  * technicznego, żeby raport importu nie mieszał jednego z drugim.

@@ -8,7 +8,7 @@ import { emitFleetEvent } from '../events'
  * Detektor wygasłej kalibracji.
  *
  * Dlaczego to w ogóle istnieje: ważność pomiaru wyprowadzamy przy odczycie
- * (`lib/calibration.ts`) i tak ma zostać — stan wyliczony nie potrafi się
+ * (`lib/calibration.ts`) i tak ma zostać - stan wyliczony nie potrafi się
  * rozjechać z faktem. Ale wyprowadzenie przy odczycie nikogo nie budzi:
  * robot z przeterminowanym pomiarem wygląda w każdym zestawieniu identycznie
  * jak sprawny, dopóki ktoś nie otworzy akurat tego ekranu. Ta komenda zamienia
@@ -18,7 +18,7 @@ import { emitFleetEvent } from '../events'
  * przejściem w cyklu życia z własnym uzasadnieniem i własnym wpisem w księdze
  * przejść; decyzję o niej podejmuje subskrybent tego zdarzenia albo człowiek,
  * mając całość obrazu. Detektor, który sam zatrzymuje maszyny, po pierwszym
- * fałszywym alarmie zostaje wyłączony — i wtedy nie ogłasza już niczego.
+ * fałszywym alarmie zostaje wyłączony - i wtedy nie ogłasza już niczego.
  */
 
 const detectSchema = z.object({
@@ -57,7 +57,7 @@ const detectExpiredCommand: CommandHandler<
      * Filtr po `expiryNotifiedAt: null` jest tym, co czyni komendę
      * idempotentną: drugi przebieg na tym samym stanie nie nadaje niczego.
      * Bez niego zdarzenie „kalibracja wygasła" wracałoby co godzinę, aż do
-     * naprawy — czyli dokładnie wtedy, gdy ma coś znaczyć, znaczyłoby najmniej.
+     * naprawy - czyli dokładnie wtedy, gdy ma coś znaczyć, znaczyłoby najmniej.
      */
     const kandydaci = (await em.find(Calibration, {
       tenantId: input.tenantId,

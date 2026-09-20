@@ -21,10 +21,10 @@
   "policy_registry.ui.identityIsDigest": "tożsamością jest skrót artefaktów, nie numer",
   "policy_registry.ui.onlyTheseDeployable": "tylko te da się wdrożyć",
   "policy_registry.ui.policies": "Polityki",
-  "policy_registry.ui.policyNoVersions": "Polityka bez żadnej wersji — zadeklarowany embodiment, brak wag.",
+  "policy_registry.ui.policyNoVersions": "Polityka bez żadnej wersji - zadeklarowany embodiment, brak wag.",
   "policy_registry.ui.released": "Wypuszczone",
   "policy_registry.ui.revisionGone": "rewizja zniknęła z rejestru floty",
   "policy_registry.ui.task": "zadanie",
   "policy_registry.ui.versions": "Wersje",
-  "policy_registry.ui.zeroInHealthy": "w zdrowym rejestrze zero — każda inna wartość jest awarią"
+  "policy_registry.ui.zeroInHealthy": "w zdrowym rejestrze zero - każda inna wartość jest awarią"
 }

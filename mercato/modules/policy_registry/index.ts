@@ -10,7 +10,7 @@ export const metadata: ModuleInfo = {
   license: 'MIT',
   /**
    * Zależność jednostronna: rejestr polityk czyta rewizje embodimentu z `fleet`,
-   * bo to tam mieszka kontrakt fizyczny. Odwrotnie nie — rejestr floty działa
+   * bo to tam mieszka kontrakt fizyczny. Odwrotnie nie - rejestr floty działa
    * bez jednej zarejestrowanej polityki i tak ma zostać (flota istnieje przed
    * pierwszym modelem i po ostatnim).
    */

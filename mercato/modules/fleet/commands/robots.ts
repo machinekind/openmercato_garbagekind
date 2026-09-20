@@ -9,7 +9,7 @@ import { emitFleetEvent } from '../events'
 /**
  * Komendy rejestru floty.
  *
- * Wszystko idzie szyną komend, nie zapisem do encji — bo w produkcie, gdzie
+ * Wszystko idzie szyną komend, nie zapisem do encji - bo w produkcie, gdzie
  * zła operacja porusza tonową maszyną w przestrzeni z ludźmi, „każdy zapis
  * zostawia log z aktorem i snapshotem przed/po" jest wymaganiem, nie wygodą.
  */
@@ -57,7 +57,7 @@ export const robotTransitionSchema = scoped.extend({
    *
    * Świadomie nie jest to „siła" ani „pomiń kontrolę": przejście i tak musi
    * być dozwolone w grafie. To jest jawna deklaracja, że człowiek bierze
-   * odpowiedzialność za dopuszczenie maszyny — i ląduje w dzienniku audytu.
+   * odpowiedzialność za dopuszczenie maszyny - i ląduje w dzienniku audytu.
    */
   approvedBy: z.string().uuid().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
@@ -94,7 +94,7 @@ const registerRobotCommand: CommandHandler<RobotRegisterInput, { robotId: string
     } as never)
     if (!revision) {
       // Robot bez rewizji embodimentu jest rekordem, do którego nigdy nie da
-      // się przypisać polityki — lepiej odmówić przy rejestracji.
+      // się przypisać polityki - lepiej odmówić przy rejestracji.
       throw new Error(`Rewizja embodimentu ${input.embodimentRevisionId} nie istnieje w tym tenancie.`)
     }
 
@@ -126,7 +126,7 @@ const registerRobotCommand: CommandHandler<RobotRegisterInput, { robotId: string
     // Dwa zapisy, nie jeden: identyfikator nadaje Postgres
     // (`defaultRaw: gen_random_uuid()`), więc przed pierwszym zrzutem
     // `robot.id` jest jeszcze puste i wpis do księgi przejść nie miałby na co
-    // wskazać. Alternatywą byłoby generowanie UUID po stronie aplikacji —
+    // wskazać. Alternatywą byłoby generowanie UUID po stronie aplikacji -
     // odrzucone, bo wtedy baza przestaje być jedynym źródłem tożsamości.
     em.persist(robot)
     await em.flush()
@@ -193,7 +193,7 @@ const transitionRobotCommand: CommandHandler<
 
     // Dopuszczenie do pracy sprawdza kalibrację przy samej bramce, a nie
     // dopiero przy wdrożeniu polityki. Robot z przeterminowanym pomiarem
-    // wygląda w każdym zestawieniu identycznie jak sprawny — i to jest
+    // wygląda w każdym zestawieniu identycznie jak sprawny - i to jest
     // dokładnie ten moment, w którym ta różnica musi wyjść.
     if (input.toState === 'ready') {
       const verdict = await evaluateRobotCalibration(em, robot as never, input.tenantId)
@@ -220,7 +220,7 @@ const transitionRobotCommand: CommandHandler<
         fromState: current,
         toState: input.toState,
         reason: input.reason,
-        // `null` znaczy system — i to jest informacja, nie brak informacji.
+        // `null` znaczy system - i to jest informacja, nie brak informacji.
         actorUserId: input.actor === 'system' ? null : input.approvedBy ?? ctx.auth?.sub ?? null,
         metadata: input.metadata ?? null,
       } as never),

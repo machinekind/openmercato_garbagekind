@@ -51,7 +51,7 @@ afterEach(() => {
   setGlobalEventBus({ emit: async () => {} })
 })
 
-/** `poprzedniWerdykt` to werdykt ostatniego raportu tej maszyny — albo brak. */
+/** `poprzedniWerdykt` to werdykt ostatniego raportu tej maszyny - albo brak. */
 function makeCtx(poprzedniWerdykt: string | null) {
   const persisted: Row[] = []
   const em = {
@@ -136,7 +136,7 @@ describe('wyzwalanie zboczem w raportach stanu', () => {
   })
 
   it('powrót do zgodności jest ogłaszany, bo domyka rozjazd', async () => {
-    // Bez tego odbiorca wie, kiedy się zepsuło, i nigdy — kiedy naprawiło.
+    // Bez tego odbiorca wie, kiedy się zepsuło, i nigdy - kiedy naprawiło.
     const seen = captureEvents()
     const result = await reportCommand.execute(zgodnosc(), makeCtx('drift'))
     expect(result.reconciliation).toBe('converged')
@@ -150,7 +150,7 @@ describe('wyzwalanie zboczem w raportach stanu', () => {
     expect(seen).toEqual([])
   })
 
-  it('pierwszy raport zgodności też jest zdarzeniem — brak poprzednika to zmiana', async () => {
+  it('pierwszy raport zgodności też jest zdarzeniem - brak poprzednika to zmiana', async () => {
     const seen = captureEvents()
     await reportCommand.execute(zgodnosc(), makeCtx(null))
     expect(seen.map((e) => e.id)).toEqual(['deployment.state.converged'])

@@ -71,7 +71,7 @@ export async function GET(req: Request): Promise<Response> {
   } catch (error) {
     /**
      * Bez tego bloku wyjatek konczyl sie pustym 500 bez naglowka typu, a
-     * przegladarka pokazywala „Unexpected end of JSON input" — komunikat,
+     * przegladarka pokazywala „Unexpected end of JSON input" - komunikat,
      * ktory mowi o parserze, a nie o przyczynie. Najczestsza przyczyna jest
      * prozaiczna: modul doinstalowany bez `db migrate`, wiec zapytanie siega
      * po kolumne, ktorej jeszcze nie ma.
@@ -102,7 +102,7 @@ async function czytajRejestr(em: EntityManager, tenantId: string): Promise<Respo
    *
    * `left join`, nie `join`: rewizja usunięta miękko w rejestrze floty nie może
    * sprawić, że wersja polityki **zniknie** z rejestru. Zniknięcie wpisu jest
-   * najgorszą możliwą reakcją na niespójność — lepiej pokazać wiersz z pustym
+   * najgorszą możliwą reakcją na niespójność - lepiej pokazać wiersz z pustym
    * embodimentem i rozjazdem oznaczonym wprost.
    */
   const versions = await em.getConnection().execute<Array<{

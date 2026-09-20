@@ -4,7 +4,7 @@ import { lazyDashboardWidget, type DashboardWidgetModule } from '@open-mercato/s
  * Kafelek łączności agentów.
  *
  * Odpowiada na inne pytanie niż kafelek gotowości floty: tamten mówi, czy
- * maszynie **wolno** pracować, ten — czy centrala **w ogóle wie**, co się
+ * maszynie **wolno** pracować, ten - czy centrala **w ogóle wie**, co się
  * z nią dzieje. Utracona łączność wygląda w rejestrze floty tak samo jak
  * maszyna sprawna, bo rejestr nie ma skąd wiedzieć.
  */
@@ -15,7 +15,7 @@ const EdgeLivenessWidget = lazyDashboardWidget<EdgeLivenessSettings>(() => impor
 
 /*
  * Tytuł i opis w metadanych zostają po angielsku, bo platforma nie
- * przepuszcza ich przez tłumacza — tak samo trzyma je każdy widget rdzenia.
+ * przepuszcza ich przez tłumacza - tak samo trzyma je każdy widget rdzenia.
  * Treść widgetu jest tłumaczona normalnie, przez `useT`.
  */
 const widget: DashboardWidgetModule<EdgeLivenessSettings> = {

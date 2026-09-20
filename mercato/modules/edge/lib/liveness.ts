@@ -2,8 +2,8 @@
  * Żywotność agenta jako funkcja czasu, nie jako flaga w bazie.
  *
  * To jest jedna decyzja projektowa i warto ją nazwać wprost. Kusząca
- * alternatywa — kolumna `online boolean` ustawiana przy odbiorze heartbeatu
- * i gaszona przez zadanie cykliczne — psuje się w dokładnie tym momencie,
+ * alternatywa - kolumna `online boolean` ustawiana przy odbiorze heartbeatu
+ * i gaszona przez zadanie cykliczne - psuje się w dokładnie tym momencie,
  * w którym ma zadziałać: gdy proces gaszący padnie, cała flota zostaje
  * na ekranie jako „online", w tym maszyny odłączone od prądu. Pulpit
  * kłamie wtedy najgłośniej wtedy, kiedy najbardziej trzeba mu wierzyć.
@@ -47,14 +47,14 @@ export function heartbeatDeadline(lastSeenAt: Date, input: Pick<LivenessInput, '
 
 export function evaluateLiveness(input: LivenessInput, now: Date = new Date()): LivenessVerdict {
   if (input.status === 'revoked') {
-    // Odwołany agent nie jest „offline" — on nie ma prawa być online.
+    // Odwołany agent nie jest „offline" - on nie ma prawa być online.
     // Mieszanie tych dwóch rzeczy w jednym polu ukrywa odwołania w szumie awarii.
     return {
       state: 'lost',
       silenceSeconds: null,
       deadline: null,
       secondsToDeadline: null,
-      reason: 'Agent odwołany — tożsamość unieważniona.',
+      reason: 'Agent odwołany - tożsamość unieważniona.',
     }
   }
 
@@ -84,7 +84,7 @@ export function evaluateLiveness(input: LivenessInput, now: Date = new Date()): 
       silenceSeconds,
       deadline,
       secondsToDeadline,
-      reason: `Brak uderzenia serca od ${silenceSeconds} s — termin minął ${-secondsToDeadline} s temu.`,
+      reason: `Brak uderzenia serca od ${silenceSeconds} s - termin minął ${-secondsToDeadline} s temu.`,
     }
   }
 
@@ -93,7 +93,7 @@ export function evaluateLiveness(input: LivenessInput, now: Date = new Date()): 
     silenceSeconds,
     deadline,
     secondsToDeadline,
-    reason: `Cisza od ${silenceSeconds} s — agent uznany za utraconego.`,
+    reason: `Cisza od ${silenceSeconds} s - agent uznany za utraconego.`,
   }
 }
 

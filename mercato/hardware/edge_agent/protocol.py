@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kanoniczne postacie komunikatów kanału brzegowego — odpowiednik `edge/lib/crypto.ts`.
+"""Kanoniczne postacie komunikatów kanału brzegowego - odpowiednik `edge/lib/crypto.ts`.
 
 Ten moduł nie ma wejścia/wyjścia i nie dotyka kluczy. Zawiera wyłącznie to, co
 musi się zgadzać co do bajtu z centralą, bo rozjazd tutaj objawia się jako

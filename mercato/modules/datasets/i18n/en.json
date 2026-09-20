@@ -11,7 +11,7 @@
   "datasets.h.przebieg": "run",
   "datasets.h.wersjaPolityki": "policy version",
   "datasets.nav.group": "Physical AI",
-  "datasets.prose.1": "the number of distinguishable episodes — one policy is sometimes fine-tuned in sequence on two datasets that partly overlap",
+  "datasets.prose.1": "the number of distinguishable episodes - one policy is sometimes fine-tuned in sequence on two datasets that partly overlap",
   "datasets.role.correction": "Corrective demonstration",
   "datasets.role.demo": "Demonstration",
   "datasets.role.failure": "Negative example",

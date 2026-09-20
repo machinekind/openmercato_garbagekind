@@ -16,7 +16,7 @@ export const metadata: ModuleInfo = {
    * Świadomie NIE ma tu `deployment`: epizod przeprowadzony ręcznie albo
    * teleoperacyjnie też jest epizodem i musi wejść do księgi. Wymaganie
    * przypisania wykluczyłoby dokładnie te przypadki, w których autonomii
-   * nie było — czyli zawyżyłoby ją tam, gdzie najbardziej kusi.
+   * nie było - czyli zawyżyłoby ją tam, gdzie najbardziej kusi.
    */
   requires: ['fleet', 'policy_registry'],
   ejectable: true,

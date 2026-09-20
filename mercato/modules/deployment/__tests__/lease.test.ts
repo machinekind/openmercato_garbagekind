@@ -12,7 +12,7 @@ import {
  *
  * Dlatego nie wystarczy tu „zwraca false po wygaśnięciu". Sprawdzamy asymetrię
  * klas ryzyka, kierunek domyślności przy nieznanej klasie i to, że odpowiedź
- * zależy **wyłącznie** od zegara i jednej liczby — bez bazy i bez sieci.
+ * zależy **wyłącznie** od zegara i jednej liczby - bez bazy i bez sieci.
  */
 
 const T0 = new Date('2026-09-19T12:00:00.000Z')
@@ -21,7 +21,7 @@ function at(secondsFromT0: number): Date {
   return new Date(T0.getTime() + secondsFromT0 * 1000)
 }
 
-describe('LEASE_SECONDS — asymetria klas ryzyka', () => {
+describe('LEASE_SECONDS - asymetria klas ryzyka', () => {
   it('cela ogrodzona liczona w dniach', () => {
     expect(LEASE_SECONDS.fenced).toBeGreaterThanOrEqual(24 * 60 * 60)
   })
@@ -57,7 +57,7 @@ describe('leaseSecondsFor', () => {
   })
 })
 
-describe('evaluateAuthorization — dowód fazy jako czysta funkcja', () => {
+describe('evaluateAuthorization - dowód fazy jako czysta funkcja', () => {
   it('po tej samej ciszy robot w celi publicznej stoi, a w ogrodzonej pracuje', () => {
     const cisza = 150 // sekund; więcej niż dzierżawa publiczna, dużo mniej niż ogrodzona
     const publiczna = evaluateAuthorization({

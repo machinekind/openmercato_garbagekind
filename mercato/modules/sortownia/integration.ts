@@ -4,12 +4,12 @@ import type { IntegrationBundle, IntegrationDefinition } from '@open-mercato/sha
  * System legacy sortowni jako zwykły konektor w hubie Data Sync.
  *
  * Adres i konto są polami integracji, więc przestawienie modułu na produkcyjną
- * instancję webERP to zmiana jednego pola w panelu — bez dotykania kodu.
+ * instancję webERP to zmiana jednego pola w panelu - bez dotykania kodu.
  */
 
 export const bundle: IntegrationBundle = {
   id: 'sortownia_legacy_bundle',
-  title: 'Sortownia — system legacy',
+  title: 'Sortownia - system legacy',
   description: 'Most do starego systemu magazynowego sortowni odpadów (XML-RPC + zrzut plikowy).',
   package: 'src/modules/sortownia',
   version: '0.1.0',
@@ -18,7 +18,7 @@ export const bundle: IntegrationBundle = {
 
 export const integration: IntegrationDefinition = {
   id: 'sortownia_legacy',
-  title: 'Sortownia — system legacy (XML-RPC)',
+  title: 'Sortownia - system legacy (XML-RPC)',
   description:
     'Zasysa topologię magazynu po XML-RPC oraz katalog frakcji i księgę ruchów ze zrzutu plikowego. Ruchy trafiają do WMS jako przyjęcia, przesunięcia i korekty wydań.',
   category: 'data_sync',

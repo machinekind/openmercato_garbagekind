@@ -8,7 +8,7 @@ import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
  *
  * Czytamy przez `getAuthFromRequest`, a nie wariant „z ciastek": po ten
  * endpoint sięgają też skrypty i testy integracyjne niosące sesję w nagłówku
- * `Authorization`. Wariant ciastkowy odprawiłby je z 401 — nauczka
+ * `Authorization`. Wariant ciastkowy odprawiłby je z 401 - nauczka
  * z poprzedniego modułu.
  */
 
@@ -27,7 +27,7 @@ type RobotRow = {
   cell: string | null
   site: string | null
   riskClass: string | null
-  /** Czy właściciel i operator to ten sam podmiot — rozstrzyga o etykiecie na liście. */
+  /** Czy właściciel i operator to ten sam podmiot - rozstrzyga o etykiecie na liście. */
   externallyOperated: boolean
   calibrationState: 'valid' | 'expiring' | 'blocked' | 'unknown'
   calibrationDaysLeft: number | null

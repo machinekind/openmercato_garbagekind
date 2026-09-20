@@ -1,5 +1,5 @@
 /**
- * Dzierżawa — odwrotność heartbeatu.
+ * Dzierżawa - odwrotność heartbeatu.
  *
  * Heartbeat mówi **centrali**, że robot żyje. Dzierżawa mówi **robotowi**, jak
  * długo wolno mu pracować bez potwierdzenia z centrali. To rozróżnienie jest
@@ -9,7 +9,7 @@
  *
  * Dlatego wszystko poniżej jest czystą funkcją. Gdyby zatrzymanie zależało od
  * zapytania do centrali, odcięcie chmury byłoby awarią bezpieczeństwa w celi
- * publicznej i awarią produkcji w celi ogrodzonej — jednocześnie.
+ * publicznej i awarią produkcji w celi ogrodzonej - jednocześnie.
  */
 
 export type RiskClass = 'fenced' | 'shared' | 'public'
@@ -22,19 +22,19 @@ export type DesiredState = 'running' | 'stopped'
  * Liczby są decyzją polityczną udającą techniczną i dlatego stoją tutaj,
  * nazwane, w jednym miejscu, a nie rozsiane po komendach:
  *
- * - `fenced` — cela ogrodzona, ludzie za płotem. Siedem dni: odcięcie chmury
+ * - `fenced` - cela ogrodzona, ludzie za płotem. Siedem dni: odcięcie chmury
  *   na weekend **nie może** zatrzymać produkcji, bo skutkiem byłoby
  *   wyłączanie bram bezpieczeństwa przez utrzymanie ruchu.
- * - `shared` — przestrzeń dzielona. Osiem godzin, czyli jedna zmiana: robot
+ * - `shared` - przestrzeń dzielona. Osiem godzin, czyli jedna zmiana: robot
  *   przeżywa awarię łącza w trakcie zmiany, ale nie wchodzi na następną bez
  *   potwierdzenia.
- * - `public` — przestrzeń publiczna. Dwie minuty: cisza z centrali jest tu
+ * - `public` - przestrzeń publiczna. Dwie minuty: cisza z centrali jest tu
  *   nieodróżnialna od utraty nadzoru, a koszt fałszywego zatrzymania jest
  *   nieporównywalnie niższy od kosztu fałszywej kontynuacji.
  *
  * Odrzucona alternatywa: jedna długość dla całej floty, konfigurowalna
  * globalnie. Odrzucona, bo każda pojedyncza wartość jest albo zbyt krótka dla
- * celi ogrodzonej, albo zbyt długa dla publicznej — a administrator ustawiający
+ * celi ogrodzonej, albo zbyt długa dla publicznej - a administrator ustawiający
  * ją raz ustawia ją pod ten przypadek, który akurat boli.
  */
 export const LEASE_SECONDS: Record<RiskClass, number> = {
@@ -92,7 +92,7 @@ export function evaluateAuthorization(input: {
   if (!input.lease) {
     return {
       working: false,
-      reason: 'brak dzierżawy — robot nigdy nie dostał mandatu do pracy',
+      reason: 'brak dzierżawy - robot nigdy nie dostał mandatu do pracy',
       secondsLeft: null,
     }
   }
@@ -105,7 +105,7 @@ export function evaluateAuthorization(input: {
   if (secondsLeft <= 0) {
     return {
       working: false,
-      reason: `dzierżawa wygasła ${Math.abs(secondsLeft)} s temu — robot zatrzymuje się sam, bez udziału centrali`,
+      reason: `dzierżawa wygasła ${Math.abs(secondsLeft)} s temu - robot zatrzymuje się sam, bez udziału centrali`,
       secondsLeft,
     }
   }
@@ -118,7 +118,7 @@ export function evaluateAuthorization(input: {
  *
  * Jedna trzecia okresu, nie połowa i nie „tuż przed": agent musi zdążyć
  * ponowić próbę co najmniej dwa razy, zanim mandat wygaśnie. Przy dzierżawie
- * dwuminutowej daje to pierwszą próbę po 40 s i dwie kolejne szanse —
+ * dwuminutowej daje to pierwszą próbę po 40 s i dwie kolejne szanse -
  * pojedyncza zgubiona odpowiedź nie zatrzymuje wtedy produkcji.
  */
 export function renewAfterSeconds(leaseSeconds: number): number {
@@ -128,7 +128,7 @@ export function renewAfterSeconds(leaseSeconds: number): number {
 /**
  * Uzgodnienie stanu faktycznego z pożądanym.
  *
- * Trzeci stan — `unknown` — jest tu obowiązkowy i nie jest wygodą. Robot,
+ * Trzeci stan - `unknown` - jest tu obowiązkowy i nie jest wygodą. Robot,
  * który się nie odezwał, nie jest ani zgodny, ani rozjechany; zliczanie go
  * jako zgodnego jest tym samym błędem, co kolumna `online` gaszona zadaniem
  * cyklicznym: pulpit kłamie najgłośniej wtedy, kiedy najbardziej trzeba mu wierzyć.

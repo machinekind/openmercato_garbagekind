@@ -4,7 +4,7 @@
 Dziennik z `mcp_server.py` jest lokalny i nikt poza tą maszyną go nie widzi.
 Epizod w ERP jest policzalny: wchodzi do bramy rolloutu, do liczby z warunku Z7
 i do porównania z licznikiem lokalnym agenta. Ten moduł robi tłumaczenie i nic
-poza tym — nie chodzi do sieci i nie zmienia dziennika.
+poza tym - nie chodzi do sieci i nie zmienia dziennika.
 
 Mapowanie jest jawne, bo każde takie przypisanie to decyzja dziedzinowa:
 
@@ -15,7 +15,7 @@ Mapowanie jest jawne, bo każde takie przypisanie to decyzja dziedzinowa:
 | `halted_on_load` | `aborted` | `abort` / `unsafe_motion` |
 
 Zatrzymanie na przeciążeniu jest interwencją, bo maszyna przerwała zadanie
-sama — to jest dokładnie ta klasa zdarzeń, której brama rolloutu pilnuje jako
+sama - to jest dokładnie ta klasa zdarzeń, której brama rolloutu pilnuje jako
 `maxSevereRate`.
 """
 

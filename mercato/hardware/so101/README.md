@@ -36,7 +36,7 @@ interpretera. Raport domyślnie powstaje poza Git w
    & $py mercato\hardware\so101\validate.py inspect --port COM5
    ```
 
-   `inspect` wymaga dokładnie sześciu STS3215 o identyfikatorach 1–6. Zachowuje
+   `inspect` wymaga dokładnie sześciu STS3215 o identyfikatorach 1-6. Zachowuje
    zastany stan `Torque_Enable`.
 
 2. Prawdziwa kalibracja LeRobot:
@@ -49,7 +49,7 @@ interpretera. Raport domyślnie powstaje poza Git w
 
    Wynik jest odczytywany z EEPROM, zapisywany przez LeRobot do pliku i
    haszowany. Operator musi jawnie podać okres ważności oraz zmierzoną lub
-   uzasadnioną niepewność offsetu w stopniach — wartości w przykładzie nie są
+   uzasadnioną niepewność offsetu w stopniach - wartości w przykładzie nie są
    domyślne. Ważność jest również zdarzeniowa: wymiana serwa, ponowny montaż
    orczyka, kolizja albo zmiana ID/`drive_mode` unieważnia dowód przed datą.
 
@@ -65,7 +65,7 @@ interpretera. Raport domyślnie powstaje poza Git w
      --confirm VALUES-MEASURED
    ```
 
-   Zera w przykładzie są celowo niedozwolone — trzeba podać wynik pomiaru.
+   Zera w przykładzie są celowo niedozwolone - trzeba podać wynik pomiaru.
 
 4. Pomiar zasilania wykonuje się na biegu jałowym i pod kontrolowanym
    obciążeniem. Zakres oczekiwany musi pochodzić z rzeczywistego zasilacza
@@ -175,7 +175,7 @@ wyłącznie przeklikaniu dalszej części łańcucha na rewizji `r1`.
 `inspect` zapisuje numer seryjny przejściówki USB w `adapter` i w dowodzie A1.
 Ścieżka portu nie identyfikuje ramienia: po przepięciu `/dev/ttyACM0` to może
 być inny egzemplarz. Zmiana numeru seryjnego w obrębie jednego `runRef` ustawia
-A1 na `failed` z powodem w `problems` — wtedy trzeba zacząć nowy przebieg
+A1 na `failed` z powodem w `problems` - wtedy trzeba zacząć nowy przebieg
 dowodowy, a nie dopisywać do poprzedniego.
 
 ## Demonstracja ruchu przez MCP
@@ -205,7 +205,7 @@ Ograniczenia wpisane w kod (`arm_control.py`):
 - okno pozycji = limity z EEPROM zawężone o `SOFT_LIMIT_MARGIN_TICKS` (120);
 - przyrost na jeden ruch ≤ 350 ticków (~31°), chwytak ≤ 150;
 - `Goal_Velocity` 300 i `Acceleration` 10 dla każdego stawu;
-- brama przed ruchem: napięcie 10,0–13,0 V, temperatura ≤ 50 °C,
+- brama przed ruchem: napięcie 10,0-13,0 V, temperatura ≤ 50 °C,
   `|Present_Load|` ≤ 900; niepełny odczyt nie jest traktowany jako zdrowy;
 - przekroczenie obciążenia w trakcie przejazdu zatrzymuje ramię na bieżącej
   pozycji i zwraca status `halted_on_load`;
@@ -221,7 +221,7 @@ Dziennik operacji powstaje poza Git w
 
 `so101_release` **nie jest E-stopem**: idzie tą samą magistralą i tym samym
 procesem, który może zawisnąć. Zamknięcie serwera MCP nie zmienia stanu
-momentu — ramię zostaje tak, jak stało. Deterministyczną warstwą zatrzymania
+momentu - ramię zostaje tak, jak stało. Deterministyczną warstwą zatrzymania
 jest wyłącznie zewnętrzny przerywacz zasilania napędów, którego ten zestaw nie
 ma. Dopóki go nie ma, warunek Z5 z `docs/handoff/so101-odbior-fizyczny.md` pozostaje niespełniony i
 poza demonstracją nie wolno na tym sprzęcie uruchamiać polityki.

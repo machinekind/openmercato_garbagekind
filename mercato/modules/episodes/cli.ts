@@ -7,7 +7,7 @@ import { cadence, cadenceBy, verifyAgainstLedger, type EpisodeEntry } from './li
 /**
  * Komendy operatorskie księgi epizodów.
  *
- * `simulate` zakłada wiarygodny przebieg produkcyjny — z interwencjami, bo
+ * `simulate` zakłada wiarygodny przebieg produkcyjny - z interwencjami, bo
  * przebieg bez nich nie pokazuje niczego, co ta księga ma pokazywać.
  * `prove` odtwarza dowód fazy: raport kadencji liczony czystą funkcją musi
  * zgodzić się **co do sztuki** z niezależnym przeliczeniem po stronie bazy.
@@ -37,7 +37,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -94,7 +94,7 @@ const simulateCommand: ModuleCli = {
 
     /**
      * Epizody generujemy dla robotów, które mają przypisaną politykę, a jeśli
-     * takich nie ma — dla robotów w ruchu, z `policy_version_id` pustym.
+     * takich nie ma - dla robotów w ruchu, z `policy_version_id` pustym.
      * Ten drugi przypadek jest celowo dopuszczony: praca teleoperacyjna też
      * trafia do księgi i musi ciągnąć autonomię w dół.
      */
@@ -136,7 +136,7 @@ const simulateCommand: ModuleCli = {
        *
        * Krzywa jest tu po to, żeby raport kadencji miał co pokazać w podziale
        * na okresy. Stałe prawdopodobieństwo dawałoby wdrożenie, które nigdzie
-       * nie idzie — a takie też się zdarzają, tylko nie nadają się na przykład.
+       * nie idzie - a takie też się zdarzają, tylko nie nadają się na przykład.
        */
       const progress = index / Math.max(1, count - 1)
       const failureChance = 0.28 - 0.2 * progress
@@ -165,7 +165,7 @@ const simulateCommand: ModuleCli = {
       if (recorded.duplicate) continue
       episodes += 1
 
-      // Nie każde niepowodzenie kończy się interwencją — i to jest sedno.
+      // Nie każde niepowodzenie kończy się interwencją - i to jest sedno.
       // Epizod nieudany, po którym robot sam się pozbierał, jest dowodem
       // dojrzałości; ten sam epizod przerwany przez człowieka nie jest.
       if (!failed || random() > 0.55) continue
@@ -322,7 +322,7 @@ const proveCommand: ModuleCli = {
     }
     const entries = toEntries(rows)
 
-    console.log('DOWÓD FAZY 3 — kadencja autonomii zgodna z księgą\n')
+    console.log('DOWÓD FAZY 3 - kadencja autonomii zgodna z księgą\n')
 
     // 1. Kontrola sumaryczna wobec księgi liczonej przez bazę.
     const ledgerRows = await em.getConnection().execute<Array<{ episodes: string; interventions: string }>>(
@@ -343,7 +343,7 @@ const proveCommand: ModuleCli = {
     console.log(`   spójne: ${check.consistent}`)
     for (const problem of check.problems) console.log(`   ROZJAZD: ${problem}`)
 
-    // 2. Cross-walidacja per polityka — liczby z bazy, bez licznika na epizodzie.
+    // 2. Cross-walidacja per polityka - liczby z bazy, bez licznika na epizodzie.
     console.log('\n2) epizody między interwencjami per polityka (raport ↔ niezależne zapytanie)')
     const sqlPerPolicy = await em.getConnection().execute<Array<{
       label: string | null
@@ -367,7 +367,7 @@ const proveCommand: ModuleCli = {
     let mismatches = 0
     for (const row of sqlPerPolicy) {
       if (row.label === null) {
-        console.log(`   (bez polityki)        ep ${row.episodes}  int ${row.interventions}  — poza raportem per polityka, celowo`)
+        console.log(`   (bez polityki)        ep ${row.episodes}  int ${row.interventions}  - poza raportem per polityka, celowo`)
         continue
       }
       const report = reportPerPolicy.get(row.label)
@@ -425,7 +425,7 @@ const proveCommand: ModuleCli = {
 
     console.log(`\n   Rozjazdów: ${mismatches}. ${mismatches === 0 ? 'Raport zgadza się z księgą co do sztuki.' : 'RAPORT NIE ZGADZA SIĘ Z KSIĘGĄ.'}`)
     console.log('   Kontrola liczona jest przez bazę osobnym zapytaniem, które nie dotyka')
-    console.log('   licznika zdenormalizowanego — zgodność dwóch przeliczeń tą samą drogą')
+    console.log('   licznika zdenormalizowanego - zgodność dwóch przeliczeń tą samą drogą')
     console.log('   nie dowodziłaby niczego.')
   },
 }

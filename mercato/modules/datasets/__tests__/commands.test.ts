@@ -7,7 +7,7 @@ import { contentDigest } from '../lib/lineage'
  * Sprawdzamy trzy rzeczy, których czyste funkcje nie widzą: że wersja zbioru
  * powstaje **z księgi**, a nie z listy podanej przez wołającego; że ten sam
  * zestaw epizodów nie rodzi drugiej wersji; i że przebiegu udanego nie da się
- * zamknąć bez wskazania polityki — bo to jest dziura w pętli.
+ * zamknąć bez wskazania polityki - bo to jest dziura w pętli.
  */
 
 type Row = Record<string, unknown>
@@ -100,7 +100,7 @@ describe('datasets.versions.build', () => {
   it('buduje wersję z księgi epizodów, nie z listy wołającego', async () => {
     const { ctx, queries } = makeCtx()
     await buildVersionCommand.execute(buildInput, ctx)
-    // Skład zbioru jest funkcją księgi — dzięki temu da się go odtworzyć.
+    // Skład zbioru jest funkcją księgi - dzięki temu da się go odtworzyć.
     expect(queries.some((q) => q.includes('episodes_episodes'))).toBe(true)
   })
 
@@ -148,7 +148,7 @@ describe('datasets.versions.build', () => {
 
   it('podział na część ewaluacyjną jest deterministyczny', async () => {
     // Losowanie dałoby przy każdym budowaniu inny podział i dwa przebiegi
-    // z tych samych kryteriów byłyby dwiema wersjami — co unieważnia
+    // z tych samych kryteriów byłyby dwiema wersjami - co unieważnia
     // deduplikację po odcisku zawartości.
     const first = await buildVersionCommand.execute(
       { ...buildInput, criteria: { holdoutRatio: 0.5 } },

@@ -62,7 +62,7 @@ const STATE: Record<Source['state'], { label: string; className: string }> = {
 }
 
 function time(value: string | null): string {
-  if (!value) return '—'
+  if (!value) return '-'
   return new Date(value).toLocaleString('pl-PL')
 }
 

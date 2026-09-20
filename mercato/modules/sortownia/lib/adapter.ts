@@ -112,7 +112,7 @@ async function resolveOperator(em: EntityManager, scope: TenantScope): Promise<s
     if (byEmail) return byEmail.id
   }
   const anyUser = await em.findOne(User, { tenantId: scope.tenantId }, { orderBy: { createdAt: 'asc' } })
-  if (!anyUser) throw new Error('Brak użytkownika w tenancie — nie ma komu przypisać ruchów magazynowych.')
+  if (!anyUser) throw new Error('Brak użytkownika w tenancie - nie ma komu przypisać ruchów magazynowych.')
   return anyUser.id
 }
 
@@ -464,7 +464,7 @@ export const sortowniaLegacyAdapter: DataSyncAdapter = {
 
     const { warehouse, byCode } = await loadLocationIndex(em, scope)
     if (!warehouse) {
-      throw new Error('Magazyn sortowni nie istnieje — uruchom najpierw import topologii.')
+      throw new Error('Magazyn sortowni nie istnieje - uruchom najpierw import topologii.')
     }
     const fractions = await loadFractionIndex(em, scope)
     const commandBus = container.resolve('commandBus') as CommandBus

@@ -67,7 +67,7 @@ def journal(action: str, result: dict[str, Any]) -> dict[str, Any]:
 def refuse_unconfirmed(action: str) -> dict[str, Any]:
     return {
         "status": "refused",
-        "reason": f"{action} wymaga confirm=true — skutek jest fizyczny",
+        "reason": f"{action} wymaga confirm=true - skutek jest fizyczny",
         "checklist": [
             "przestrzeń robocza pusta",
             "ramię podparte",
@@ -134,7 +134,7 @@ def so101_return_home(confirm: bool = False) -> dict[str, Any]:
 def so101_release(confirm: bool = False, return_home: bool = True) -> dict[str, Any]:
     """Wraca do pozy zastanej z chwili so101_enable, potem zwalnia moment.
 
-    Z `return_home=false` zwalnia moment od razu w bieżącej pozie — wtedy ramię
+    Z `return_home=false` zwalnia moment od razu w bieżącej pozie - wtedy ramię
     opadnie pod własnym ciężarem. To nie jest E-stop. Wymaga confirm=true.
     """
     if not confirm:

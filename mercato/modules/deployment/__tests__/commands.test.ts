@@ -8,7 +8,7 @@ import { LEASE_SECONDS } from '../lib/lease'
  *
  * Reguła dzierżawy ma własny test jako czysta funkcja. Tutaj sprawdzamy, czy
  * komenda jej **używa** i czy bramki wstępne (stan robota, status wersji,
- * rewizja embodimentu) naprawdę są wołane — bo bramka, której nikt nie woła,
+ * rewizja embodimentu) naprawdę są wołane - bo bramka, której nikt nie woła,
  * nie chroni niczego.
  */
 
@@ -123,7 +123,7 @@ function makeCtx(options: {
    *
    * Przypisanie woła `safety.clearance.check` przed zapisem (brama dodana
    * przy fazie 5). Domyślna odpowiedź to „dopuszczone", bo testy tego pliku
-   * badają bramki stanu robota, statusu wersji i rewizji embodimentu —
+   * badają bramki stanu robota, statusu wersji i rewizji embodimentu -
    * brama dopuszczenia ma własne testy w module `safety` i osobny przypadek
    * niżej. Bez domyślnej odpowiedzi każdy test wywracałby się na braku
    * dopuszczenia zamiast na badanym warunku.
@@ -156,7 +156,7 @@ const assignInput = {
   reason: 'Wdrożenie testowe',
 }
 
-describe('deployment.assignments.assign — bramki wstępne', () => {
+describe('deployment.assignments.assign - bramki wstępne', () => {
   it('odmawia wersji historycznej bez zachowania po wygaśnięciu dzierżawy', async () => {
     const { lease_expiry_behavior: _missing, ...legacyVersion } = VERSION
     const { ctx, commands } = makeCtx({ version: legacyVersion })
@@ -252,7 +252,7 @@ describe('deployment.assignments.assign — bramki wstępne', () => {
   })
 })
 
-describe('deployment.leases.issue — uwierzytelnienie i termin', () => {
+describe('deployment.leases.issue - uwierzytelnienie i termin', () => {
   function signedInput(sequence = 1) {
     const { publicKey, privateKey } = generateKeyPairSync('ed25519')
     const stamp = new Date().toISOString()
@@ -396,7 +396,7 @@ describe('deployment.leases.issue — uwierzytelnienie i termin', () => {
   })
 })
 
-describe('deployment.reports.record — zgłoszenie stanu jest dowodem, nie deklaracją', () => {
+describe('deployment.reports.record - zgłoszenie stanu jest dowodem, nie deklaracją', () => {
   const activeKey = (pem: string) => ({
     public_key: pem,
     active_from: new Date(Date.now() - 60_000).toISOString(),
@@ -433,7 +433,7 @@ describe('deployment.reports.record — zgłoszenie stanu jest dowodem, nie dekl
     expect(persisted.some((row) => row.__table === 'StateReport')).toBe(true)
   })
 
-  it('odrzuca zgłoszenie bez ważnego podpisu — sama znajomość sesji nie wystarcza', async () => {
+  it('odrzuca zgłoszenie bez ważnego podpisu - sama znajomość sesji nie wystarcza', async () => {
     const { publicKeyPem, input } = signedReport()
     const obcy = generateKeyPairSync('ed25519')
     const podrobiony = {
@@ -458,7 +458,7 @@ describe('deployment.reports.record — zgłoszenie stanu jest dowodem, nie dekl
       reportedState: 'stopped' as const,
       reportedPolicyVersionId: null,
       timestamp: stamp,
-      // Podpis poprawny, ale pod innym przedrostkiem — wiązanie kontekstu.
+      // Podpis poprawny, ale pod innym przedrostkiem - wiązanie kontekstu.
       signature: signPayload(
         null,
         Buffer.from(leasePayload(SESSION_ID, 1, stamp), 'utf8'),

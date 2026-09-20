@@ -5,7 +5,7 @@ import { TILE } from '../lib/tokens'
  * Upakowanie kafelków w celi.
  *
  * Testy istnieją, bo ta arytmetyka siedziała wcześniej w JSX i przez to
- * nikt jej nie sprawdził — a mieściła dwie maszyny z pięciu w celi mającej
+ * nikt jej nie sprawdził - a mieściła dwie maszyny z pięciu w celi mającej
  * miejsce na wszystkie.
  */
 
@@ -24,7 +24,7 @@ describe('packTiles', () => {
 
   it('CELA WĘŻSZA NIŻ CZYTELNY KAFELEK ZGŁASZA TO, zamiast po cichu ścinać', () => {
     /*
-     * Nie ściskamy kafelka poniżej obrysu celi — wystawałby poza celę,
+     * Nie ściskamy kafelka poniżej obrysu celi - wystawałby poza celę,
      * do której należy. Nie udajemy też, że wszystko jest w porządku:
      * przy tym obmiarze opis stanu będzie ucięty i ma to być widać.
      */
@@ -37,13 +37,13 @@ describe('packTiles', () => {
     expect(swobodna.tileWidth).toBeGreaterThanOrEqual(TILE.minWidth)
   })
 
-  it('NIE ROBI WIĘCEJ NIŻ TRZECH KOLUMN — kafelek węższy niż numer seryjny jest bezużyteczny', () => {
+  it('NIE ROBI WIĘCEJ NIŻ TRZECH KOLUMN - kafelek węższy niż numer seryjny jest bezużyteczny', () => {
     const wynik = packTiles({ innerWidth: 2000, innerHeight: 200, count: 20 })
     expect(wynik.columns).toBe(3)
   })
 
   it('zwraca pojemność mniejszą niż liczba maszyn, gdy naprawdę się nie mieszczą', () => {
-    // Wtedy komponent ma czym uzasadnić kafelek zbiorczy — zamiast po cichu
+    // Wtedy komponent ma czym uzasadnić kafelek zbiorczy - zamiast po cichu
     // uciąć listę.
     const wynik = packTiles({ innerWidth: 120, innerHeight: 40, count: 9 })
     expect(wynik.capacity).toBeLessThan(9)

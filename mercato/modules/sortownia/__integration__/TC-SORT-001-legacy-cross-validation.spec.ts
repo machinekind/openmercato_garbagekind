@@ -15,7 +15,7 @@ export const integrationMeta = {
  * Obie strony liczą z tej samej księgi, ale zupełnie inaczej: legacy trzyma
  * płaskie wiersze `stockmoves` w kilogramach, Mercato prowadzi salda w WMS
  * i zwija parę `SORT` w jeden `transfer`. Jeżeli mapowanie gdzieś się
- * przekłamie — znak przy wydaniu, zgubiona para, jednostka — salda się
+ * przekłamie - znak przy wydaniu, zgubiona para, jednostka - salda się
  * rozjadą i ten test to pokaże.
  *
  * Źródłem prawdy jest `out/ruchy.csv` (kanał plikowy legacy), a nie
@@ -198,7 +198,7 @@ function ledgerBalances(rows: LegacyRow[]) {
  *
  * Uwaga: to NIE jest liczba wierszy w księdze WMS. Masa schodzi z konkretnych
  * partii, a komenda magazynowa rusza jedną partię naraz, więc jeden kwit bywa
- * kilkoma ruchami. Niezmiennikiem jest kwit — jego zgubienie albo zdublowanie
+ * kilkoma ruchami. Niezmiennikiem jest kwit - jego zgubienie albo zdublowanie
  * rozjeżdża salda, a podział na partie nie.
  */
 function expectedMovementCount(rows: LegacyRow[]): number {
@@ -225,7 +225,7 @@ async function loadDashboard(request: APIRequestContext): Promise<DashboardPaylo
   return (await response.json()) as DashboardPayload
 }
 
-test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy', () => {
+test.describe('TC-SORT-001 - zgodność Open Mercato z księgą systemu legacy', () => {
   test.beforeAll(async () => {
     const present = await fileExists(MOVEMENTS_CSV)
     test.skip(!present, `Brak zrzutu legacy: ${MOVEMENTS_CSV}. Uruchom eksport po stronie starego systemu.`)
@@ -264,12 +264,12 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     }
   })
 
-  test('para SORT zwija się w jeden kwit — liczba kwitów musi się zgadzać', async ({ request }) => {
+  test('para SORT zwija się w jeden kwit - liczba kwitów musi się zgadzać', async ({ request }) => {
     const ledger = await readLegacyLedger()
     const dashboard = await loadDashboard(request)
     expect(dashboard.totals.movements30d).toBe(expectedMovementCount(ledger))
     // Ruchów magazynowych jest co najmniej tyle, co kwitów: mniej znaczyłoby,
-    // że kwit nie wszedł, a dokładnie tyle — że masa nigdy nie schodzi
+    // że kwit nie wszedł, a dokładnie tyle - że masa nigdy nie schodzi
     // z więcej niż jednej partii, czyli że partie przestały działać.
     expect(dashboard.totals.movementRows30d).toBeGreaterThanOrEqual(dashboard.totals.movements30d)
   })
@@ -288,7 +288,7 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     expect(dashboard.totals.binsKg).toBeCloseTo(binsKg, 1)
   })
 
-  test('żaden stan nie schodzi poniżej zera — magazyn nie wydaje więcej, niż przyjął', async ({ request }) => {
+  test('żaden stan nie schodzi poniżej zera - magazyn nie wydaje więcej, niż przyjął', async ({ request }) => {
     const dashboard = await loadDashboard(request)
     for (const location of dashboard.locations) {
       expect.soft(location.quantityKg ?? 0, `lokalizacja ${location.code}`).toBeGreaterThanOrEqual(-TOLERANCE_KG)
@@ -332,7 +332,7 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     expect(dashboard.sales?.orders).toBe(orders.length)
   })
 
-  test('każde zamówienie jest zafakturowane — faktura bez zamówienia jest bezwartościowa', async ({ request }) => {
+  test('każde zamówienie jest zafakturowane - faktura bez zamówienia jest bezwartościowa', async ({ request }) => {
     const dashboard = await loadDashboard(request)
     expect(dashboard.sales?.invoices).toBe(dashboard.sales?.orders)
   })
@@ -388,12 +388,12 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     expect(dashboard.sales?.paidPln ?? 0).toBeCloseTo(suma, 1)
   })
 
-  test('należność to różnica między wystawionym a wpłaconym — nie osobna liczba', async ({ request }) => {
+  test('należność to różnica między wystawionym a wpłaconym - nie osobna liczba', async ({ request }) => {
     const dashboard = await loadDashboard(request)
     const sales = dashboard.sales
     expect(sales).toBeDefined()
     expect(sales!.outstandingPln).toBeCloseTo(sales!.billedPln - sales!.paidPln, 2)
-    // Magazyn nie może być winien odbiorcom — ujemna należność oznaczałaby,
+    // Magazyn nie może być winien odbiorcom - ujemna należność oznaczałaby,
     // że wpłaty przewyższyły faktury, czyli błąd alokacji.
     expect(sales!.outstandingPln).toBeGreaterThanOrEqual(0)
   })
@@ -403,7 +403,7 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     expect(dashboard.sales?.billedPln ?? 0).toBeCloseTo(dashboard.sales?.grossPln ?? 0, 1)
   })
 
-  test('każde przyjęcie ma swoją partię — bez tego nie wiadomo, czyj odpad leży na placu', async ({ request }) => {
+  test('każde przyjęcie ma swoją partię - bez tego nie wiadomo, czyj odpad leży na placu', async ({ request }) => {
     const ledger = await readLegacyLedger()
     const przyjecia = ledger.filter((row) => row.typ === 'PZ').length
     const dashboard = await loadDashboard(request)
@@ -434,10 +434,10 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     }
   })
 
-  test('każde wydanie ma kartę przekazania — przekazanie bez ewidencji jest bezprawne', async ({ request }) => {
+  test('każde wydanie ma kartę przekazania - przekazanie bez ewidencji jest bezprawne', async ({ request }) => {
     const orders = await readLegacyOrders()
     const ledger = await readLegacyLedger()
-    // Kartę dostaje wydanie, które faktycznie zaszło — a nie każde zamówienie.
+    // Kartę dostaje wydanie, które faktycznie zaszło - a nie każde zamówienie.
     // Zamówienie z odbiorem za tydzień karty mieć nie może.
     const wydane = new Set(ledger.filter((row) => row.typ === 'WZ').map((row) => row.orderno))
     const zrealizowane = orders.filter((row) => wydane.has(row.orderno)).length
@@ -462,7 +462,7 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
   test('zarezerwowana masa nie przekracza tego, co leży w boksach', async ({ request }) => {
     const dashboard = await loadDashboard(request)
     const reserved = dashboard.rezerwacje?.reservedKg ?? 0
-    // Rezerwacja ponad stan oznaczałaby obietnicę bez pokrycia — dokładnie to,
+    // Rezerwacja ponad stan oznaczałaby obietnicę bez pokrycia - dokładnie to,
     // czemu rezerwacje mają zapobiegać.
     expect(reserved).toBeLessThanOrEqual(dashboard.totals.binsKg + dashboard.totals.yardKg)
   })
@@ -480,7 +480,7 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     expect(dashboard.ewidencja?.massKg ?? 0).toBeCloseTo(expectedKg, 1)
   })
 
-  test('żadna karta nie jest niekompletna — brak kodu procesu albo numeru BDO unieważnia ewidencję', async ({ request }) => {
+  test('żadna karta nie jest niekompletna - brak kodu procesu albo numeru BDO unieważnia ewidencję', async ({ request }) => {
     const dashboard = await loadDashboard(request)
     expect.soft(dashboard.ewidencja?.withoutProcess ?? 0, 'karty bez kodu procesu odzysku').toBe(0)
     expect.soft(dashboard.ewidencja?.withoutBdo ?? 0, 'karty bez numeru rejestrowego odbiorcy').toBe(0)
@@ -491,7 +491,7 @@ test.describe('TC-SORT-001 — zgodność Open Mercato z księgą systemu legacy
     const bilans = dashboard.bilans
     expect(bilans, 'pulpit musi raportować bilans masy').toBeDefined()
     // To jest najostrzejszy test w całym zestawie. Jeżeli gdziekolwiek zgubi
-    // się znak, para SORT albo jednostka, masa przestanie się domykać — i nie
+    // się znak, para SORT albo jednostka, masa przestanie się domykać - i nie
     // ma innego miejsca, w którym taki błąd by się ujawnił.
     expect(bilans!.differenceKg).toBeCloseTo(0, 1)
     expect(bilans!.receivedKg - bilans!.issuedKg).toBeCloseTo(bilans!.onHandKg, 1)

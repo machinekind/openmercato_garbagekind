@@ -5,7 +5,7 @@ import { lazyDashboardWidget, type DashboardWidgetModule } from '@open-mercato/s
  *
  * Powód istnienia: dotąd odpowiedź na pytanie „ile maszyn wolno dziś
  * uruchomić" wymagała wejścia na osobny ekran. Człowiek, który otwiera
- * rano pulpit, nie szuka rejestru floty — i właśnie dlatego nie zobaczy
+ * rano pulpit, nie szuka rejestru floty - i właśnie dlatego nie zobaczy
  * kwarantanny, dopóki ktoś mu o niej nie powie.
  */
 
@@ -15,7 +15,7 @@ const FleetReadinessWidget = lazyDashboardWidget<FleetReadinessSettings>(() => i
 
 /*
  * Tytuł i opis w metadanych zostają po angielsku, bo platforma nie
- * przepuszcza ich przez tłumacza — tak samo trzyma je każdy widget rdzenia.
+ * przepuszcza ich przez tłumacza - tak samo trzyma je każdy widget rdzenia.
  * Treść widgetu jest tłumaczona normalnie, przez `useT`.
  */
 const widget: DashboardWidgetModule<FleetReadinessSettings> = {

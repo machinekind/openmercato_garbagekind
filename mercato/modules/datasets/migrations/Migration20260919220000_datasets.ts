@@ -1,14 +1,14 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Zbiory danych — schemat początkowy.
+ * Zbiory danych - schemat początkowy.
  *
  * Trzy rzeczy warte przeczytania:
  *
  * 1. **Unikat `(tenant_id, dataset_id, content_digest)`.** Tożsamością wersji
  *    zbioru jest jego zawartość, nie moment zbudowania. Przebudowanie z tych
  *    samych kryteriów nad niezmienioną księgą daje tę samą wersję, a nie
- *    kolejną — inaczej zdanie „polityka v7 uczyła się na zbiorze X w wersji 3"
+ *    kolejną - inaczej zdanie „polityka v7 uczyła się na zbiorze X w wersji 3"
  *    nie miałoby stabilnego odniesienia.
  *
  * 2. **`datasets_members` trzyma odniesienia, nie kopie danych.** Identyfikator

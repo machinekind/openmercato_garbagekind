@@ -85,7 +85,7 @@ const registerCommand: ModuleCli = {
     console.log(`Zarejestrowano ${kod}`)
     console.log(`Role      : ${wynik.roles.join(', ')}`)
     console.log('Czego NIE : funkcja bezpieczeństwa, zatrzymanie awaryjne, zatrzymanie ochronne')
-    console.log('            — te wymagają determinizmu i niezależności od polityki.')
+    console.log('            - te wymagają determinizmu i niezależności od polityki.')
   },
 }
 
@@ -142,7 +142,7 @@ const planCommand: ModuleCli = {
     /*
      * Dla detektora podstawiamy moc w precyzji, w której on faktycznie liczy,
      * a nie nagłówkową liczbę FP4 z arkusza danych. Podstawienie tej drugiej
-     * odwraca werdykt o wąskim gardle — sprawdzone na własnym teście.
+     * odwraca werdykt o wąskim gardle - sprawdzone na własnym teście.
      */
     const fp16: NodeCapability = { ...node, computeTflops: node.computeTflops / 8 }
     for (const strumienie of [2, 4, 8, 16]) {

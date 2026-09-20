@@ -135,7 +135,7 @@ describe('safety.cases.approve', () => {
     await expect(approveCaseCommand.execute(approveInput, ctx)).rejects.toThrow(/Annex I część A/)
   })
 
-  it('ODMAWIA ZATWIERDZENIA BEZ RODZAJU WARSTWY — sam opis nie wystarcza', async () => {
+  it('ODMAWIA ZATWIERDZENIA BEZ RODZAJU WARSTWY - sam opis nie wystarcza', async () => {
     /*
      * Dołożone, gdy do systemu wszedł mocny węzeł obliczeniowy. Wolny tekst
      * przyjmuje zdanie „warstwą bezpieczeństwa jest model nadzorczy na
@@ -202,7 +202,7 @@ describe('safety.runs.record', () => {
   })
 
   it('nie nadpisuje odcisku podanego przez wołającego', async () => {
-    // Wołający, który testował na stanowisku, zna go lepiej — i wtedy rozjazd
+    // Wołający, który testował na stanowisku, zna go lepiej - i wtedy rozjazd
     // ma wyjść, a nie zostać zamaskowany wartością z bazy.
     const { ctx, persisted } = makeCtx()
     await recordRunCommand.execute({ ...runInput, embodimentSpecDigest: 'demo:ur10e-pick:r2' }, ctx)

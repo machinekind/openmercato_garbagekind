@@ -14,8 +14,8 @@ import { EDGE_SESSIONS_SWEEP_QUEUE } from '../lib/queues'
  * niej brak tego workera nie dawał fałszywego „online".
  *
  * Co naprawia: **księgę sesji**. Bez zamiatania sesja agenta odciętego od
- * prądu zostaje otwarta na zawsze, przez co liczba sesji na dobę — miara
- * migotania łącza — przestaje cokolwiek znaczyć, a ponowne połączenie
+ * prądu zostaje otwarta na zawsze, przez co liczba sesji na dobę - miara
+ * migotania łącza - przestaje cokolwiek znaczyć, a ponowne połączenie
  * wygląda jak klon wypierający żywą sesję.
  */
 

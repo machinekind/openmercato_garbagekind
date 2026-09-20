@@ -9,7 +9,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  * Panel przedsiębiorstwa.
  *
  * Kolejność kolumn nie jest przypadkowa i oddaje, czyje to jest pytanie.
- * Najpierw zlecenie i odbiorca — bo kierownik zakładu zaczyna od „na czyją
+ * Najpierw zlecenie i odbiorca - bo kierownik zakładu zaczyna od „na czyją
  * rzecz". Potem postęp w kilogramach. Rozjazd jest na końcu, ale to on jest
  * jedyną liczbą na tym ekranie, której nie da się zobaczyć w żadnym innym
  * systemie: **ile materiału robot zgłosił jako przeniesiony, a nie przeniósł.**
@@ -181,7 +181,7 @@ export default function EnterprisePanel() {
                       ) : null}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {[order.cell, order.policy].filter(Boolean).join(' · ') || '—'}
+                      {[order.cell, order.policy].filter(Boolean).join(' · ') || '-'}
                     </div>
                   </div>
 
@@ -191,7 +191,7 @@ export default function EnterprisePanel() {
                       <span className="text-xs text-muted-foreground"> / {kg(locale, order.targetKg)}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {order.progressRatio === null ? '—' : `${(order.progressRatio * 100).toFixed(0)}%`}
+                      {order.progressRatio === null ? '-' : `${(order.progressRatio * 100).toFixed(0)}%`}
                       {' · '}
                       {order.batches} partii
                       {order.openBatch ? ` · ${order.openBatch} w toku` : ''}

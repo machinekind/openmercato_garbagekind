@@ -7,7 +7,7 @@
  */
 
 export type ReconcileInput = {
-  /** Epizody zakończone powodzeniem w oknie partii — zdanie robota o sobie. */
+  /** Epizody zakończone powodzeniem w oknie partii - zdanie robota o sobie. */
   claimedPieces: number
   /** Masa nominalna sztuki w gramach; `null` znaczy „nie mamy odniesienia". */
   nominalPieceGrams: number | null | undefined
@@ -18,13 +18,13 @@ export type ReconcileInput = {
 }
 
 /**
- * - `ok` — rozjazd mieści się w tolerancji.
- * - `overclaim` — waga pokazała **mniej**, niż wynika z deklaracji. Robot
+ * - `ok` - rozjazd mieści się w tolerancji.
+ * - `overclaim` - waga pokazała **mniej**, niż wynika z deklaracji. Robot
  *   policzył jako sukces coś, czego nie przyniósł: upuszczone sztuki,
  *   chwyt powietrza zaliczony przez czujnik, sztuka wypchnięta z pojemnika.
- * - `underclaim` — waga pokazała **więcej**. Materiał w pojemniku nie pochodzi
+ * - `underclaim` - waga pokazała **więcej**. Materiał w pojemniku nie pochodzi
  *   w całości z policzonych chwytów albo masa nominalna jest zła.
- * - `no_reference` — brak masy nominalnej, uzgodnienia nie da się policzyć.
+ * - `no_reference` - brak masy nominalnej, uzgodnienia nie da się policzyć.
  */
 export type ReconcileVerdict = 'ok' | 'overclaim' | 'underclaim' | 'no_reference'
 
@@ -40,7 +40,7 @@ export type ReconcileResult = {
    *
    * Uwaga na to, czego ta flaga NIE znaczy: nie wstrzymuje materiału.
    * Pojemnik stoi na wadze, materiał fizycznie istnieje i wchodzi do zapasu
-   * niezależnie od werdyktu — odmowa przyjęcia czegoś, co się fizycznie ma,
+   * niezależnie od werdyktu - odmowa przyjęcia czegoś, co się fizycznie ma,
    * byłaby zapisaniem nieprawdy w magazynie. Flaga dotyczy maszyny: coś
    * z chwytaniem albo z czujnikiem jest nie tak i trzeba to zobaczyć teraz,
    * a nie w raporcie miesięcznym.
@@ -59,7 +59,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
 
   if (!input.nominalPieceGrams || input.nominalPieceGrams <= 0) {
     /*
-     * Brak masy nominalnej nie jest błędem — dla wielu frakcji nikt jej nie
+     * Brak masy nominalnej nie jest błędem - dla wielu frakcji nikt jej nie
      * zmierzył. Jest natomiast brakiem odniesienia i ma być tak nazwany,
      * zamiast podstawiać średnią z innej frakcji i produkować werdykt,
      * który wygląda jak pomiar, a jest zgadywaniem.
@@ -70,7 +70,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
       driftGrams: null,
       driftRatio: null,
       toleranceRatio,
-      reason: 'Brak masy nominalnej sztuki — uzgodnienia nie da się policzyć.',
+      reason: 'Brak masy nominalnej sztuki - uzgodnienia nie da się policzyć.',
       requiresReview: false,
     }
   }
@@ -114,7 +114,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
      * Kierunek groźny.
      *
      * Robot zgłosił więcej, niż przyniósł. W jego własnej telemetrii wygląda
-     * to identycznie jak praca udana — bo z jego punktu widzenia była udana.
+     * to identycznie jak praca udana - bo z jego punktu widzenia była udana.
      * Jedyne miejsce, w którym ta różnica się ujawnia, to waga. Dlatego ten
      * werdykt domyślnie wymaga spojrzenia człowieka, zanim masa wejdzie
      * do zapasu: albo robot gubi materiał, albo czujnik chwytu kłamie,
@@ -129,7 +129,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
       toleranceRatio,
       reason:
         `Waga pokazała ${formatKg(input.weighedGrams)} kg przy deklarowanych ` +
-        `${formatKg(expectedGrams)} kg — brakuje ${formatKg(-driftGrams)} kg ` +
+        `${formatKg(expectedGrams)} kg - brakuje ${formatKg(-driftGrams)} kg ` +
         `(${(driftRatio * 100).toFixed(1)}%). Robot policzył jako sukces materiał, którego nie przyniósł.`,
       requiresReview: true,
     }
@@ -143,7 +143,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
     toleranceRatio,
     reason:
       `Waga pokazała ${formatKg(input.weighedGrams)} kg przy deklarowanych ` +
-      `${formatKg(expectedGrams)} kg — nadwyżka ${formatKg(driftGrams)} kg ` +
+      `${formatKg(expectedGrams)} kg - nadwyżka ${formatKg(driftGrams)} kg ` +
       `(${(driftRatio * 100).toFixed(1)}%). Materiał nie pochodzi w całości z policzonych chwytów ` +
       'albo masa nominalna sztuki jest zawyżona.',
     requiresReview: false,
@@ -151,7 +151,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
 }
 
 /**
- * Zbiorczy rozjazd dla wielu partii — po to, żeby dało się powiedzieć
+ * Zbiorczy rozjazd dla wielu partii - po to, żeby dało się powiedzieć
  * „ta wersja polityki gubi tyle a tyle", a nie tylko „ten pojemnik się nie zgadza".
  *
  * Sumujemy gramy, a nie uśredniamy procenty: średnia z procentów daje temu

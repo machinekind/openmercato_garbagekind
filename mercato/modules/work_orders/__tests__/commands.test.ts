@@ -137,7 +137,7 @@ describe('work_orders.batches.close', () => {
     expect(result.verdict).toBe('overclaim')
   })
 
-  it('rozjazd nie wstrzymuje przyjęcia — materiał fizycznie leży w pojemniku', async () => {
+  it('rozjazd nie wstrzymuje przyjęcia - materiał fizycznie leży w pojemniku', async () => {
     const { ctx, busCalls } = makeCtx({ order: ORDER, batch: batchFilling(), claimedPieces: 1000 })
     const result = await closeBatchCommand.execute({ ...zamkniecie, weighedGrams: 10_000 }, ctx)
 

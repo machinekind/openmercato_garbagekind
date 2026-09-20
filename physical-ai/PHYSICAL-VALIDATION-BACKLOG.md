@@ -1,4 +1,4 @@
-# Backlog walidacji fizycznej po hackathonie 18–19.09.2026
+# Backlog walidacji fizycznej po hackathonie 18-19.09.2026
 
 Ten dokument rozdziela fakty potwierdzone w kodzie od rzeczy, które wymagają
 realnego robota. Punktem odniesienia jest import dowodów z `mercatoXD` w
@@ -52,7 +52,7 @@ przejść:
 py -3.12 mercato\hardware\evidence_bundle.py <katalog-runRef> --require-p0-pass
 ```
 
-## P0 — bezpieczeństwo przed ruchem autonomicznym
+## P0 - bezpieczeństwo przed ruchem autonomicznym
 
 - [ ] **A1X/SO-101: bezpieczne załączenie.** Udowodnić, że przed momentem
   podania momentu sterownik przez co najmniej 500 ms nadaje bieżące `q` jako
@@ -70,7 +70,7 @@ py -3.12 mercato\hardware\evidence_bundle.py <katalog-runRef> --require-p0-pass
 Warunek odbioru P0: komplet logów dla wszystkich prób, brak niekontrolowanego
 ruchu i podpis osoby prowadzącej ocenę ryzyka. Bez P0 nie uruchamiamy polityki.
 
-## P1 — kontrakt sprzętu i kalibracje
+## P1 - kontrakt sprzętu i kalibracje
 
 - [ ] Zmierzyć zasięg roboczy oraz payload A1X w konfiguracji używanej na
   stanowisku; uzupełnić rewizję embodimentu zamiast wartości `unknown`.
@@ -81,13 +81,13 @@ ruchu i podpis osoby prowadzącej ocenę ryzyka. Bez P0 nie uruchamiamy polityki
   ważności kalibracji.
 - [ ] Zweryfikować semantykę chwytaka: jednostkę, kierunek, pozycję otwartą,
   zamknięcie bez detalu, zatrzymanie na detalu i próg wykrycia utrzymania.
-- [ ] Wykonać próbę system-ID A1X: skok oraz sweep 0,5–5 Hz z poleceniem i
+- [ ] Wykonać próbę system-ID A1X: skok oraz sweep 0,5-5 Hz z poleceniem i
   pomiarem w tej samej osi czasu.
 
 Warunek odbioru P1: `mercato fleet embodiment` nie zgłasza niekompletności,
 a każda wymagana kalibracja ma ważny rekord i odcisk rewizji.
 
-## P2 — dane, polityka i odzyskiwanie
+## P2 - dane, polityka i odzyskiwanie
 
 - [ ] Zebrać prawdziwe demonstracje per `(taskKey, embodiment revision)`;
   żadnego mieszania A1X i SO-101 pod jednym kontraktem.
@@ -103,7 +103,7 @@ a każda wymagana kalibracja ma ważny rekord i odcisk rewizji.
 Warunek odbioru P2: polityka przechodzi zgodność embodimentu i daje się
 odtworzyć z wersji zbioru oraz kompletu artefaktów.
 
-## P3 — ewaluacja i próba cieniowa
+## P3 - ewaluacja i próba cieniowa
 
 - [ ] Zdefiniować zestawy `nominal`, `edge_case`, `recovery` i `safety` jako
   wersjonowane artefakty z URI oraz SHA-256.
@@ -113,7 +113,7 @@ odtworzyć z wersji zbioru oraz kompletu artefaktów.
   traktować jak `fail`, nie jak brak wyniku.
 - [ ] Uruchomić tryb cieniowy bez wysyłania akcji do napędów. Porównać akcje
   polityki z teleoperatorem i zarejestrować naruszenia limitów.
-- [ ] Dopiero po P0–P3 wykonać stopniowy rollout w najniższej klasie ryzyka,
+- [ ] Dopiero po P0-P3 wykonać stopniowy rollout w najniższej klasie ryzyka,
   z dostępnym operatorem i działającą telemetrią ERP.
 
 ## Dane wymagane od właściciela procesu

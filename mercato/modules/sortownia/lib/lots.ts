@@ -10,7 +10,7 @@ import type { LegacyMovementRow } from './legacyFiles'
  *
  * To jest ta rzecz, której w starym systemie nie było w ogóle, a której
  * w gospodarce odpadami wymaga się wprost. `stockmoves` mówi tylko, że
- * przyjechało 6 412 kg papieru. Nie mówi, czyjego — a kiedy okaże się, że
+ * przyjechało 6 412 kg papieru. Nie mówi, czyjego - a kiedy okaże się, że
  * w partii był odpad niebezpieczny albo że odbiorca kwestionuje jakość
  * frakcji, pytanie brzmi zawsze tak samo: od kogo to przyjechało i kiedy.
  *
@@ -39,7 +39,7 @@ export type LotOutcome = {
   error?: string
 }
 
-/** Numer partii odtwarzalny z numeru przyjęcia — stąd idempotencja. */
+/** Numer partii odtwarzalny z numeru przyjęcia - stąd idempotencja. */
 export function lotNumberFor(stkmoveno: number): string {
   return `PZ/${stkmoveno}`
 }

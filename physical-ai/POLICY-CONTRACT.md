@@ -8,12 +8,12 @@ na którym była trenowana. Sam plik wag i liczba DOF nie wystarczają.
 `observationSpec.fields` i `actionSpec.fields` są uporządkowanymi tablicami.
 Pozycja pola jest pozycją w wektorze. Każde pole zawiera:
 
-- `key` — stabilną nazwę sygnału;
-- `size` — liczbę kolejnych skalarów;
-- `unit` — jednostkę z zamkniętego słownika;
-- `frame` — jawny układ odniesienia, np. `base_link`, `camera_wrist`,
+- `key` - stabilną nazwę sygnału;
+- `size` - liczbę kolejnych skalarów;
+- `unit` - jednostkę z zamkniętego słownika;
+- `frame` - jawny układ odniesienia, np. `base_link`, `camera_wrist`,
   `joint_space` albo `none`;
-- `semantics` — `absolute`, `delta`, `velocity`, `effort`, `binary` lub
+- `semantics` - `absolute`, `delta`, `velocity`, `effort`, `binary` lub
   `encoded`.
 
 Suma `size` musi być równa odpowiednio `observationDim` albo `actionDim`.
@@ -25,11 +25,11 @@ ani częstotliwością.
 
 `leaseExpiryBehavior` jest częścią wersji polityki i przyjmuje jedną wartość:
 
-- `hold_position` — przerwij generowanie kolejnych akcji i utrzymaj bieżącą
+- `hold_position` - przerwij generowanie kolejnych akcji i utrzymaj bieżącą
   bezpieczną pozycję;
-- `complete_grasp_then_hold` — dokończ rozpoczęty chwyt, bez rozpoczynania
+- `complete_grasp_then_hold` - dokończ rozpoczęty chwyt, bez rozpoczynania
   kolejnego cyklu, następnie utrzymaj pozycję;
-- `return_home` — wykonaj lokalną, zwalidowaną trajektorię powrotu i zatrzymaj
+- `return_home` - wykonaj lokalną, zwalidowaną trajektorię powrotu i zatrzymaj
   się w pozycji bazowej.
 
 To zachowanie jest wykonywane lokalnie po upływie `expiresAt`; nie czeka na

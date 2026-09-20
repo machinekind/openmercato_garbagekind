@@ -8,6 +8,6 @@
 # Podpisy Ed25519 agenta brzegowego (mercato/hardware/edge_agent).
 cryptography>=42.0
 
-# Zależności WYŁĄCZNIE sprzętowe, nieinstalowane w CI — trzymane osobno:
+# Zależności WYŁĄCZNIE sprzętowe, nieinstalowane w CI - trzymane osobno:
 #   mercato/hardware/so101/requirements-hardware.txt   sterowanie SO-101
 #   mcp                                                serwer MCP ramienia

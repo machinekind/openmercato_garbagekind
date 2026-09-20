@@ -9,7 +9,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  *
  * Rozstrzygnięcie nośne siedzi w kolumnie `cell_class` na uzasadnieniu:
  * **dopuszczenie dotyczy klasy celi, nie pojedynczej celi**. Klucz obcy do
- * `fleet_cells` byłby tu naturalny i byłby błędem — każda nowa cela o tej samej,
+ * `fleet_cells` byłby tu naturalny i byłby błędem - każda nowa cela o tej samej,
  * niezmienionej konfiguracji wymagałaby wtedy osobnego uzasadnienia, a to jest
  * koszt, którego nikt nie poniesie. W praktyce kończy się dopuszczeniami
  * udzielanymi hurtem bez czytania.
@@ -56,7 +56,7 @@ export class SafetyCase {
    *
    * Pole istnieje po to, żeby było zawsze fałszem, i po to, żeby próba
    * ustawienia go na prawdę była jawną, zapisaną decyzją, a nie milczącym
-   * założeniem. Dopuszczenie odmawia bezwarunkowo, gdy jest prawdą — żaden
+   * założeniem. Dopuszczenie odmawia bezwarunkowo, gdy jest prawdą - żaden
    * komplet ewaluacji tego nie obchodzi.
    */
   @Property({ name: 'declared_as_safety_function', type: 'boolean', default: false })
@@ -66,7 +66,7 @@ export class SafetyCase {
   @Property({ type: 'json', nullable: true })
   hazards?: Array<Record<string, unknown>> | null
 
-  /** Normy i przepisy przywołane w uzasadnieniu — ląduje w dokumentacji technicznej. */
+  /** Normy i przepisy przywołane w uzasadnieniu - ląduje w dokumentacji technicznej. */
   @Property({ type: 'json', nullable: true })
   standards?: string[] | null
 
@@ -80,7 +80,7 @@ export class SafetyCase {
   safetyLayer?: string | null
 
   /**
-   * Rodzaj deterministycznej warstwy bezpieczeństwa — ze słownika zamkniętego.
+   * Rodzaj deterministycznej warstwy bezpieczeństwa - ze słownika zamkniętego.
    *
    * Dołożone, gdy do systemu wszedł mocny węzeł obliczeniowy. Do tej pory
    * `safetyLayer` był wolnym tekstem sprawdzanym wyłącznie na niepustość,
@@ -89,7 +89,7 @@ export class SafetyCase {
    * Słownik zamknięty odbiera tę możliwość na poziomie typu: wszystkie
    * dopuszczone pozycje są mechanizmami deterministycznymi, niezależnymi od
    * polityki i od tego, co akurat liczy akcelerator. Wyuczonego modelu nie da
-   * się w tym polu **wyrazić** — a to jest mocniejsze niż odmowa po sprawdzeniu.
+   * się w tym polu **wyrazić** - a to jest mocniejsze niż odmowa po sprawdzeniu.
    */
   @Property({ name: 'safety_layer_kind', type: 'text', nullable: true })
   safetyLayerKind?: string | null
@@ -168,7 +168,7 @@ export class EvalSuite {
  * Przebieg zestawu ewaluacyjnego dla konkretnej wersji polityki.
  *
  * Dopisywany, nigdy nadpisywany. Zestaw przebiegnięty ponownie po zmianie
- * w celi i zakończony niepowodzeniem unieważnia poprzedni sukces —
+ * w celi i zakończony niepowodzeniem unieważnia poprzedni sukces -
  * dopuszczenie bierze **najnowszy** przebieg, a nie jakikolwiek zaliczony.
  * Szukanie „czy kiedykolwiek przeszedł" dawałoby dopuszczenia na podstawie
  * wyniku sprzed roku.
@@ -204,7 +204,7 @@ export class EvalRun {
   /**
    * Odcisk kontraktu embodimentu, na którym zestaw przebiegł.
    *
-   * Bez tego dopuszczenie opierałoby się na testach z innego sprzętu —
+   * Bez tego dopuszczenie opierałoby się na testach z innego sprzętu -
    * najczęstsza droga do zgody „na podstawie ewaluacji", której nikt nie
    * powtórzył po wymianie chwytaka.
    */
@@ -233,7 +233,7 @@ export class EvalRun {
  *
  * Klasyfikacja jest dwuwymiarowa: **czy ktoś ucierpiał** i **czy zawiodła
  * warstwa bezpieczeństwa**. Pojedyncza skala ciężkości skleiłaby te pytania
- * i zgubiła najważniejszy przypadek — zdarzenie bez skutków, w którym warstwa
+ * i zgubiła najważniejszy przypadek - zdarzenie bez skutków, w którym warstwa
  * deterministyczna zadziałała na ostatniej linii.
  */
 @Entity({ tableName: 'safety_incidents' })
@@ -275,7 +275,7 @@ export class Incident {
   @Property({ name: 'policy_implicated', type: 'boolean', default: false })
   policyImplicated: boolean = false
 
-  /** Wynik klasyfikacji policzony przy zapisie — patrz `lib/clearance.ts`. */
+  /** Wynik klasyfikacji policzony przy zapisie - patrz `lib/clearance.ts`. */
   @Property({ type: 'text' })
   priority!: string
 

@@ -19,7 +19,7 @@ import { emitRolloutEvent } from '../events'
  *
  * Najważniejsza jest `rollout.gates.evaluate`: to ona zatrzymuje etapy
  * następne i wycofuje bieżący **bez udziału człowieka**. Wycofanie idzie
- * komendą `deployment.assignments.assign`, a nie zapisem do tabeli wdrożeń —
+ * komendą `deployment.assignments.assign`, a nie zapisem do tabeli wdrożeń -
  * inaczej stan pożądany w hali rozjechałby się ze stanem wdrożenia w panelu,
  * czyli dokładnie tam, gdzie takiego rozjazdu być nie może.
  */
@@ -86,7 +86,7 @@ const planCommand: CommandHandler<PlanInput, { rolloutId: string; stageIds: stri
      *
      * Nie jest to ochrona przed literówką: robot w etapie pierwszym i trzecim
      * sprawiłby, że wycofanie etapu pierwszego zdjęłoby politykę maszynie,
-     * która właśnie zbiera dane dla etapu trzeciego — i brama etapu trzeciego
+     * która właśnie zbiera dane dla etapu trzeciego - i brama etapu trzeciego
      * orzekałaby o populacji, której nie ma.
      */
     const seen = new Set<string>()
@@ -109,7 +109,7 @@ const planCommand: CommandHandler<PlanInput, { rolloutId: string; stageIds: stri
       createdBy: ctx.auth?.sub ?? null,
     } as never)
 
-    // Identyfikator nadaje baza — etapy muszą mieć na co wskazać.
+    // Identyfikator nadaje baza - etapy muszą mieć na co wskazać.
     em.persist(rollout)
     await em.flush()
     const rolloutId = (rollout as unknown as { id: string }).id
@@ -220,7 +220,7 @@ const startStageCommand: CommandHandler<
     if (row.rollout_status === 'halted' || row.rollout_status === 'rolled_back') {
       // To jest druga połowa zdania „przekroczenie progu zatrzymuje etap 2":
       // wstrzymane wdrożenie nie daje się wystartować dalej, nawet ręcznie.
-      throw new Error(`Wdrożenie jest w stanie ${row.rollout_status} — etapu nie da się uruchomić.`)
+      throw new Error(`Wdrożenie jest w stanie ${row.rollout_status} - etapu nie da się uruchomić.`)
     }
 
     const previousStages = await em.getConnection().execute<Array<{ ordinal: number; status: string; name: string }>>(
@@ -231,7 +231,7 @@ const startStageCommand: CommandHandler<
     const unfinished = previousStages.find((stage) => stage.status !== 'passed')
     if (unfinished) {
       throw new Error(
-        `Etap ${unfinished.ordinal} („${unfinished.name}") jest w stanie ${unfinished.status} — etapowość nie jest opcjonalna.`,
+        `Etap ${unfinished.ordinal} („${unfinished.name}") jest w stanie ${unfinished.status} - etapowość nie jest opcjonalna.`,
       )
     }
 
@@ -312,7 +312,7 @@ export type EvaluateResult = {
 }
 
 /**
- * Ocena bramy — serce fazy.
+ * Ocena bramy - serce fazy.
  *
  * Liczby bierzemy z księgi epizodów (moduł `episodes`) surowym SQL-em, tak samo
  * jak rejestr polityk czyta rewizje embodimentu. Liczymy je **dla populacji
@@ -329,7 +329,7 @@ const evaluateGateCommand: CommandHandler<EvaluateInput, EvaluateResult> = {
 
     const row = await loadStage(em, input.stageId, input.tenantId)
     if (!row) throw new Error(`Etap ${input.stageId} nie istnieje.`)
-    if (row.status !== 'running') throw new Error(`Etap jest w stanie ${row.status} — brama ocenia tylko etapy w biegu.`)
+    if (row.status !== 'running') throw new Error(`Etap jest w stanie ${row.status} - brama ocenia tylko etapy w biegu.`)
 
     const severeList = SEVERE_KINDS.map((k) => `'${k}'`).join(', ')
     const statsRows = await em.getConnection().execute<Array<{
@@ -416,7 +416,7 @@ const evaluateGateCommand: CommandHandler<EvaluateInput, EvaluateResult> = {
     }
 
     if (verdict.decision === 'rollback') {
-      // 1. Wszystkie etapy następne — nie tylko kolejny. Wdrożenie
+      // 1. Wszystkie etapy następne - nie tylko kolejny. Wdrożenie
       //    pięcioetapowe, w którym po wycofaniu etapu 1 rusza etap 3,
       //    jest wdrożeniem jednoetapowym z opóźnieniem.
       const allStages = await em.getConnection().execute<Array<{ id: string; ordinal: number; status: string }>>(
@@ -435,7 +435,7 @@ const evaluateGateCommand: CommandHandler<EvaluateInput, EvaluateResult> = {
         haltedStages += 1
       }
 
-      // 2. Wycofanie bieżącego etapu — przez komendę stanu pożądanego,
+      // 2. Wycofanie bieżącego etapu - przez komendę stanu pożądanego,
       //    nie przez zapis do tabeli wdrożeń.
       const members = await em.getConnection().execute<Array<{
         id: string

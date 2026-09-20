@@ -1,24 +1,24 @@
 /**
- * Granice prawne monitoringu w zakładzie pracy — egzekwowane w kodzie,
+ * Granice prawne monitoringu w zakładzie pracy - egzekwowane w kodzie,
  * nie opisane w polityce prywatności.
  *
  * Dwa reżimy stosują się jednocześnie i żaden nie zastępuje drugiego:
  *
- * **Art. 22² Kodeksu pracy** — monitoring wizyjny w zakładzie pracy:
+ * **Art. 22² Kodeksu pracy** - monitoring wizyjny w zakładzie pracy:
  * zamknięty katalog celów (§1), zakaz obejmowania pomieszczeń sanitarnych,
  * szatni, stołówek, palarni i pomieszczeń związków zawodowych (§1¹),
  * zniszczenie nagrań po trzech miesiącach (§3), poinformowanie załogi na dwa
  * tygodnie przed uruchomieniem (§7) i oznaczenie obszaru najpóźniej dzień
  * przed (§9).
  *
- * **Art. 5 rozporządzenia o sztucznej inteligencji (2024/1689)** — praktyki
+ * **Art. 5 rozporządzenia o sztucznej inteligencji (2024/1689)** - praktyki
  * zakazane: wnioskowanie emocji osoby fizycznej **w miejscu pracy** na
  * podstawie danych biometrycznych (art. 5 ust. 1 lit. f) oraz kategoryzacja
  * biometryczna wnioskująca cechy wrażliwe (lit. g). Zakazy obowiązują od
  * 2 lutego 2025 r., a sankcja sięga 35 mln euro albo 7% obrotu.
  *
  * Konsekwencja projektowa: detektor deklarujący takie klasy **nie daje się
- * zarejestrować**. Nie ostrzeżenie, nie pole „potwierdzam, że rozumiem" —
+ * zarejestrować**. Nie ostrzeżenie, nie pole „potwierdzam, że rozumiem" -
  * odmowa zapisu.
  */
 
@@ -48,7 +48,7 @@ const PROHIBITED_CLASS_ROOTS = [
 export type ClassVerdict = {
   allowed: boolean
   prohibited: string[]
-  /** Klasy dopuszczone warunkowo — `person` wyłącznie jako obecność. */
+  /** Klasy dopuszczone warunkowo - `person` wyłącznie jako obecność. */
   presenceOnly: string[]
   reason: string
 }
@@ -70,7 +70,7 @@ export function checkClassVocabulary(vocabulary: string[]): ClassVerdict {
      * informacją o bezpieczeństwie (czy ktoś wszedł w obszar pracy maszyny)
      * i nie wymaga wiedzy, kto to jest. Śledzenie osoby, przypisanie do
      * pracownika albo zliczanie jej czasu pracy to już inny system i inna
-     * podstawa prawna — ten moduł ich nie obsługuje.
+     * podstawa prawna - ten moduł ich nie obsługuje.
      */
     if (klasa === 'person' || klasa === 'people' || klasa === 'human') presenceOnly.push(klasa)
   }
@@ -92,7 +92,7 @@ export function checkClassVocabulary(vocabulary: string[]): ClassVerdict {
     prohibited: [],
     presenceOnly,
     reason: presenceOnly.length
-      ? `Słownik dopuszczony. Klasa ${presenceOnly.join(', ')} wyłącznie jako obecność — bez identyfikacji i bez śledzenia.`
+      ? `Słownik dopuszczony. Klasa ${presenceOnly.join(', ')} wyłącznie jako obecność - bez identyfikacji i bez śledzenia.`
       : 'Słownik dopuszczony.',
   }
 }
@@ -104,7 +104,7 @@ export type CameraVerdict = { lawful: boolean; problems: string[]; warnings: str
  *
  * Rozdział na `problems` i `warnings` jest tu treścią, nie kosmetyką: cel spoza
  * katalogu i okres przechowywania ponad ustawowy to wady, których nie da się
- * naprawić zgodą — a brak poinformowania załogi to wada usuwalna, byle przed
+ * naprawić zgodą - a brak poinformowania załogi to wada usuwalna, byle przed
  * uruchomieniem.
  */
 export function checkCamera(input: {
@@ -121,7 +121,7 @@ export function checkCamera(input: {
   if (!LAWFUL_PURPOSES.includes(input.purpose as LawfulPurpose)) {
     problems.push(
       `Cel „${input.purpose}" jest spoza katalogu art. 22² § 1 KP (${LAWFUL_PURPOSES.join(', ')}). ` +
-        'Katalog jest zamknięty — nie ma pozycji „inne".',
+        'Katalog jest zamknięty - nie ma pozycji „inne".',
     )
   }
 
@@ -138,13 +138,13 @@ export function checkCamera(input: {
     const DZIEN = 24 * 60 * 60 * 1000
 
     if (!input.workforceNotifiedAt) {
-      warnings.push('Brak daty poinformowania załogi (art. 22² § 7 KP — dwa tygodnie przed uruchomieniem).')
+      warnings.push('Brak daty poinformowania załogi (art. 22² § 7 KP - dwa tygodnie przed uruchomieniem).')
     } else if (activation.getTime() - input.workforceNotifiedAt.getTime() < 14 * DZIEN) {
       warnings.push('Załogę poinformowano później niż dwa tygodnie przed uruchomieniem (art. 22² § 7 KP).')
     }
 
     if (!input.areaMarkedAt) {
-      warnings.push('Brak daty oznaczenia obszaru (art. 22² § 9 KP — najpóźniej dzień przed uruchomieniem).')
+      warnings.push('Brak daty oznaczenia obszaru (art. 22² § 9 KP - najpóźniej dzień przed uruchomieniem).')
     } else if (activation.getTime() - input.areaMarkedAt.getTime() < DZIEN) {
       warnings.push('Obszar oznaczono później niż dzień przed uruchomieniem (art. 22² § 9 KP).')
     }
@@ -153,7 +153,7 @@ export function checkCamera(input: {
   return { lawful: problems.length === 0, problems, warnings }
 }
 
-/** Termin usunięcia materiału — liczony, nie przyjmowany od wołającego. */
+/** Termin usunięcia materiału - liczony, nie przyjmowany od wołającego. */
 export function deleteAfterFor(recordedAt: Date, retentionDays: number): Date {
   const dni = Math.min(Math.max(1, retentionDays), MAX_RETENTION_DAYS)
   return new Date(recordedAt.getTime() + dni * 24 * 60 * 60 * 1000)

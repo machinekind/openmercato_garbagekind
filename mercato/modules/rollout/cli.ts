@@ -37,7 +37,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -100,7 +100,7 @@ async function feedEpisodes(
    *
    * Brama liczy epizody od chwili uruchomienia etapu. Przy odstępie sekundowym
    * epizody etapu poprzedniego wchodziły w okno etapu następnego i rozcieńczały
-   * dokładnie ten sygnał, który brama ma wyłapać — pierwsze przejście dowodu
+   * dokładnie ten sygnał, który brama ma wyłapać - pierwsze przejście dowodu
    * pokazało 12,5% zamiast 25%. To jest artefakt generatora, nie bramy, ale
    * gdyby został, dowód mówiłby coś innego, niż twierdzi.
    */
@@ -200,11 +200,11 @@ const statusCommand: ModuleCli = {
     let last = ''
     for (const row of rows) {
       if (row.name !== last) {
-        console.log(`\n${row.name} — ${row.status}`)
+        console.log(`\n${row.name} - ${row.status}`)
         last = row.name
       }
       console.log(
-        `  ${row.ordinal}. ${row.stage_name.padEnd(28)} ${row.stage_status.padEnd(12)} ${row.decision ?? '—'}${row.reason ? ` (${row.reason})` : ''}`,
+        `  ${row.ordinal}. ${row.stage_name.padEnd(28)} ${row.stage_status.padEnd(12)} ${row.decision ?? '-'}${row.reason ? ` (${row.reason})` : ''}`,
       )
     }
   },
@@ -217,7 +217,7 @@ const statusCommand: ModuleCli = {
  * etap 2 i wycofuje etap 1 bez udziału człowieka.*
  *
  * Dowód ma dwie części, bo jedna nie wystarcza. Najpierw etap z czystymi
- * liczbami przechodzi dalej — bez tego cały dowód sprowadzałby się do
+ * liczbami przechodzi dalej - bez tego cały dowód sprowadzałby się do
  * pokazania funkcji, która zawsze zwraca „wycofaj". Dopiero potem etap
  * z przekroczonym progiem.
  */
@@ -227,12 +227,12 @@ const statusCommand: ModuleCli = {
  *
  * Dopisane po fazie 5, która wprowadziła bramę w `deployment.assignments.assign`.
  * Dowód fazy 4 opiera się na wdrażaniu i wycofywaniu wersji, więc bez tej
- * preambuły przestał się odtwarzać — brama odbijała pierwsze przypisanie
+ * preambuły przestał się odtwarzać - brama odbijała pierwsze przypisanie
  * i dowód kończył się błędem, zamiast pokazywać zachowanie, o którym mówi.
  *
  * To jest realny koszt kolejności faz: warstwa bezpieczeństwa dołożona później
  * unieważnia dowody wcześniejszych faz, które jej nie znały. Naprawa idzie
- * w dowód, a nie w bramę — brama ma blokować i robi to poprawnie.
+ * w dowód, a nie w bramę - brama ma blokować i robi to poprawnie.
  *
  * Operacja jest idempotentna: powtórne uruchomienie zastaje uzasadnienie już
  * zatwierdzone i nie tworzy drugiego.
@@ -265,7 +265,7 @@ async function zapewnijDopuszczenie(
           standards: ['ISO 10218-2:2025', 'ISO/TS 15066:2016'],
           // Warstwa deterministyczna jest warunkiem zatwierdzenia i ma nim
           // zostać: to ona egzekwuje bezpieczeństwo, nie wyuczona polityka.
-          // Rodzaj ze słownika zamkniętego — sam opis nie wystarcza do zatwierdzenia.
+          // Rodzaj ze słownika zamkniętego - sam opis nie wystarcza do zatwierdzenia.
           safetyLayerKind: 'safety_rated_speed_limit',
           safetyLayer: 'Bariera prędkości i momentu w sterowniku celi, niezależna od polityki.',
         },
@@ -325,27 +325,27 @@ const proveCommand: ModuleCli = {
     const pierwszy = await robotBySerial(em, scope.tenantId, String(args.robot1 ?? 'UR10E-0001'))
     const drugi = await robotBySerial(em, scope.tenantId, String(args.robot2 ?? 'UR10E-0002'))
 
-    console.log('DOWÓD FAZY 4 — brama etapowa odwołuje się do liczb, nie do opinii\n')
+    console.log('DOWÓD FAZY 4 - brama etapowa odwołuje się do liczb, nie do opinii\n')
 
     /**
      * Dowód zaczyna od znanego punktu wyjścia.
      *
      * Robot dostaje v1 przed wdrożeniem v2, żeby wycofanie miało dokąd wrócić.
      * Bez tego powtórne uruchomienie dowodu zastawałoby maszynę już na v2
-     * i „wycofanie" sprowadzałoby się do przypisania jej tego, co ma —
+     * i „wycofanie" sprowadzałoby się do przypisania jej tego, co ma -
      * widać by było werdykt, a nie skutek.
      */
     const bazowa = await versionByKey(em, scope.tenantId, 'pick-bin-ur10e', 1)
     if (bazowa.status !== 'released') {
       await bus.execute('policy_registry.versions.transition', {
-        input: { ...scope, policyVersionId: bazowa.id, toStatus: 'released', reason: 'Dowód fazy 4 — punkt wyjścia' },
+        input: { ...scope, policyVersionId: bazowa.id, toStatus: 'released', reason: 'Dowód fazy 4 - punkt wyjścia' },
         ctx,
       })
     }
     /*
      * Brama bezpieczeństwa z fazy 5 stoi przed każdym przypisaniem. Dowód
      * fazy 4 mówi o bramie ETAPOWEJ, nie o bezpieczeństwie, więc musi sam
-     * doprowadzić obie wersje do stanu dopuszczonego — inaczej mierzyłby
+     * doprowadzić obie wersje do stanu dopuszczonego - inaczej mierzyłby
      * cudzą odmowę zamiast własnego progu.
      */
     const cela = await em.getConnection().execute<Array<{ cell_class: string; risk_class: string }>>(
@@ -353,7 +353,7 @@ const proveCommand: ModuleCli = {
          join fleet_cells c on c.id = r.cell_id where r.id = ? limit 1`,
       [pierwszy.id],
     )
-    if (!cela.length) throw new Error('Robot dowodu nie stoi w celi — uruchom: yarn mercato fleet seed')
+    if (!cela.length) throw new Error('Robot dowodu nie stoi w celi - uruchom: yarn mercato fleet seed')
     for (const wersja of [bazowa.id, version.id]) {
       await zapewnijDopuszczenie(em, bus, ctx, scope, wersja, cela[0].cell_class, cela[0].risk_class)
     }
@@ -364,7 +364,7 @@ const proveCommand: ModuleCli = {
         ...scope,
         robotId: pierwszy.id,
         policyVersionId: bazowa.id,
-        reason: 'Dowód fazy 4 — ustawienie punktu wyjścia',
+        reason: 'Dowód fazy 4 - ustawienie punktu wyjścia',
       },
       ctx,
     })
@@ -396,11 +396,11 @@ const proveCommand: ModuleCli = {
       await bus.execute('rollout.rollouts.plan', {
         input: {
           ...scope,
-          name: `Dowód 4A — próg przekroczony (${stamp})`,
+          name: `Dowód 4A - próg przekroczony (${stamp})`,
           policyVersionId: version.id,
           stages: [
-            { name: 'Etap 1 — jeden robot', robotIds: [pierwszy.id], thresholds: progi },
-            { name: 'Etap 2 — reszta celi', robotIds: [drugi.id], thresholds: progi },
+            { name: 'Etap 1 - jeden robot', robotIds: [pierwszy.id], thresholds: progi },
+            { name: 'Etap 2 - reszta celi', robotIds: [drugi.id], thresholds: progi },
           ],
         },
         ctx,
@@ -432,7 +432,7 @@ const proveCommand: ModuleCli = {
       measured: { episodes: number; interventionRate: number; successRate: number }
     }
 
-    console.log(`   brama etapu 1: ${werdyktB.decision} — ${werdyktB.reason}`)
+    console.log(`   brama etapu 1: ${werdyktB.decision} - ${werdyktB.reason}`)
     console.log(
       `   zatrzymanych etapów następnych: ${werdyktB.haltedStages}; wycofanych robotów: ${werdyktB.rolledBackRobots}`,
     )
@@ -442,7 +442,7 @@ const proveCommand: ModuleCli = {
 
     const startB2 = await bus
       .execute('rollout.stages.start', { input: { ...scope, stageId: zly.stageIds[1] }, ctx })
-      .then(() => 'etap 2 URUCHOMIONY — BŁĄD DOWODU')
+      .then(() => 'etap 2 URUCHOMIONY - BŁĄD DOWODU')
       .catch((error: Error) => `etap 2 odrzucony: ${error.message}`)
     console.log(`   ${startB2}`)
 
@@ -452,11 +452,11 @@ const proveCommand: ModuleCli = {
       await bus.execute('rollout.rollouts.plan', {
         input: {
           ...scope,
-          name: `Dowód 4B — czyste liczby (${stamp})`,
+          name: `Dowód 4B - czyste liczby (${stamp})`,
           policyVersionId: version.id,
           stages: [
-            { name: 'Etap 1 — jeden robot', robotIds: [pierwszy.id], thresholds: progi },
-            { name: 'Etap 2 — reszta celi', robotIds: [drugi.id], thresholds: progi },
+            { name: 'Etap 1 - jeden robot', robotIds: [pierwszy.id], thresholds: progi },
+            { name: 'Etap 2 - reszta celi', robotIds: [drugi.id], thresholds: progi },
           ],
         },
         ctx,
@@ -477,7 +477,7 @@ const proveCommand: ModuleCli = {
     const werdyktA = (
       await bus.execute('rollout.gates.evaluate', { input: { ...scope, stageId: dobry.stageIds[0] }, ctx })
     ).result as { decision: string; reason: string }
-    console.log(`   brama etapu 1: ${werdyktA.decision} — ${werdyktA.reason}`)
+    console.log(`   brama etapu 1: ${werdyktA.decision} - ${werdyktA.reason}`)
 
     const startB = await bus
       .execute('rollout.stages.start', { input: { ...scope, stageId: dobry.stageIds[1] }, ctx })
@@ -492,13 +492,13 @@ const proveCommand: ModuleCli = {
         where g.rollout_id in (?, ?) order by g.evaluated_at`,
       [dobry.rolloutId, zly.rolloutId],
     )
-    console.log('\nC) dziennik bramy — kto zdecydował')
+    console.log('\nC) dziennik bramy - kto zdecydował')
     for (const wpis of wpisy) {
       console.log(`   ${wpis.decision.padEnd(9)} ${wpis.actor_user_id === null ? 'automat' : 'człowiek'}`)
     }
 
     console.log('\n   Wniosek: ta sama brama, te same progi, dwa różne zestawy liczb,')
-    console.log('   dwie różne decyzje — i obie bez podpisu człowieka.')
+    console.log('   dwie różne decyzje - i obie bez podpisu człowieka.')
   },
 }
 

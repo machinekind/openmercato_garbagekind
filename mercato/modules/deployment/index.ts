@@ -10,13 +10,13 @@ export const metadata: ModuleInfo = {
   license: 'MIT',
   /**
    * Trzy zależności, każda po co innego i każda jednostronna:
-   * `fleet` — stan robota i klasa ryzyka celi,
-   * `policy_registry` — co wolno wdrożyć,
-   * `edge` — czyim kluczem zweryfikować żądanie dzierżawy.
+   * `fleet` - stan robota i klasa ryzyka celi,
+   * `policy_registry` - co wolno wdrożyć,
+   * `edge` - czyim kluczem zweryfikować żądanie dzierżawy.
    *
    * `safety` dołączył przy fazie 5: dopuszczenie polityki do klasy celi jest
    * warunkiem wstępnym przypisania, nie jego skutkiem ubocznym. Wariant
-   * odwrotny — subskrybent odwołujący przypisanie po fakcie — zostawiałby
+   * odwrotny - subskrybent odwołujący przypisanie po fakcie - zostawiałby
    * okno, w którym robot pracuje niedopuszczoną polityką.
    *
    * Żaden z tych modułów nie wie o wdrożeniu i tak ma zostać. Rejestr floty

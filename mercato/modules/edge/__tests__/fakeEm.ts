@@ -4,7 +4,7 @@
  * Jedna rzecz jest tu odwzorowana celowo wiernie: **identyfikator powstaje
  * dopiero przy zrzucie**, tak jak w Postgresie z `gen_random_uuid()`. Gdyby
  * atrapa nadawała `id` od razu, testy przechodziłyby również dla kodu, który
- * czyta `id` przed `flush()` — a to jest dokładnie ten błąd, który wywrócił
+ * czyta `id` przed `flush()` - a to jest dokładnie ten błąd, który wywrócił
  * pierwszą wersję rejestracji robota.
  */
 

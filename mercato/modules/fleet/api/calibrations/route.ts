@@ -6,7 +6,7 @@ import { executeCommandRoute } from '../../lib/commandRoute'
  *
  * Data ważności jest w schemacie obowiązkowa i taka zostaje także tutaj.
  * Formularz bez tego pola dałby kalibrację, o której nikt nigdy nie
- * przypomni — a robot z przeterminowanym pomiarem wygląda w każdym
+ * przypomni - a robot z przeterminowanym pomiarem wygląda w każdym
  * zestawieniu identycznie jak sprawny.
  */
 export const metadata = {

@@ -8,7 +8,7 @@ import { contamination, triangulate, type Suspect } from '../../lib/triangulate'
  * Panel wzroku maszynowego.
  *
  * Ekran łączy trzech świadków jednej partii roboczej: kamerę nad pojemnikiem,
- * deklarację robota i wagę. Zwraca **podejrzanego**, a nie sam rozjazd — bo
+ * deklarację robota i wagę. Zwraca **podejrzanego**, a nie sam rozjazd - bo
  * rozjazd widać już w panelu przedsiębiorstwa, a nowa informacja zaczyna się
  * dopiero tam, gdzie da się powiedzieć, po której stronie leży błąd.
  *
@@ -59,7 +59,7 @@ export async function GET(req: Request): Promise<Response> {
   const tenantId = auth.tenantId as string
 
   /**
-   * Materiał oznaczony, ale nadal istniejący — właściwa liczba zgodności.
+   * Materiał oznaczony, ale nadal istniejący - właściwa liczba zgodności.
    * Liczba oznaczeń sama w sobie nie mówi nic: z punktu widzenia przepisu
    * nagranie, którego nikt nie skasował, wciąż tam jest.
    */
@@ -141,7 +141,7 @@ export async function GET(req: Request): Promise<Response> {
     const tryby = (row.counting_modes ?? []).filter(Boolean)
 
     // Mieszanka trybów zliczania nie sumuje się do jednej liczby, więc wizja
-    // nie występuje wtedy jako świadek — zamiast podawać liczbę bez znaczenia.
+    // nie występuje wtedy jako świadek - zamiast podawać liczbę bez znaczenia.
     const mieszane = tryby.length > 1
     const visionCount = windows > 0 && !mieszane ? Number(counts[klasa] ?? 0) : null
 

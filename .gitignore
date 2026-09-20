@@ -22,7 +22,7 @@ build/
 identity.json
 
 # --- narzędzia i system -------------------------------------------------------
-# Konfiguracja lokalna narzędzi jest z definicji związana z jedną maszyną —
+# Konfiguracja lokalna narzędzi jest z definicji związana z jedną maszyną -
 # śledzony launch.json niósł ścieżkę tymczasową wraz z nazwą użytkownika.
 .claude/
 .DS_Store

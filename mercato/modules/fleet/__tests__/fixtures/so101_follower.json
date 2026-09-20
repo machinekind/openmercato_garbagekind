@@ -10,7 +10,7 @@
       "https://huggingface.co/docs/lerobot/main/so101",
       "https://github.com/TheRobotStudio/SO-ARM100"
     ],
-    "note": "Wartości pochodzą wyłącznie z dokumentacji. Pola oznaczone `unknown` są nieznane z dokumentacji i MUSZĄ zostać uzupełnione pomiarem przed dopuszczeniem — nie wolno ich zgadywać."
+    "note": "Wartości pochodzą wyłącznie z dokumentacji. Pola oznaczone `unknown` są nieznane z dokumentacji i MUSZĄ zostać uzupełnione pomiarem przed dopuszczeniem - nie wolno ich zgadywać."
   },
   "kinematics": {
     "type": "serial_manipulator",
@@ -34,7 +34,7 @@
   "observation": {
     "jointPositions": true,
     "cameras": "site_specific",
-    "note": "Liczba i rozmieszczenie kamer nie należą do ramienia — są cechą stanowiska. Polityka trenowana z dwiema kamerami nie zadziała na stanowisku z jedną, więc kamery wchodzą do odcisku kontraktu przez konfigurację celi, nie przez ten plik."
+    "note": "Liczba i rozmieszczenie kamer nie należą do ramienia - są cechą stanowiska. Polityka trenowana z dwiema kamerami nie zadziała na stanowisku z jedną, więc kamery wchodzą do odcisku kontraktu przez konfigurację celi, nie przez ten plik."
   },
   "safetyLayer": {
     "mechanism": "max_relative_target",
@@ -42,7 +42,7 @@
     "defaultValue": 5,
     "unit": "degrees_per_step",
     "disableable": true,
-    "note": "Domyślne ograniczenie skoku zadanej pozycji względem bieżącej. Ustawienie na null wyłącza je całkowicie. Warstwa jest deterministyczna i nie zależy od polityki — dokładnie to, czego wymaga zatwierdzenie uzasadnienia bezpieczeństwa."
+    "note": "Domyślne ograniczenie skoku zadanej pozycji względem bieżącej. Ustawienie na null wyłącza je całkowicie. Warstwa jest deterministyczna i nie zależy od polityki - dokładnie to, czego wymaga zatwierdzenie uzasadnienia bezpieczeństwa."
   },
   "requiredCalibrations": ["joint_offsets"],
   "calibrationContract": {
@@ -50,11 +50,11 @@
       "producedBy": "lerobot-calibrate",
       "storedAt": "~/.cache/huggingface/lerobot/calibration/ oraz EEPROM serwomechanizmów",
       "perJointFields": {
-        "id": "int — identyfikator na magistrali",
-        "drive_mode": "int — 0 dla normalnego kierunku",
-        "homing_offset": "int — przesunięcie zera, pole 11-bitowe, zakres ±2047",
-        "range_min": "int 0..4095 — dolny kraniec w jednostkach enkodera",
-        "range_max": "int 0..4095 — górny kraniec w jednostkach enkodera"
+        "id": "int - identyfikator na magistrali",
+        "drive_mode": "int - 0 dla normalnego kierunku",
+        "homing_offset": "int - przesunięcie zera, pole 11-bitowe, zakres ±2047",
+        "range_min": "int 0..4095 - dolny kraniec w jednostkach enkodera",
+        "range_max": "int 0..4095 - górny kraniec w jednostkach enkodera"
       },
       "expiry": "event_based",
       "invalidatedBy": [
@@ -70,6 +70,6 @@
     "required": ["config.json", "model.safetensors"],
     "trainingProvenance": ["train_config.json"],
     "versionDependent": ["policy_preprocessor.json"],
-    "note": "Zestaw plików zależy od wersji LeRobot — nowsze wydania wymagają preprocesora, którego starsze repozytoria polityk nie zawierają. Rola artefaktu w naszym rejestrze ma odwzorowywać nazwę pliku, a nie odwrotnie."
+    "note": "Zestaw plików zależy od wersji LeRobot - nowsze wydania wymagają preprocesora, którego starsze repozytoria polityk nie zawierają. Rola artefaktu w naszym rejestrze ma odwzorowywać nazwę pliku, a nie odwrotnie."
   }
 }

@@ -1,4 +1,4 @@
-# Jedno źródło prawdy o formatowaniu — edytor ma nie być powodem szumu w diffie.
+# Jedno źródło prawdy o formatowaniu - edytor ma nie być powodem szumu w diffie.
 root = true
 
 [*]
@@ -14,7 +14,7 @@ max_line_length = 100
 indent_size = 4
 
 [*.{md,markdown}]
-# Dwie spacje na końcu wiersza to w Markdownie twardy podział — nie wolno ich uciąć.
+# Dwie spacje na końcu wiersza to w Markdownie twardy podział - nie wolno ich uciąć.
 trim_trailing_whitespace = false
 
 [*.{sh,bash}]
@@ -23,7 +23,7 @@ indent_size = 2
 [Makefile]
 indent_style = tab
 
-# Materiał archiwalny zachowuje postać źródła bajt w bajt — patrz NOTICE.
+# Materiał archiwalny zachowuje postać źródła bajt w bajt - patrz NOTICE.
 [physical-ai/evidence/**]
 charset = unset
 end_of_line = unset

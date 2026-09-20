@@ -5,13 +5,13 @@ import { createHash } from 'node:crypto'
  *
  * Powód powstania jest konkretny: do tej pory `spec_digest` był **deklarowany**
  * przez wgrywającego. Odcisk, który podaje ten sam, kto podaje specyfikację,
- * nie stwierdza niczego — porównuje deklarację sam ze sobą. Tutaj odcisk jest
+ * nie stwierdza niczego - porównuje deklarację sam ze sobą. Tutaj odcisk jest
  * **liczony** z kanonicznej postaci opisu, więc zmiana jednego przełożenia
  * w jednym stawie daje inny odcisk i unieważnia zgodność polityk.
  *
  * Drugi powód: SO-101 jest ramieniem dobrze udokumentowanym i ma być wzorcem.
  * Ramiona gorzej udokumentowane wypełni się tym samym formularzem, a miejsca,
- * których nikt nie zna, zostaną jawnie oznaczone jako `unknown` — zamiast być
+ * których nikt nie zna, zostaną jawnie oznaczone jako `unknown` - zamiast być
  * po cichu zgadnięte. To jest cała idea tego formatu: **niewiedza ma być
  * widoczna w danych, a nie schowana w wartości domyślnej.**
  */
@@ -100,7 +100,7 @@ export function validateEmbodimentSpec(input: unknown): SpecVerdict {
         return
       }
       if (nazwy.has(joint.name)) {
-        // Zduplikowana nazwa stawu znaczy, że ktoś kopiował wiersz i nie poprawił —
+        // Zduplikowana nazwa stawu znaczy, że ktoś kopiował wiersz i nie poprawił -
         // a przestrzeń akcji polityki jest indeksowana właśnie nazwami.
         problems.push({
           path: `actuators.joints[${index}].name`,
@@ -114,7 +114,7 @@ export function validateEmbodimentSpec(input: unknown): SpecVerdict {
     if (typeof dof === 'number' && dof !== joints.length) {
       /**
        * Rozjazd liczby stopni swobody z liczbą stawów jest najtańszą kontrolą
-       * zdrowego rozsądku, jaka istnieje — i najczęściej łapie opis skopiowany
+       * zdrowego rozsądku, jaka istnieje - i najczęściej łapie opis skopiowany
        * z innego ramienia i poprawiony tylko w połowie.
        */
       problems.push({
@@ -131,7 +131,7 @@ export function validateEmbodimentSpec(input: unknown): SpecVerdict {
 
   const unknownFields = collectUnknowns(spec)
   for (const path of unknownFields) {
-    problems.push({ path, reason: 'wartość nieznana z dokumentacji — wymaga pomiaru', severity: 'unknown_field' })
+    problems.push({ path, reason: 'wartość nieznana z dokumentacji - wymaga pomiaru', severity: 'unknown_field' })
   }
 
   const errors = problems.filter((p) => p.severity === 'error')
@@ -140,9 +140,9 @@ export function validateEmbodimentSpec(input: unknown): SpecVerdict {
     valid: errors.length === 0,
     /**
      * „Kompletny" znaczy: nadaje się do dopuszczenia polityki. Opis
-     * z jawnymi lukami wolno zaewidencjonować — bo inwentaryzacja ramienia,
+     * z jawnymi lukami wolno zaewidencjonować - bo inwentaryzacja ramienia,
      * którego nikt do końca nie zna, jest właśnie tym, od czego zaczyna się
-     * wdrożenie — ale nie wolno na jego podstawie dopuścić polityki do ruchu.
+     * wdrożenie - ale nie wolno na jego podstawie dopuścić polityki do ruchu.
      */
     complete: errors.length === 0 && unknownFields.length === 0,
     problems,

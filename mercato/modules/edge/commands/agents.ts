@@ -17,7 +17,7 @@ import { emitEdgeEvent } from '../events'
 /**
  * Komendy kanału brzegowego.
  *
- * Wszystkie zapisy idą szyną komend — tak samo jak w rejestrze floty i z tego
+ * Wszystkie zapisy idą szyną komend - tak samo jak w rejestrze floty i z tego
  * samego powodu: w produkcie, w którym zła operacja porusza tonową maszyną,
  * „kto to zrobił i co było przedtem" jest wymaganiem, nie udogodnieniem.
  *
@@ -78,7 +78,7 @@ const issueEnrollmentCommand: CommandHandler<
     em.persist(record)
     await em.flush()
 
-    // Parametry żywotności podróżują razem z biletem, w jawnej postaci —
+    // Parametry żywotności podróżują razem z biletem, w jawnej postaci -
     // agent musi znać swój termin, zanim po raz pierwszy się odezwie.
     const tokenId = (record as unknown as { id: string }).id
     await emitEdgeEvent('edge.enrollment.issued', {
@@ -165,7 +165,7 @@ const enrollAgentCommand: CommandHandler<
     } as never)
     if (existing) {
       // Świadomie odmowa, nie ciche zastąpienie. Drugi agent na tej samej
-      // maszynie to albo klon, albo nieudane wdrożenie — oba wymagają
+      // maszynie to albo klon, albo nieudane wdrożenie - oba wymagają
       // decyzji człowieka, a nie automatycznego rozstrzygnięcia na korzyść
       // tego, kto odezwał się później.
       throw new Error('Robot ma już wpisanego agenta. Odwołaj poprzedniego przed wpisaniem nowego.')
@@ -185,7 +185,7 @@ const enrollAgentCommand: CommandHandler<
     } as never)
     em.persist(agent)
     // Identyfikator nadaje Postgres, więc klucz i sesja nie mają jeszcze na co
-    // wskazać — stąd zrzut pośredni. Ta sama mechanika, co przy rejestracji robota.
+    // wskazać - stąd zrzut pośredni. Ta sama mechanika, co przy rejestracji robota.
     await em.flush()
     const agentId = (agent as unknown as { id: string }).id
 
@@ -386,15 +386,15 @@ const heartbeatCommand: CommandHandler<
     if (!session) throw new Error('Sesja nie istnieje.')
     if (session.endedAt) {
       // Sesja wyparta albo wygaszona nie „wraca do życia" uderzeniem serca.
-      // Agent ma się połączyć na nowo — i ten fakt ma zostać w historii.
-      throw new Error(`Sesja zamknięta (${session.endedReason ?? 'nieznany powód'}) — wymagane ponowne połączenie.`)
+      // Agent ma się połączyć na nowo - i ten fakt ma zostać w historii.
+      throw new Error(`Sesja zamknięta (${session.endedReason ?? 'nieznany powód'}) - wymagane ponowne połączenie.`)
     }
 
     if (input.sequence <= session.lastSequence) {
       // Numer niemalejący to powtórka albo drugi nadawca z tym samym kluczem.
       // Jedno i drugie jest incydentem bezpieczeństwa, nie zakłóceniem sieci.
       throw new Error(
-        `Numer kolejny ${input.sequence} nie jest większy od ostatniego (${session.lastSequence}) — powtórka lub klon.`,
+        `Numer kolejny ${input.sequence} nie jest większy od ostatniego (${session.lastSequence}) - powtórka lub klon.`,
       )
     }
 
@@ -429,7 +429,7 @@ const heartbeatCommand: CommandHandler<
       agentId: agent.id,
       robotId: agent.robotId,
       sequence: input.sequence,
-      // Termin wraca do agenta w odpowiedzi — dzięki temu robot zna swój
+      // Termin wraca do agenta w odpowiedzi - dzięki temu robot zna swój
       // własny czas do odcięcia i może sam zwolnić, gdy centrala zamilknie.
       nextDeadline: verdict.deadline as Date,
       state: verdict.state,
@@ -554,7 +554,7 @@ const revokeAgentCommand: CommandHandler<RevokeAgentInput, { agentId: string; re
     const keys = (await em.find(AgentKey, { agentId: input.agentId, revokedAt: null } as never)) as unknown as Array<{
       revokedAt?: Date | null
     }>
-    // Tu odwołanie jest natychmiastowe, bez okna — bo powodem odwołania agenta
+    // Tu odwołanie jest natychmiastowe, bez okna - bo powodem odwołania agenta
     // jest zwykle podejrzenie, że klucz jest w cudzych rękach.
     for (const key of keys) key.revokedAt = now
 
@@ -685,7 +685,7 @@ const sweepSessionsCommand: CommandHandler<
     /**
      * Zamiatanie **nie** zmienia stanu robota.
      *
-     * Kusi, żeby od razu wrzucić utraconą maszynę do kwarantanny — i to jest
+     * Kusi, żeby od razu wrzucić utraconą maszynę do kwarantanny - i to jest
      * dokładnie ta granica, której ten moduł nie przekracza. `edge` stwierdza
      * ciszę; wniosek, że cisza znaczy „nie wolno pracować", należy do dziedziny
      * i zapada w `fleet`. Zwracamy więc listę, a nie wykonujemy wyroku.
@@ -707,7 +707,7 @@ const sweepSessionsCommand: CommandHandler<
 /**
  * Wspólne uwierzytelnienie agenta: podpis musi zgadzać się z którymś z kluczy
  * ważnych **w tej chwili**. Sprawdzamy wszystkie, bo w oknie rotacji ważne są
- * dwa — a agent nie ma jak powiedzieć, którym właśnie podpisał.
+ * dwa - a agent nie ma jak powiedzieć, którym właśnie podpisał.
  */
 export async function authenticateAgent(
   em: EntityManager,
@@ -742,7 +742,7 @@ export async function authenticateAgent(
       }
     | null
   if (!agent) throw new Error('Agent nie istnieje.')
-  if (agent.status !== 'enrolled') throw new Error('Agent odwołany — tożsamość unieważniona.')
+  if (agent.status !== 'enrolled') throw new Error('Agent odwołany - tożsamość unieważniona.')
 
   const keys = (await em.find(AgentKey, { agentId } as never)) as unknown as Array<{
     id: string

@@ -52,7 +52,7 @@ describe('applyReservations', () => {
     expect(calls[0].input).toMatchObject({ sourceType: 'order', sourceId: 'ord-41', quantity: 7200 })
   })
 
-  it('zamówienie już wydane nie dostaje rezerwacji — nie ma czego blokować', async () => {
+  it('zamówienie już wydane nie dostaje rezerwacji - nie ma czego blokować', async () => {
     const { ctx, calls } = makeCtx({ fulfilled: [5041] })
     const result = await applyReservations(ctx, [order()])
     expect(calls).toHaveLength(0)

@@ -12,7 +12,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  * pytanie. Rejestr mówi, czy maszynie **wolno** pracować; ten ekran mówi,
  * czy centrala **w ogóle wie**, co się z nią dzieje. Odcisk klucza jest tu
  * na wierzchu, bo to jedyna rzecz, którą technik może porównać z tym, co
- * widzi na robocie — a wpis agenta bez takiego porównania jest zaufaniem
+ * widzi na robocie - a wpis agenta bez takiego porównania jest zaufaniem
  * udzielonym w ciemno.
  */
 
@@ -123,7 +123,7 @@ export default function AgentLinkBoard() {
               <div key={agent.agentId} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="font-mono text-xs">{agent.fingerprint?.slice(0, 16) ?? '—'}</span>
+                    <span className="font-mono text-xs">{agent.fingerprint?.slice(0, 16) ?? '-'}</span>
                     <span className="text-xs text-muted-foreground">{agent.agentKind}</span>
                     {agent.agentVersion ? (
                       <span className="text-xs text-muted-foreground">{agent.agentVersion}</span>
@@ -138,7 +138,7 @@ export default function AgentLinkBoard() {
                 <div className="w-40">
                   <div className={`text-sm ${STATE_TONE[agent.state]}`}>{t(...STATE_LABEL[agent.state])}</div>
                   <div className="text-xs text-muted-foreground">
-                    {/* Liczba sesji na dobę rozdziela stabilne łącze od migoczącego —
+                    {/* Liczba sesji na dobę rozdziela stabilne łącze od migoczącego -
                         w kolumnie „ostatnio widziany" wyglądają identycznie. */}
                     {agent.sessionsLastDay} sesji/dobę
                   </div>

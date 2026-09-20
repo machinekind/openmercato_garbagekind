@@ -19,14 +19,14 @@ describe('checkEmbodimentCompatibility', () => {
     expect(verdict.reason).toBeUndefined()
   })
 
-  it('odmawia, gdy rewizji w ogóle nie ma — i mówi dlaczego', () => {
+  it('odmawia, gdy rewizji w ogóle nie ma - i mówi dlaczego', () => {
     const verdict = checkEmbodimentCompatibility(null, {
       policyEmbodimentKey: 'ur10e-pick',
       declaredSpecDigest: 'cokolwiek',
     })
     expect(verdict.compatible).toBe(false)
     expect(verdict.code).toBe('no_embodiment')
-    // Powód musi być zdaniem, nie kodem — to on ląduje w komunikacie operatora.
+    // Powód musi być zdaniem, nie kodem - to on ląduje w komunikacie operatora.
     expect(verdict.reason).toContain('bez zadeklarowanej rewizji embodimentu')
   })
 

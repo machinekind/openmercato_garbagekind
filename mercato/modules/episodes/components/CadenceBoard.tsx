@@ -52,7 +52,7 @@ const KIND_LABEL: Record<string, [string, string]> = {
   estop: ['episodes.label.kind.estop', "zatrzymanie awaryjne"],
 }
 
-/** Kolor rośnie z ciężarem przerwania — to nie kategoria, to pilność. */
+/** Kolor rośnie z ciężarem przerwania - to nie kategoria, to pilność. */
 const KIND_TONE: Record<string, string> = {
   adjust: 'text-muted-foreground',
   manual_reset: 'text-muted-foreground',
@@ -170,7 +170,7 @@ export default function CadenceBoard() {
           footer={
             <span className="text-xs text-muted-foreground">
               {overall && overall.meanEpisodesBetweenInterventions === null
-                ? t('episodes.ui.noInterventionsYet', "nie było jeszcze ani jednej interwencji — to brak danych, nie autonomia")
+                ? t('episodes.ui.noInterventionsYet', "nie było jeszcze ani jednej interwencji - to brak danych, nie autonomia")
                 : t('episodes.ui.onlyNumberThatMatters', "jedyna liczba, która mówi, czy wdrożenie idzie do przodu")}
             </span>
           }
@@ -181,7 +181,7 @@ export default function CadenceBoard() {
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              najdłuższa dotąd: {overall?.longestStreak ?? '—'}
+              najdłuższa dotąd: {overall?.longestStreak ?? '-'}
             </span>
           }
         />
@@ -191,7 +191,7 @@ export default function CadenceBoard() {
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              {overall ? `${overall.interventions} interwencji` : '—'}
+              {overall ? `${overall.interventions} interwencji` : '-'}
             </span>
           }
         />
@@ -202,7 +202,7 @@ export default function CadenceBoard() {
           formatValue={(value) => `${value.toFixed(0)}%`}
           footer={
             <span className="text-xs text-muted-foreground">
-              epizodów bez udziału człowieka; skuteczność {overall ? `${(overall.successRate * 100).toFixed(0)}%` : '—'}
+              epizodów bez udziału człowieka; skuteczność {overall ? `${(overall.successRate * 100).toFixed(0)}%` : '-'}
             </span>
           }
         />
@@ -216,7 +216,7 @@ export default function CadenceBoard() {
       <CadenceTable
         title={t('episodes.ui.perPolicy', "Per polityka")}
         data={data?.byPolicy ?? {}}
-        note={t('episodes.note.perPolicy', 'ta sama polityka na różnym sprzęcie bywa różną polityką — porównuj wersje, nie nazwy')}
+        note={t('episodes.note.perPolicy', 'ta sama polityka na różnym sprzęcie bywa różną polityką - porównuj wersje, nie nazwy')}
       />
       <CadenceTable
         title={t('episodes.ui.perCell', "Per cela")}

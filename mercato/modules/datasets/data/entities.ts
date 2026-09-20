@@ -1,14 +1,14 @@
 import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy'
 
 /**
- * Zbiory danych — zamknięcie pętli.
+ * Zbiory danych - zamknięcie pętli.
  *
  * Zdanie, które ten moduł ma uczynić prawdziwym: **dla dowolnej wersji polityki
- * da się wskazać zbiór, a dla zbioru — listę epizodów źródłowych, i odwrotnie.**
+ * da się wskazać zbiór, a dla zbioru - listę epizodów źródłowych, i odwrotnie.**
  *
  * Bez tego regres jakości po treningu jest nie do zdiagnozowania: polityka v7
- * zachowuje się gorzej od v6 i zostają dwie hipotezy — zmiana w danych albo
- * zmiana w treningu — których nie da się rozdzielić, jeśli nie wiadomo, czym
+ * zachowuje się gorzej od v6 i zostają dwie hipotezy - zmiana w danych albo
+ * zmiana w treningu - których nie da się rozdzielić, jeśli nie wiadomo, czym
  * różniły się zbiory.
  *
  * Trzy rozstrzygnięcia:
@@ -21,7 +21,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  *
  * 2. **Skład zbioru to odniesienia do epizodów, nie kopia danych.** Tabela
  *    trzyma identyfikatory i role. Bajty przebiegów leżą w magazynie obiektów
- *    i nie przechodzą przez MikroORM — warunek trzeci raportu.
+ *    i nie przechodzą przez MikroORM - warunek trzeci raportu.
  *
  * 3. **Przebieg treningowy jest osobnym obiektem**, a nie polem na wersji
  *    polityki. Z jednego zbioru wychodzi zwykle kilka polityk (różne ziarna,
@@ -83,7 +83,7 @@ export class Dataset {
  *
  * Unikat na `(tenant, dataset, content_digest)` sprawia, że dwukrotne
  * zbudowanie tego samego zestawu epizodów odbija się od **bazy**, a nie od
- * naszej pamięci — ta sama zasada, co przy skrócie wag i przy identyfikatorze
+ * naszej pamięci - ta sama zasada, co przy skrócie wag i przy identyfikatorze
  * epizodu z agenta.
  */
 @Entity({ tableName: 'datasets_versions' })
@@ -136,7 +136,7 @@ export class DatasetVersion {
   @Property({ type: 'json', nullable: true })
   warnings?: Array<{ code: string; message: string }> | null
 
-  /** Kryteria, po których zbiór został zbudowany — żeby dało się go odtworzyć. */
+  /** Kryteria, po których zbiór został zbudowany - żeby dało się go odtworzyć. */
   @Property({ type: 'json', nullable: true })
   criteria?: Record<string, unknown> | null
 
@@ -159,7 +159,7 @@ export class DatasetVersion {
  *
  * Wiersz jest odniesieniem, nie kopią. Rola jest tu istotniejsza niż
  * identyfikator: epizod zakończony sukcesem, w którym człowiek poprawił
- * chwyt, wchodzi jako `correction`, a nie `demo` — wrzucenie go do `demo`
+ * chwyt, wchodzi jako `correction`, a nie `demo` - wrzucenie go do `demo`
  * uczyłoby model, że tak właśnie ma wyglądać poprawny przebieg.
  */
 @Entity({ tableName: 'datasets_members' })
@@ -191,7 +191,7 @@ export class DatasetMember {
 }
 
 /**
- * Przebieg treningowy — ogniwo łączące zbiór z polityką.
+ * Przebieg treningowy - ogniwo łączące zbiór z polityką.
  *
  * Osobna tabela, nie pole na wersji polityki. Z jednego zbioru wychodzi
  * zwykle kilka polityk (różne ziarna, różne hiperparametry), a jedna polityka
@@ -200,7 +200,7 @@ export class DatasetMember {
  *
  * `policy_version_id` jest nullowalne: przebieg zarejestrowany przed
  * zakończeniem treningu jeszcze nie ma wyniku, a przebieg nieudany nie będzie
- * go miał nigdy — i też jest informacją o zbiorze.
+ * go miał nigdy - i też jest informacją o zbiorze.
  */
 @Entity({ tableName: 'datasets_training_runs' })
 @Index({ name: 'datasets_runs_scope_idx', properties: ['organizationId', 'tenantId'] })
@@ -223,14 +223,14 @@ export class TrainingRun {
   @Property({ name: 'policy_version_id', type: 'uuid', nullable: true })
   policyVersionId?: string | null
 
-  /** Identyfikator przebiegu w systemie treningowym — klucz idempotencji. */
+  /** Identyfikator przebiegu w systemie treningowym - klucz idempotencji. */
   @Property({ name: 'run_ref', type: 'text' })
   runRef!: string
 
   @Property({ type: 'text', nullable: true })
   framework?: string | null
 
-  /** Hiperparametry i ziarno — bez nich „ten sam zbiór" nie tłumaczy różnicy wyników. */
+  /** Hiperparametry i ziarno - bez nich „ten sam zbiór" nie tłumaczy różnicy wyników. */
   @Property({ type: 'json', nullable: true })
   hyperparameters?: Record<string, unknown> | null
 

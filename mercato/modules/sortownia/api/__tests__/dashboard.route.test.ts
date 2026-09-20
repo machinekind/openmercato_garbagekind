@@ -21,7 +21,7 @@ jest.mock('@open-mercato/shared/lib/auth/organizationScope', () => ({
 }))
 
 jest.mock('@open-mercato/shared/lib/encryption/find', () => ({
-  // Nazwy kontrahentów są szyfrowane w spoczynku — trasa MUSI czytać je
+  // Nazwy kontrahentów są szyfrowane w spoczynku - trasa MUSI czytać je
   // przez warstwę deszyfrującą, więc mock odwzorowuje właśnie ją.
   findWithDecryption: jest.fn(async () => [
     { id: 'ent-5', displayName: 'RecycleHub Sp. z o.o.' },
@@ -138,12 +138,12 @@ async function readBody(response: Response) {
   return JSON.parse(await response.text())
 }
 
-describe('GET /api/sortownia/dashboard — dostęp', () => {
+describe('GET /api/sortownia/dashboard - dostęp', () => {
   it('wymaga uprawnienia podglądu pulpitu', () => {
     expect(metadata.GET).toMatchObject({ requireAuth: true, requireFeatures: ['sortownia.view'] })
   })
 
-  it('czyta sesję z żądania, a nie tylko z ciastek — po pulpit sięgają też skrypty z tokenem w nagłówku', async () => {
+  it('czyta sesję z żądania, a nie tylko z ciastek - po pulpit sięgają też skrypty z tokenem w nagłówku', async () => {
     const { getAuthFromRequest } = jest.requireMock('@open-mercato/shared/lib/auth/server')
     const request = new Request('http://localhost/api/sortownia/dashboard', {
       headers: { authorization: 'Bearer token-z-integracji' },
@@ -158,7 +158,7 @@ describe('GET /api/sortownia/dashboard — dostęp', () => {
     expect(response.status).toBe(401)
   })
 
-  it('bez wybranej organizacji odpowiada 400, a nie 401 — 401 wysłałby klienta w pętlę odświeżania sesji', async () => {
+  it('bez wybranej organizacji odpowiada 400, a nie 401 - 401 wysłałby klienta w pętlę odświeżania sesji', async () => {
     organizationResult = null
     const response = await GET(makeRequest())
     expect(response.status).toBe(400)
@@ -166,7 +166,7 @@ describe('GET /api/sortownia/dashboard — dostęp', () => {
   })
 })
 
-describe('GET /api/sortownia/dashboard — dane', () => {
+describe('GET /api/sortownia/dashboard - dane', () => {
   it('liczy zapełnienie lokalizacji względem pojemności', async () => {
     const body = await readBody(await GET(makeRequest()))
     const yard = body.locations.find((row: { code: string }) => row.code === 'PRZYJ')
@@ -201,7 +201,7 @@ describe('GET /api/sortownia/dashboard — dane', () => {
     expect(row.name).toBe('20 01 01')
   })
 
-  it('niesie numery z systemu legacy — para SORT oba naraz', async () => {
+  it('niesie numery z systemu legacy - para SORT oba naraz', async () => {
     const body = await readBody(await GET(makeRequest()))
     expect(body.movements[0].legacyMoveNo).toBe('100240 + 100241')
     expect(body.movements[1].legacyMoveNo).toBe(100242)

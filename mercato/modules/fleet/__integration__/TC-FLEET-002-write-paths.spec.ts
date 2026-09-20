@@ -6,7 +6,7 @@ export const integrationMeta = {
 }
 
 /**
- * Ścieżki zapisu — bramki muszą przeżyć drogę przez HTTP.
+ * Ścieżki zapisu - bramki muszą przeżyć drogę przez HTTP.
  *
  * Reguły cyklu życia i kalibracji mają testy jednostkowe na czystych
  * funkcjach, a komendy mają testy wiązania na atrapie bazy. Ten test pyta
@@ -49,7 +49,7 @@ test.describe('TC-FLEET-002 ścieżki zapisu', () => {
       data: {
         robotId: zablokowany!.id,
         toState: 'ready',
-        reason: 'test integracyjny — dopuszczenie mimo nieważnej kalibracji',
+        reason: 'test integracyjny - dopuszczenie mimo nieważnej kalibracji',
         actor: 'human',
         approvedBy: '00000000-0000-4000-8000-000000000001',
       },
@@ -92,7 +92,7 @@ test.describe('TC-FLEET-002 ścieżki zapisu', () => {
         robotId: dane.robots[0].id,
         kind: 'camera_extrinsics',
         measuredAt: new Date().toISOString(),
-        // brak `validUntil` — pole obowiązkowe, bo kalibracja bez terminu
+        // brak `validUntil` - pole obowiązkowe, bo kalibracja bez terminu
         // to kalibracja, o której nikt nigdy nie przypomni
       },
     })
@@ -122,7 +122,7 @@ test.describe('TC-FLEET-002 ścieżki zapisu', () => {
       transitions: Array<{ toState: string; reason: string }>
     }
     expect(detal.robot.id).toBe(dane.robots[0].id)
-    // Każdy robot ma co najmniej wpis rejestracyjny — księga jest dopisywana
+    // Każdy robot ma co najmniej wpis rejestracyjny - księga jest dopisywana
     // od pierwszej chwili istnienia rekordu.
     expect(detal.transitions.length).toBeGreaterThan(0)
     expect(detal.transitions.every((t) => typeof t.reason === 'string' && t.reason.length > 0)).toBeTruthy()

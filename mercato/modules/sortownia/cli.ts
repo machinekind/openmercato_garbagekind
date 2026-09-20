@@ -63,12 +63,12 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const organizationId = typeof args.org === 'string' ? args.org : String(args.organizationId ?? '')
   if (tenantId && organizationId) return { tenantId, organizationId }
 
-  // Środowisko demo ma jeden tenant i jedną organizację — nie każmy operatora
+  // Środowisko demo ma jeden tenant i jedną organizację - nie każmy operatora
   // przepisywać UUID-ów z bazy.
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -122,7 +122,7 @@ const importCommand: ModuleCli = {
 
     console.log(`Sortownia: import do organizacji ${scope.organizationId} (tenant ${scope.tenantId})`)
 
-    // 1. Topologia — kanał XML-RPC.
+    // 1. Topologia - kanał XML-RPC.
     const credentials = resolveCredentials(undefined)
     const client = new LegacyRpcClient(credentials.endpoint)
     const code = await client.login(credentials.user, credentials.password, credentials.company)
@@ -137,14 +137,14 @@ const importCommand: ModuleCli = {
     const topology = await ensureTopology(em, scope, detailed)
     console.log(`  topologia: ${detailed.length} lokalizacji (nowych ${topology.created}, zaktualizowanych ${topology.updated})`)
 
-    // 2. Frakcje — kanał plikowy.
+    // 2. Frakcje - kanał plikowy.
     const fractionsPath = fractionsFile()
     if (!(await fileExists(fractionsPath))) throw new Error(`Brak katalogu frakcji: ${fractionsPath}`)
     const fractions = await readFractions(fractionsPath)
     const fractionResult = await ensureFractions(em, scope, fractions)
     console.log(`  frakcje: ${fractions.length} pozycji (nowych ${fractionResult.created})`)
 
-    // 3. Kontrahenci — do modułu klientów, komendą CRM.
+    // 3. Kontrahenci - do modułu klientów, komendą CRM.
     const commandBus = container.resolve('commandBus') as CommandBus
     const commandContext = buildCommandContext(container, scope)
     const customersPath = customersFile()
@@ -162,7 +162,7 @@ const importCommand: ModuleCli = {
       console.log(`  kontrahenci: pominięto (brak ${customersPath})`)
     }
 
-    // 4. Zamówienia sprzedaży i faktury — komendami modułu sprzedaży.
+    // 4. Zamówienia sprzedaży i faktury - komendami modułu sprzedaży.
     const ordersPath = ordersFile()
     let salesOrderIndex = new Map<number, string>()
     if (await fileExists(ordersPath) && customerIndex.size > 0) {
@@ -189,7 +189,7 @@ const importCommand: ModuleCli = {
       console.log(`  zamówienia: pominięto (brak pliku albo kontrahentów)`)
     }
 
-    // 5. Karty przekazania odpadu — wysyłki na zamówieniach, które już wyjechały.
+    // 5. Karty przekazania odpadu - wysyłki na zamówieniach, które już wyjechały.
     const movementsPath = movementsFile()
     if (!(await fileExists(movementsPath))) throw new Error(`Brak księgi ruchów: ${movementsPath}`)
     const fulfilledOrders = new Set<number>()
@@ -225,7 +225,7 @@ const importCommand: ModuleCli = {
       for (const outcome of failedCards.slice(0, 5)) console.log(`    ! KPO/${outcome.orderno}: ${outcome.error}`)
     }
 
-    // 6. Wpłaty odbiorców — rozliczane na fakturach.
+    // 6. Wpłaty odbiorców - rozliczane na fakturach.
     const paymentsPath = paymentsFile()
     if ((await fileExists(paymentsPath)) && salesOrderIndex.size > 0) {
       const rows = await readPayments(paymentsPath)
@@ -238,18 +238,18 @@ const importCommand: ModuleCli = {
       const mismatches = result.outcomes.filter((o) => o.action === 'mismatch')
       console.log(`  wpłaty: ${rows.length} pozycji (nowych ${created}, istniejących ${result.outcomes.length - created - failedPayments.length - mismatches.length})`)
       for (const outcome of mismatches) {
-        console.log(`    ⚠ wpłata ${outcome.transno}: ${outcome.error} — dane u źródła zostały zmienione po imporcie`)
+        console.log(`    ⚠ wpłata ${outcome.transno}: ${outcome.error} - dane u źródła zostały zmienione po imporcie`)
       }
       for (const outcome of failedPayments.slice(0, 5)) console.log(`    ! wpłata ${outcome.transno}: ${outcome.error}`)
     } else {
       console.log('  wpłaty: pominięto (brak pliku albo zamówień)')
     }
 
-    // 7. Partie odpadu — zakładane przed księgą, bo przyjęcie na nie wskazuje.
-    // 8. Księga ruchów — kanał plikowy, zapis przez komendy WMS.
+    // 7. Partie odpadu - zakładane przed księgą, bo przyjęcie na nie wskazuje.
+    // 8. Księga ruchów - kanał plikowy, zapis przez komendy WMS.
 
     const { warehouse, byCode } = await loadLocationIndex(em, scope)
-    if (!warehouse) throw new Error('Magazyn nie powstał — przerwano.')
+    if (!warehouse) throw new Error('Magazyn nie powstał - przerwano.')
 
     const operator = await em.findOne(User, { tenantId: scope.tenantId }, { orderBy: { createdAt: 'asc' } })
     if (!operator) throw new Error('Brak użytkownika w tenancie.')
@@ -329,7 +329,7 @@ const importCommand: ModuleCli = {
     //
     // Dopiero po księdze ruchów: rezerwacja blokuje masę, która musi już
     // leżeć w magazynie. Puszczona wcześniej nie miałaby czego zablokować
-    // i każde otwarte zamówienie zgłaszałaby jako brak pokrycia — przy
+    // i każde otwarte zamówienie zgłaszałaby jako brak pokrycia - przy
     // imporcie na pustą bazę odmowa WMS-u znaczyłaby wtedy tylko tyle, że
     // pytamy o stan, którego sami jeszcze nie zapisaliśmy.
     if (salesOrderIndex.size > 0 && (await fileExists(ordersPath))) {
@@ -354,12 +354,12 @@ const importCommand: ModuleCli = {
       const failedRes = result.outcomes.filter((o) => o.action === 'failed')
       console.log(`  rezerwacje: ${orderRows.length - fulfilled.size} zamówień otwartych (nowych rezerwacji ${created})`)
       for (const outcome of short) {
-        console.log(`    · zamówienie ${outcome.orderno}: brak pokrycia w magazynie — WMS odmówił rezerwacji`)
+        console.log(`    · zamówienie ${outcome.orderno}: brak pokrycia w magazynie - WMS odmówił rezerwacji`)
       }
       for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
     }
 
-    // 10. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
+    // 10. CRM - etapy firm i szanse sprzedaży mają się zgadzać.
     await runCrmSync({ em, commandBus, commandContext, scope })
 
     const balances = await em.find(InventoryBalance, {

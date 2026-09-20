@@ -13,7 +13,7 @@ import {
  *
  * Sprawdzamy to, czego czyste funkcje nie obejmują: czy komendy naprawdę
  * **odmawiają**. Moduł ostrzegający i moduł odmawiający wyglądają w dokumentacji
- * tak samo — różnią się dopiero w dniu kontroli.
+ * tak samo - różnią się dopiero w dniu kontroli.
  */
 
 type Row = Record<string, unknown>
@@ -42,7 +42,7 @@ function makeCtx(options: { camera?: Row | null; detector?: Row | null; window?:
     flush: jest.fn(async () => {
       for (const row of persisted) if (!row.id) row.id = 'nowy-1'
     }),
-    // Komenda oznaczania liczy zaległości zapytaniem surowym — atrapa zwraca
+    // Komenda oznaczania liczy zaległości zapytaniem surowym - atrapa zwraca
     // zero, bo te testy sprawdzają odmowy, a nie liczbę zaległych nagrań.
     getConnection: () => ({ execute: jest.fn(async () => [{ count: '0', oldest: null }]) }),
   }
@@ -120,7 +120,7 @@ describe('vision.detectors.register', () => {
   })
 
   it('odmawia progu ufności równego zeru', async () => {
-    // Próg zero daje zliczenia hipotez modelu, nie obiektów — a taka liczba
+    // Próg zero daje zliczenia hipotez modelu, nie obiektów - a taka liczba
     // wchodzi potem do triangulacji jako pełnoprawny świadek.
     const { ctx } = makeCtx()
     await expect(
@@ -209,7 +209,7 @@ describe('vision.clips.attach', () => {
       },
       ctx,
     )
-    // 14 dni z ustawienia kamery — wołający nie ma jak tego wydłużyć.
+    // 14 dni z ustawienia kamery - wołający nie ma jak tego wydłużyć.
     expect(Math.round((wynik.deleteAfter.getTime() - nagranie.getTime()) / 86_400_000)).toBe(14)
   })
 
@@ -256,7 +256,7 @@ describe('vision.clips.purge', () => {
   })
 
   it('zwraca adresy do skasowania, ale plików nie kasuje', async () => {
-    // ERP nie ma dostępu do magazynu obiektów i nie powinien mieć — inaczej
+    // ERP nie ma dostępu do magazynu obiektów i nie powinien mieć - inaczej
     // stałby się systemem zdolnym nieodwracalnie usunąć materiał dowodowy.
     const { ctx } = makeCtx({ clips: [{ id: 'a', uri: 's3://a', deleteAfter: wczoraj, markedForDeletionAt: null }] })
     const wynik = await purgeClipsCommand.execute({ tenantId: TENANT }, ctx)
@@ -283,7 +283,7 @@ describe('vision.clips.confirm_deletion', () => {
   })
 
   it('ODMAWIA potwierdzenia materiału, którego nikt nie oznaczył', async () => {
-    // Znaczy to, że skasowano go poza procesem — może przed terminem,
+    // Znaczy to, że skasowano go poza procesem - może przed terminem,
     // może mimo wstrzymania dowodowego. Zapis zamykałby sprawę, która
     // tylko wygląda na zamkniętą.
     const { ctx } = makeCtx({

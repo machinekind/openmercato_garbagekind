@@ -15,7 +15,7 @@ export const metadata: ModuleInfo = {
    * Świadomie NIE ma tu `deployment` ani `rollout`. Kierunek jest odwrotny:
    * to kanał stanu pożądanego pyta warstwę bezpieczeństwa o zgodę przed
    * przypisaniem. Gdyby `safety` znał wdrożenia, zaczęłoby go kusić
-   * zatrzymywanie ich samodzielnie — a wtedy dwie warstwy zatrzymywałyby
+   * zatrzymywanie ich samodzielnie - a wtedy dwie warstwy zatrzymywałyby
    * maszynę dwoma różnymi mechanizmami.
    */
   requires: ['fleet', 'policy_registry'],

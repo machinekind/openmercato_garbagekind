@@ -44,9 +44,9 @@ describe('KOLOR NIGDY SAM', () => {
     }
   })
 
-  it('FORMA KRÓTKA JEST NAPRAWDĘ KRÓTKA — inaczej kafelek i tak ją utnie', () => {
+  it('FORMA KRÓTKA JEST NAPRAWDĘ KRÓTKA - inaczej kafelek i tak ją utnie', () => {
     // Automatyczne cięcie daje „Agent nigdy się …", z czego nie wynika nic.
-    // Człowiek piszący etykietę potrafi skrócić ją tak, żeby coś znaczyła —
+    // Człowiek piszący etykietę potrafi skrócić ją tak, żeby coś znaczyła -
     // ale tylko jeśli coś go do tego zmusi.
     for (const d of wszystkieDeskryptory()) {
       expect(d.short.length).toBeLessThanOrEqual(SHORT_LABEL_MAX)
@@ -60,7 +60,7 @@ describe('KOLOR NIGDY SAM', () => {
     }
   })
 
-  it('STAN NORMALNY NIE MA GLIFU — nie zużywa uwagi na „w porządku"', () => {
+  it('STAN NORMALNY NIE MA GLIFU - nie zużywa uwagi na „w porządku"', () => {
     // Ekran, na którym każda maszyna nosi znaczek „w porządku", zużywa całą
     // uwagę na potwierdzanie, że nic się nie dzieje.
     for (const d of wszystkieDeskryptory()) {
@@ -97,7 +97,7 @@ describe('praca to norma', () => {
   })
 
   it('brak wymagań kalibracyjnych to norma, nie niewiedza', () => {
-    // Rewizja embodimentu nie deklaruje pomiarów — to kompletna informacja.
+    // Rewizja embodimentu nie deklaruje pomiarów - to kompletna informacja.
     expect(calibrationStatus('unknown').severity).toBe('normal')
   })
 })

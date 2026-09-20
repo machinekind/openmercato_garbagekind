@@ -61,7 +61,7 @@ został zastąpiony mockiem ani wartością katalogową.
 Inwentaryzacja materiału `mercatoXD` względem naszych bram znajduje się w
 `physical-ai/MATERIAL-MERCATOXD.md`. Kod bridge'a przeszedł testy, ale
 repo źródłowe nie zawiera surowych logów, datasetu, wag ani zakończonego
-autonomicznego chwytu, więc nie zmienia statusu fizycznych bramek P0–P3.
+autonomicznego chwytu, więc nie zmienia statusu fizycznych bramek P0-P3.
 
 ## Warunek następnego odbioru
 
@@ -71,5 +71,5 @@ edge/DGX, zamknąć raport oraz przekazać jego URI i SHA-256. Dopiero powstała
 tego raportu kolejna rewizja `so101_follower` może być oznaczona jako
 `verifiedAgainstHardware: true`.
 
-Pozostałe próby P0–P3 i format paczki dowodowej są prowadzone w
+Pozostałe próby P0-P3 i format paczki dowodowej są prowadzone w
 `physical-ai/PHYSICAL-VALIDATION-BACKLOG.md`.

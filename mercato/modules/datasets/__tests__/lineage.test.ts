@@ -58,7 +58,7 @@ describe('contentDigest', () => {
   ]
 
   it('nie zależy od kolejności dodania epizodów', () => {
-    // Kolejność nie jest własnością zbioru — kolejność losowania w treningu
+    // Kolejność nie jest własnością zbioru - kolejność losowania w treningu
     // i tak jest inna.
     expect(contentDigest(a)).toBe(contentDigest([...a].reverse()))
   })
@@ -215,7 +215,7 @@ describe('diff', () => {
 
   it('wskazuje epizody, którym zmieniła się rola', () => {
     // Ten sam epizod raz jako demonstracja, raz jako część ewaluacyjna to
-    // realna różnica między dwoma zbiorami — i najczęstsza przyczyna wyniku,
+    // realna różnica między dwoma zbiorami - i najczęstsza przyczyna wyniku,
     // którego nie da się powtórzyć.
     const result = diff(before, [
       { episodeId: 'e1', role: 'holdout' },

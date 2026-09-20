@@ -8,7 +8,7 @@ import { SEVERITY_PRIORITY, type Severity } from './tokens'
  * jedynym nośnikiem znaczenia**. Każdy stan odbiegający od normy ma
  * dodatkowo kształt i tekst. Operator z zaburzeniem rozróżniania barw,
  * ekran w słońcu i wydruk czarno-biały to trzy różne sytuacje, w których
- * sam kolor nie niesie niczego — a każda z nich zdarza się na hali częściej
+ * sam kolor nie niesie niczego - a każda z nich zdarza się na hali częściej
  * niż awaria, której ten ekran ma dotyczyć.
  *
  * Druga reguła, równie ważna: **stan normalny nie dostaje glifu**. Ekran,
@@ -16,18 +16,18 @@ import { SEVERITY_PRIORITY, type Severity } from './tokens'
  * potwierdzanie, że nic się nie dzieje.
  */
 
-/** Kształty — nośnik znaczenia niezależny od barwy. */
+/** Kształty - nośnik znaczenia niezależny od barwy. */
 export type Glyph = 'none' | 'triangle' | 'cross' | 'square' | 'diamond' | 'bars' | 'ring'
 
 export type StatusDescriptor = {
-  /** Klucz stabilny — po nim składa się legendę i testy, nie po etykiecie. */
+  /** Klucz stabilny - po nim składa się legendę i testy, nie po etykiecie. */
   code: string
   severity: Severity
   glyph: Glyph
   /** Pełna etykieta: legenda, panel szczegółów, podpowiedź. */
   label: string
   /**
-   * Forma krótka dla miejsc ciasnych — kafelka maszyny na rzucie.
+   * Forma krótka dla miejsc ciasnych - kafelka maszyny na rzucie.
    *
    * Osobne pole, a nie skracanie w locie: automatyczne cięcie daje
    * „Agent nigdy się …", z czego nie wynika nic. Człowiek, który pisze
@@ -38,7 +38,7 @@ export type StatusDescriptor = {
   detail?: string
 }
 
-/** Górna granica formy krótkiej — tyle mieści kafelek przy dwóch kolumnach. */
+/** Górna granica formy krótkiej - tyle mieści kafelek przy dwóch kolumnach. */
 export const SHORT_LABEL_MAX = 18
 
 /* ------------------------------------------------------------------ */
@@ -80,7 +80,7 @@ const LIFECYCLE: Record<RobotLifecycle, StatusDescriptor> = {
     glyph: 'cross',
     label: 'Kwarantanna',
     short: 'Kwarantanna',
-    detail: 'Niedopuszczony — bywa mechanicznie sprawny',
+    detail: 'Niedopuszczony - bywa mechanicznie sprawny',
   },
   registered: {
     code: 'lifecycle.registered',
@@ -115,7 +115,7 @@ export function lifecycleStatus(state: string): StatusDescriptor {
       label: 'Stan nierozpoznany',
       short: 'Nierozpoznany',
       // Stan spoza słownika znaczy, że rejestr wie coś, czego ten ekran nie
-      // umie pokazać — i lepiej, żeby to było widać, niż żeby zniknęło.
+      // umie pokazać - i lepiej, żeby to było widać, niż żeby zniknęło.
       detail: `Rejestr podaje „${state}", czego ten ekran nie zna`,
     }
   )
@@ -185,7 +185,7 @@ export function linkStatus(state: LinkState, silenceSeconds?: number | null): St
       }
     case 'absent':
       /*
-       * Brak wpisanego agenta to **niewiedza**, nie awaria — i dlatego ma
+       * Brak wpisanego agenta to **niewiedza**, nie awaria - i dlatego ma
        * własną wagę. Poprzednia wersja tego ekranu rysowała go identycznie
        * jak żywą łączność, czyli brak wiedzy udawał dobrą wiadomość.
        */
@@ -216,7 +216,7 @@ export function linkStatus(state: LinkState, silenceSeconds?: number | null): St
  *
  * Kafelek maszyny ma miejsce na jeden glif, a maszyna bywa jednocześnie
  * w kwarantannie, bez kalibracji i bez łączności. Pokazujemy najcięższy,
- * a resztę wypisujemy w szczegółach — zamiast nakładać trzy znaczki
+ * a resztę wypisujemy w szczegółach - zamiast nakładać trzy znaczki
  * na obiekt wielkości paznokcia.
  */
 export function worstOf(descriptors: StatusDescriptor[]): StatusDescriptor {
@@ -229,7 +229,7 @@ export function worstOf(descriptors: StatusDescriptor[]): StatusDescriptor {
   )
 }
 
-/** Czy stan w ogóle ma być pokazany — norma nie zużywa uwagi. */
+/** Czy stan w ogóle ma być pokazany - norma nie zużywa uwagi. */
 export function isNotable(descriptor: StatusDescriptor): boolean {
   return descriptor.severity !== 'normal'
 }
@@ -237,7 +237,7 @@ export function isNotable(descriptor: StatusDescriptor): boolean {
 /**
  * Pełny słownik stanów, po którym składa się legendę.
  *
- * Legenda generowana, nie pisana ręcznie — bo ręczna już raz w tym projekcie
+ * Legenda generowana, nie pisana ręcznie - bo ręczna już raz w tym projekcie
  * rozjechała się z rysunkiem i trzeba ją było poprawiać dwa razy.
  */
 export function statusVocabulary(): StatusDescriptor[] {

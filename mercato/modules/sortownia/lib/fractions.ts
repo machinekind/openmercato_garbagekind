@@ -8,7 +8,7 @@ import type { LegacyFractionRow } from './legacyFiles'
  * Frakcje odpadów jako pozycje katalogu.
  *
  * W legacy frakcja to wiersz w `stockmaster` i nic więcej. Tutaj staje się
- * produktem z wariantem, którego SKU jest kodem odpadu — dzięki temu WMS może
+ * produktem z wariantem, którego SKU jest kodem odpadu - dzięki temu WMS może
  * prowadzić dla niej stany, a moduły sprzedaży wystawić wydanie do odbiorcy.
  * Profil zapasu dokłada próg minimalny, czyli wiedzę, której stary system
  * nie miał gdzie zapisać.
@@ -100,7 +100,7 @@ export async function ensureFractions(
         tenantId: scope.tenantId,
         catalogProductId: (product as unknown as { id: string }).id,
         catalogVariantId: variant.id,
-        // Magazyn prowadzimy w kilogramach — tak liczy waga i tak liczy legacy.
+        // Magazyn prowadzimy w kilogramach - tak liczy waga i tak liczy legacy.
         // Megagramy są jednostką raportową, nie magazynową.
         defaultUom: 'kg',
         // Odpad nie ma partii ani dat ważności, więc najprostsza strategia wystarcza.

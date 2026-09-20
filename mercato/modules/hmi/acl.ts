@@ -1,7 +1,7 @@
 /**
  * Pusto i celowo.
  *
- * Ten moduł nie ma danych ani endpointów — jest warstwą prezentacji, z której
+ * Ten moduł nie ma danych ani endpointów - jest warstwą prezentacji, z której
  * korzystają inne moduły. Uprawnienia pilnują tego, co pokazuje ekran,
  * a nie tego, z jakich elementów jest zbudowany.
  */

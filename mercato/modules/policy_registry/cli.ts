@@ -10,7 +10,7 @@ import { Policy } from './data/entities'
  * Komendy operatorskie rejestru polityk.
  *
  * `seed` zakłada dwie polityki związane z rewizjami embodimentu z zasiewu
- * floty. `prove` odtwarza dowód fazy na żywej bazie — bo warunkiem zaliczenia
+ * floty. `prove` odtwarza dowód fazy na żywej bazie - bo warunkiem zaliczenia
  * jest zdanie o zachowaniu systemu, a nie zielona suita testów.
  */
 
@@ -38,7 +38,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -56,7 +56,7 @@ function buildCommandContext(
 /**
  * Skróty artefaktów w zasiewie są deterministyczne.
  *
- * To nie jest udawanie prawdziwego sha256 pliku — to prawdziwy sha256 ustalonego
+ * To nie jest udawanie prawdziwego sha256 pliku - to prawdziwy sha256 ustalonego
  * ciągu. Dzięki temu powtórne uruchomienie `seed` musi trafić w deduplikację,
  * czyli zasiew sam jest pierwszą połową dowodu. Losowe skróty rozmnażałyby
  * wersje przy każdym uruchomieniu i ukryłyby dokładnie ten błąd, który ta faza
@@ -81,7 +81,7 @@ async function loadRevisions(em: EntityManager, tenantId: string): Promise<Revis
 const POLICIES = [
   {
     policyKey: 'pick-bin-ur10e',
-    name: 'Pobranie z pojemnika — UR10e',
+    name: 'Pobranie z pojemnika - UR10e',
     embodimentKey: 'ur10e-pick',
     taskKey: 'bin-picking',
     learningMethod: 'rl' as const,
@@ -89,7 +89,7 @@ const POLICIES = [
   },
   {
     policyKey: 'insert-peg-fr3',
-    name: 'Wsunięcie kołka — FR3',
+    name: 'Wsunięcie kołka - FR3',
     embodimentKey: 'fr3-assembly',
     taskKey: 'peg-in-hole',
     learningMethod: 'il' as const,
@@ -169,12 +169,12 @@ const seedCommand: ModuleCli = {
 
         const r = result.result!
         console.log(
-          `  ${entry.policyKey} v${r.version} ${r.deduplicated ? '(powtórka — ta sama wersja)' : '(nowa)'} skrót ${String(r.contentDigest).slice(0, 12)}`,
+          `  ${entry.policyKey} v${r.version} ${r.deduplicated ? '(powtórka - ta sama wersja)' : '(nowa)'} skrót ${String(r.contentDigest).slice(0, 12)}`,
         )
       }
     }
 
-    console.log('  żadna wersja nie jest jeszcze wypuszczona — to osobna decyzja i osobne uprawnienie')
+    console.log('  żadna wersja nie jest jeszcze wypuszczona - to osobna decyzja i osobne uprawnienie')
   },
 }
 
@@ -221,7 +221,7 @@ const statusCommand: ModuleCli = {
       const sprzet = row.embodiment_key ? `${row.embodiment_key}@r${row.revision}` : 'BRAK REWIZJI'
       const drift = row.spec_digest && row.spec_digest !== row.embodiment_spec_digest ? ' !ROZJAZD' : ''
       console.log(
-        `  ${row.policy_key.padEnd(21)} v${String(row.version).padEnd(3)} ${row.content_digest.slice(0, 12)}  ${(sprzet + drift).padEnd(22)} ${(row.roles ?? '—').padEnd(14)} ${row.status}`,
+        `  ${row.policy_key.padEnd(21)} v${String(row.version).padEnd(3)} ${row.content_digest.slice(0, 12)}  ${(sprzet + drift).padEnd(22)} ${(row.roles ?? '-').padEnd(14)} ${row.status}`,
       )
     }
     console.log('')
@@ -277,7 +277,7 @@ const proveCommand: ModuleCli = {
       ...demoJointContract(target.dof_count ?? 6),
     }
 
-    console.log('DOWÓD FAZY 1 — rejestr polityk\n')
+    console.log('DOWÓD FAZY 1 - rejestr polityk\n')
 
     // 1. Obcy odcisk kontraktu przy właściwej rewizji.
     console.log('1) ta sama rewizja, ale polityka uczona pod innym odciskiem kontraktu')
@@ -337,7 +337,7 @@ const proveCommand: ModuleCli = {
     )
 
     console.log('\n   Wniosek: tożsamością wersji jest skrót artefaktów, a niezgodność sprzętu')
-    console.log('   wychodzi przy rejestracji — czyli zanim ktokolwiek wskaże robota.')
+    console.log('   wychodzi przy rejestracji - czyli zanim ktokolwiek wskaże robota.')
   },
 }
 

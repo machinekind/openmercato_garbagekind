@@ -12,7 +12,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  *
  * `clips.deletion_overdue` jest jedynym zdarzeniem w całej wtyczce, które
  * celowo **powtarza się** przy każdym przebiegu, dopóki stan trwa. To nie jest
- * wyjątek od zasady wyzwalania zboczem — to inna klasa faktu: „dziś nadal
+ * wyjątek od zasady wyzwalania zboczem - to inna klasa faktu: „dziś nadal
  * przechowujemy nagranie po ustawowym terminie" jest prawdziwe każdego dnia
  * z osobna i każdego dnia z osobna jest naruszeniem.
  */
@@ -72,7 +72,7 @@ const events = [
   {
     id: 'vision.window.recorded',
     label: 'Zapisano okno detekcji',
-    description: 'Zliczenia z jednej kamery za jeden przedział. Zdarzenie o częstotliwości minutowej na kamerę — do tablic i zliczeń, nie do alarmów.',
+    description: 'Zliczenia z jednej kamery za jeden przedział. Zdarzenie o częstotliwości minutowej na kamerę - do tablic i zliczeń, nie do alarmów.',
     entity: 'detection_window',
     category: 'lifecycle',
     payloadSchema: {
@@ -93,7 +93,7 @@ const events = [
   {
     id: 'vision.clips.marked_for_deletion',
     label: 'Oznaczono materiał do usunięcia',
-    description: 'Termin z art. 22² § 3 KP upłynął. Oznaczenie nie jest usunięciem — bajty kasuje ten, kto je trzyma.',
+    description: 'Termin z art. 22² § 3 KP upłynął. Oznaczenie nie jest usunięciem - bajty kasuje ten, kto je trzyma.',
     entity: 'clip',
     category: 'lifecycle',
     payloadSchema: {

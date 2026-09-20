@@ -41,7 +41,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -57,7 +57,7 @@ function buildCommandContext(
 }
 
 /**
- * Zamiana numeru seryjnego na identyfikator robota — surowym zapytaniem,
+ * Zamiana numeru seryjnego na identyfikator robota - surowym zapytaniem,
  * nie importem encji z modułu `fleet`.
  *
  * Kierunek zależności ma zostać jednostronny i luźny: `edge` zna kolumnę
@@ -115,7 +115,7 @@ const issueCommand: ModuleCli = {
     console.log(`Ważny : do ${new Date(result.expiresAt).toISOString()}`)
     // Ostrzeżenie nie jest kurtuazją: to jedyny moment, w którym jawny bilet
     // w ogóle istnieje po stronie centrali.
-    console.log('\nBilet nie jest nigdzie zapisany w jawnej postaci — po zamknięciu terminala nie da się go odtworzyć.')
+    console.log('\nBilet nie jest nigdzie zapisany w jawnej postaci - po zamknięciu terminala nie da się go odtworzyć.')
   },
 }
 
@@ -194,7 +194,7 @@ const simulateCommand: ModuleCli = {
       if (sequence < beats) await new Promise((resolve) => setTimeout(resolve, intervalSeconds * 1000))
     }
 
-    console.log('\nAgent milknie — to jest moment odcięcia zasilania.')
+    console.log('\nAgent milknie - to jest moment odcięcia zasilania.')
     console.log(`Po ${lostAfter} s uruchom: mercato edge sweep`)
   },
 }
@@ -251,10 +251,10 @@ const statusCommand: ModuleCli = {
         },
         now,
       )
-      const silence = verdict.silenceSeconds === null ? '—' : `${verdict.silenceSeconds}s`
+      const silence = verdict.silenceSeconds === null ? '-' : `${verdict.silenceSeconds}s`
       console.log(
         [
-          (row.serial_number ?? '—').padEnd(14),
+          (row.serial_number ?? '-').padEnd(14),
           row.status.padEnd(9),
           verdict.state.padEnd(11),
           `cisza=${silence}`.padEnd(14),
@@ -272,7 +272,7 @@ const statusCommand: ModuleCli = {
  *
  * Platforma woła `seedDefaults` wyłącznie przy inicjalizacji tenanta, więc
  * moduł **doinstalowany później nigdy nie zarejestrowałby swojego zadania
- * cyklicznego** — i nikt by tego nie zauważył, bo brak zadania nie generuje
+ * cyklicznego** - i nikt by tego nie zauważył, bo brak zadania nie generuje
  * błędu, tylko ciszę. Ta komenda domyka tę lukę i jest idempotentna:
  * identyfikator harmonogramu jest stały, a `register` nadpisuje.
  */
@@ -310,7 +310,7 @@ const sweepCommand: ModuleCli = {
         'select serial_number from fleet_robots where id = ? limit 1',
         [entry.robotId],
       )
-      console.log(`  utracony: ${robot[0]?.serial_number ?? entry.robotId} — cisza ${entry.silenceSeconds}s`)
+      console.log(`  utracony: ${robot[0]?.serial_number ?? entry.robotId} - cisza ${entry.silenceSeconds}s`)
     }
     if (result.lost.length) {
       // Zamiatanie stwierdza ciszę; decyzja o kwarantannie należy do floty.
@@ -329,10 +329,10 @@ const sweepCommand: ModuleCli = {
  * ją tak: lista niepusta znaczy „wolno wyłącznie to, co na niej jest".
  *
  * Moduł doinstalowany później nie ma jak się na tej liście znaleźć, więc jego
- * widget nie pojawia się nawet w katalogu „Customize" — jest zarejestrowany,
+ * widget nie pojawia się nawet w katalogu „Customize" - jest zarejestrowany,
  * załadowany i niewidoczny dla nikogo. Bez tej komendy byłby martwym kodem.
  *
- * Dopisujemy wyłącznie do ról, które już mają uprawnienie `edge.view` —
+ * Dopisujemy wyłącznie do ról, które już mają uprawnienie `edge.view` -
  * bezpośrednio albo przez wieloznacznik. Rola bez tego uprawnienia i tak
  * odbiłaby się o kontrolę cech przy renderowaniu, a dopisanie jej widgetu
  * byłoby cichą zmianą cudzej konfiguracji.
@@ -345,7 +345,7 @@ const installWidgetsCommand: ModuleCli = {
 
     /*
      * Surowy SQL, nie encja rdzenia. Import klasy encji z obcego modułu
-     * kończy się podwójną rejestracją metadanych MikroORM — to jest ta sama
+     * kończy się podwójną rejestracją metadanych MikroORM - to jest ta sama
      * pułapka, którą opisuje komentarz w `deployment/commands/assignments.ts`.
      */
     const wynik = await em.getConnection().execute<Array<{ role_id: string }>>(

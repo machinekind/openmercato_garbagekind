@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Kanał brzegowy — schemat początkowy.
+ * Kanał brzegowy - schemat początkowy.
  *
  * Trzy rzeczy warte uwagi przy czytaniu:
  *
@@ -10,7 +10,7 @@ import { Migration } from '@mikro-orm/migrations'
  *
  * 2. `edge_agent_keys` ma unikat na odcisku w obrębie tenanta. Ten sam klucz
  *    publiczny podstawiony dla dwóch agentów byłby albo pomyłką wdrożeniową,
- *    albo próbą klonowania tożsamości — w obu przypadkach ma się odbić od bazy.
+ *    albo próbą klonowania tożsamości - w obu przypadkach ma się odbić od bazy.
  *
  * 3. Indeks `edge_sessions_open_idx` na `(tenant_id, ended_at)` obsługuje
  *    jedyne zapytanie, które biegnie cyklicznie: „pokaż otwarte sesje".
@@ -57,7 +57,7 @@ export class Migration20260919150000_edge extends Migration {
     this.addSql(`create index "edge_agents_scope_idx" on "edge_agents" ("organization_id", "tenant_id");`)
     this.addSql(`create index "edge_agents_robot_idx" on "edge_agents" ("tenant_id", "robot_id");`)
     // Jeden ważny agent na robota. Warunek częściowy, bo agenci odwołani
-    // zostają w tabeli na zawsze — historia tożsamości jest materiałem audytowym.
+    // zostają w tabeli na zawsze - historia tożsamości jest materiałem audytowym.
     this.addSql(`create unique index "edge_agents_active_robot_unique" on "edge_agents" ("tenant_id", "robot_id") where "status" = 'enrolled';`)
 
     this.addSql(`create table "edge_agent_keys" (

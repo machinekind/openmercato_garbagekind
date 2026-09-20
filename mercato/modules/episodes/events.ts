@@ -4,13 +4,13 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * Zdarzenia dziennika epizodów.
  *
  * Epizody przychodzą hurtem z hali, więc `episode.recorded` jest zdarzeniem
- * o wysokiej częstotliwości i świadomie ma płaski ładunek — służy zliczaniu
+ * o wysokiej częstotliwości i świadomie ma płaski ładunek - służy zliczaniu
  * i zasilaniu tablic, nie podejmowaniu decyzji. Decyzje wiszą na dwóch
  * pozostałych.
  *
  * `intervention.recorded` jest tu faktem najcenniejszym: człowiek musiał
  * wejść między maszynę a zadanie. To jedyna miara, która nie daje się
- * podrobić optymalizacją metryki — bo kosztuje czyjś czas na hali.
+ * podrobić optymalizacją metryki - bo kosztuje czyjś czas na hali.
  *
  * `intervention.emergency` wydzielone osobno, bo zatrzymanie awaryjne
  * i przejęcie zdalne to nie jest ta sama klasa faktu co korekta chwytu.
@@ -22,7 +22,7 @@ const events = [
   {
     id: 'episodes.episode.recorded',
     label: 'Epizod zapisany',
-    description: 'Pojedyncze wykonanie zadania przez maszynę. Zdarzenie o wysokiej częstotliwości — do zliczeń, nie do alarmów.',
+    description: 'Pojedyncze wykonanie zadania przez maszynę. Zdarzenie o wysokiej częstotliwości - do zliczeń, nie do alarmów.',
     entity: 'episode',
     category: 'lifecycle',
     payloadSchema: {

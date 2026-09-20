@@ -52,7 +52,7 @@ describe('resolveCredentials', () => {
     expect(credentials.company).toBe('produkcja')
   })
 
-  it('wartości z integracji wygrywają ze środowiskiem — panel jest ważniejszy niż .env', () => {
+  it('wartości z integracji wygrywają ze środowiskiem - panel jest ważniejszy niż .env', () => {
     process.env.SORTOWNIA_RPC_URL = 'https://ze-srodowiska.example/api'
     const credentials = resolveCredentials({ endpoint: 'https://z-panelu.example/api', user: 'operator' })
     expect(credentials.endpoint).toBe('https://z-panelu.example/api')
@@ -79,7 +79,7 @@ describe('parseMovementCursor', () => {
     expect(parseMovementCursor('100100')).toEqual({ lastMoveNo: 100100 })
   })
 
-  it('uszkodzony kursor cofa import do początku zamiast go wywracać — duplikaty i tak odpadną', () => {
+  it('uszkodzony kursor cofa import do początku zamiast go wywracać - duplikaty i tak odpadną', () => {
     expect(parseMovementCursor('{zepsute')).toEqual({ lastMoveNo: 0 })
     expect(parseMovementCursor('{"lastMoveNo":"nie-liczba"}')).toEqual({ lastMoveNo: 0 })
   })
@@ -99,7 +99,7 @@ describe('kontrakt adaptera', () => {
     ])
   })
 
-  it('kolejność zbiorów nie jest kosmetyczna — zamówienie wymaga kontrahenta i frakcji, ruch WZ wymaga zamówienia', () => {
+  it('kolejność zbiorów nie jest kosmetyczna - zamówienie wymaga kontrahenta i frakcji, ruch WZ wymaga zamówienia', () => {
     const order = sortowniaLegacyAdapter.supportedEntities
     expect(order.indexOf(ENTITY_CUSTOMERS)).toBeLessThan(order.indexOf(ENTITY_SALES_ORDERS))
     expect(order.indexOf(ENTITY_FRACTIONS)).toBeLessThan(order.indexOf(ENTITY_SALES_ORDERS))
@@ -145,7 +145,7 @@ describe('kontrakt adaptera', () => {
     expect(primary).toMatchObject({ externalField: 'stkmoveno', mappingKind: 'external_id' })
   })
 
-  it('pierwszy przebieg nie dostaje kursora — ma przejść całą księgę', async () => {
+  it('pierwszy przebieg nie dostaje kursora - ma przejść całą księgę', async () => {
     await expect(
       sortowniaLegacyAdapter.getInitialCursor?.({
         entityType: ENTITY_MOVEMENTS,

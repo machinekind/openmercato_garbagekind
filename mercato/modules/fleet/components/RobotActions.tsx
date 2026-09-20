@@ -21,7 +21,7 @@ import type { RobotState } from '../data/entities'
  *
  * **Podpis składa człowiek, nie serwer.** Komenda wymaga `approvedBy` przy
  * każdym przejściu dopuszczającym maszynę do ruchu. Kusiło, żeby trasa
- * dokładała tam identyfikator zalogowanego użytkownika po cichu — i to
+ * dokładała tam identyfikator zalogowanego użytkownika po cichu - i to
  * zamieniłoby „człowiek bierze odpowiedzialność" w „serwer podpisał za niego".
  * Dlatego identyfikator wędruje z przeglądarki i tylko po zaznaczeniu
  * świadomego potwierdzenia.
@@ -29,7 +29,7 @@ import type { RobotState } from '../data/entities'
  * **Lista stanów docelowych liczona z grafu, nie wypisana w formularzu.**
  * `allowedTargets` to ta sama czysta funkcja, której używa komenda. Gdyby
  * formularz miał własną listę, po pierwszej zmianie grafu pokazywałby
- * przejścia, które serwer odrzuca — a operator uczyłby się, że system kłamie.
+ * przejścia, które serwer odrzuca - a operator uczyłby się, że system kłamie.
  */
 
 type Robot = {
@@ -165,7 +165,7 @@ export function RobotActions({ robot, onDone }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t('fleet.actions.changeStateOf', 'Zmiana stanu')} — {robot.serialNumber}
+              {t('fleet.actions.changeStateOf', 'Zmiana stanu')} - {robot.serialNumber}
             </DialogTitle>
           </DialogHeader>
 
@@ -181,7 +181,7 @@ export function RobotActions({ robot, onDone }: Props) {
                 value={toState}
                 onChange={(e) => { setToState(e.target.value as RobotState); setPodpis(false) }}
               >
-                <option value="">{t('fleet.actions.pick', '— wybierz —')}</option>
+                <option value="">{t('fleet.actions.pick', '- wybierz -')}</option>
                 {cele.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -190,7 +190,7 @@ export function RobotActions({ robot, onDone }: Props) {
 
             <label className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">
-                {t('fleet.actions.reason', 'Powód')} — {t('fleet.actions.reasonHint', 'trafia do księgi przejść i zostaje tam na stałe')}
+                {t('fleet.actions.reason', 'Powód')} - {t('fleet.actions.reasonHint', 'trafia do księgi przejść i zostaje tam na stałe')}
               </span>
               <textarea
                 className="rounded border px-2 py-1"
@@ -250,7 +250,7 @@ export function RobotActions({ robot, onDone }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t('fleet.actions.recordCalibration', 'Zapisz kalibrację')} — {robot.serialNumber}
+              {t('fleet.actions.recordCalibration', 'Zapisz kalibrację')} - {robot.serialNumber}
             </DialogTitle>
           </DialogHeader>
 

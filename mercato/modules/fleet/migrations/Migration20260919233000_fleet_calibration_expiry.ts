@@ -3,7 +3,7 @@ import { Migration } from '@mikro-orm/migrations'
 /**
  * Odhaczenie powiadomienia o wygaśnięciu kalibracji.
  *
- * Kolumna nie mówi „kalibracja wygasła" — to nadal wyprowadzamy z `valid_until`
+ * Kolumna nie mówi „kalibracja wygasła" - to nadal wyprowadzamy z `valid_until`
  * przy odczycie. Mówi „fakt wygaśnięcia został już raz ogłoszony", i tylko
  * dlatego detektor cykliczny może chodzić co godzinę, nie zamieniając
  * zdarzenia w szum.

@@ -11,7 +11,7 @@
 #   ./mercato/install.sh fleet      # wybrane
 #
 # Klon Open Mercato wskazuje zmienna MERCATO_ROOT. Bez niej skrypt szuka
-# w typowych miejscach obok tego repozytorium — absolutna sciezka z jednej
+# w typowych miejscach obok tego repozytorium - absolutna sciezka z jednej
 # stacji roboczej nie ma prawa byc wartoscia domyslna w repozytorium.
 set -euo pipefail
 

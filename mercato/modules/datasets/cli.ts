@@ -7,7 +7,7 @@ import type { CommandBus, CommandRuntimeContext } from '@open-mercato/shared/lib
  * Komendy operatorskie zbiorów danych.
  *
  * `prove` odtwarza dowód fazy: dla wersji polityki da się wskazać zbiór,
- * a dla zbioru — listę epizodów źródłowych, i odwrotnie. Obie strony są
+ * a dla zbioru - listę epizodów źródłowych, i odwrotnie. Obie strony są
  * sprawdzane osobnym zapytaniem, bo to są dwa odwzorowania, nie jedno.
  */
 
@@ -35,7 +35,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -95,7 +95,7 @@ const statusCommand: ModuleCli = {
       console.log(
         `  ${row.dataset_key.padEnd(20)} v${String(row.version).padEnd(3)} ${row.content_digest.slice(0, 12)} ` +
           `${String(row.episode_count).padStart(3)} ${String(row.demo_count).padStart(5)} ${String(row.correction_count).padStart(4)} ` +
-          `${String(row.failure_count).padStart(4)} ${String(row.holdout_count).padStart(5)}  ${row.policies ?? '—'}`,
+          `${String(row.failure_count).padStart(4)} ${String(row.holdout_count).padStart(5)}  ${row.policies ?? '-'}`,
       )
     }
   },
@@ -105,7 +105,7 @@ const statusCommand: ModuleCli = {
  * Dowód fazy 6.
  *
  * Zdanie z mapy faz: *dla dowolnej wersji polityki da się wskazać zbiór,
- * a dla zbioru — listę epizodów źródłowych, i odwrotnie.*
+ * a dla zbioru - listę epizodów źródłowych, i odwrotnie.*
  *
  * „I odwrotnie" jest tu sprawdzane dosłownie: jedno zapytanie idzie od
  * polityki do epizodów, drugie od epizodu do polityk, i oba muszą wskazać
@@ -123,14 +123,14 @@ const proveCommand: ModuleCli = {
     const ctx = buildCommandContext(container, scope)
     const stamp = Date.now().toString(36)
 
-    console.log('DOWÓD FAZY 6 — pętla zamknięta w obie strony\n')
+    console.log('DOWÓD FAZY 6 - pętla zamknięta w obie strony\n')
 
     const dataset = (
       await bus.execute('datasets.datasets.define', {
         input: {
           ...scope,
           datasetKey: 'bin-picking-ur10e',
-          name: 'Chwytanie z pojemnika — UR10e',
+          name: 'Chwytanie z pojemnika - UR10e',
           taskKey: 'bin-picking',
           embodimentKey: 'ur10e-pick',
           description: 'Epizody z celi odkładczej, wraz z interwencjami jako demonstracjami korekcyjnymi.',
@@ -164,7 +164,7 @@ const proveCommand: ModuleCli = {
     )
     for (const warning of built.warnings) console.log(`   ostrzeżenie [${warning.code}]: ${warning.message}`)
 
-    // 2. Przebudowanie z tych samych kryteriów — ta sama wersja.
+    // 2. Przebudowanie z tych samych kryteriów - ta sama wersja.
     console.log('\n2) przebudowanie z tych samych kryteriów nad niezmienioną księgą')
     const again = (
       await bus.execute('datasets.versions.build', {
@@ -204,7 +204,7 @@ const proveCommand: ModuleCli = {
 
     const nieudany = await bus
       .execute('datasets.runs.complete', { input: { ...scope, runRef, status: 'succeeded' }, ctx })
-      .then(() => 'ZAMKNIĘTY BEZ POLITYKI — BŁĄD DOWODU')
+      .then(() => 'ZAMKNIĘTY BEZ POLITYKI - BŁĄD DOWODU')
       .catch((error: Error) => `odbite: ${error.message}`)
     console.log(`   próba zamknięcia przebiegu bez wskazania polityki → ${nieudany}`)
 

@@ -19,7 +19,7 @@ import { ensureCalibrationExpirySchedule } from './setup'
  *
  * `seed` zakłada wiarygodny punkt wyjścia: obiekt, cele, dwie rewizje
  * embodimentu i flotę manipulatorów. `status` odpowiada na pytanie, od
- * którego zaczyna się każde wdrożenie — ile rejestr twierdzi, że istnieje,
+ * którego zaczyna się każde wdrożenie - ile rejestr twierdzi, że istnieje,
  * i ile z tego wolno uruchomić.
  */
 
@@ -48,7 +48,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -69,7 +69,7 @@ function buildCommandContext(
 /**
  * Flota demonstracyjna: dwie klasy sprzętowe, jedna cela ogrodzona.
  *
- * Celowo niewygodna w jednym miejscu — jeden robot dostaje kalibrację, która
+ * Celowo niewygodna w jednym miejscu - jeden robot dostaje kalibrację, która
  * wygasa za trzy dni, a drugi nie dostaje jej wcale. Flota, w której wszystko
  * jest zielone, nie pokazuje niczego, co ten rejestr ma pokazywać.
  */
@@ -77,14 +77,14 @@ const EMBODIMENTS = [
   {
     key: 'ur10e-pick',
     revision: 1,
-    name: 'UR10e — stanowisko odkładcze',
+    name: 'UR10e - stanowisko odkładcze',
     dofCount: 6,
     requiredCalibrations: ['camera_extrinsics', 'tool_center_point'],
   },
   {
     key: 'fr3-assembly',
     revision: 1,
-    name: 'Franka FR3 — montaż',
+    name: 'Franka FR3 - montaż',
     dofCount: 7,
     requiredCalibrations: ['camera_extrinsics', 'joint_offsets'],
   },
@@ -120,7 +120,7 @@ const seedCommand: ModuleCli = {
 
     console.log(`Flota: zasiew do organizacji ${scope.organizationId} (tenant ${scope.tenantId})`)
 
-    // 1. Obiekt i cela — jednostka koperty bezpieczeństwa.
+    // 1. Obiekt i cela - jednostka koperty bezpieczeństwa.
     let site = await em.findOne(Site, { tenantId: scope.tenantId, code: 'ZAK1' } as never)
     if (!site) {
       site = em.create(Site, {
@@ -146,7 +146,7 @@ const seedCommand: ModuleCli = {
         tenantId: scope.tenantId,
         siteId: (site as unknown as { id: string }).id,
         code: 'CELA-A',
-        name: 'Cela A — gniazdo odkładcze',
+        name: 'Cela A - gniazdo odkładcze',
         cellClass: 'fenced-pick-place',
         // Cela ogrodzona: dzierżawa w dniach, odcięcie chmury nie zatrzymuje produkcji.
         riskClass: 'fenced',
@@ -155,7 +155,7 @@ const seedCommand: ModuleCli = {
       await em.flush()
     }
 
-    // 2. Rewizje embodimentu — kontrakt, do którego wiąże się polityka.
+    // 2. Rewizje embodimentu - kontrakt, do którego wiąże się polityka.
     const revisionByKey = new Map<string, string>()
     for (const entry of EMBODIMENTS) {
       let revision = await em.findOne(EmbodimentRevision, {
@@ -171,7 +171,7 @@ const seedCommand: ModuleCli = {
           revision: entry.revision,
           name: entry.name,
           // W prawdziwym wdrożeniu to hash kanonicznej postaci kontraktu.
-          // Tutaj deterministyczny zastępnik — robot i tak porówna go bit po bicie.
+          // Tutaj deterministyczny zastępnik - robot i tak porówna go bit po bicie.
           specDigest: `demo:${entry.key}:r${entry.revision}`,
           dofCount: entry.dofCount,
           requiredCalibrations: entry.requiredCalibrations,
@@ -183,7 +183,7 @@ const seedCommand: ModuleCli = {
     }
     console.log(`  klasy sprzętowe: ${revisionByKey.size}`)
 
-    // 3. Roboty — przez komendę, nie zapisem do encji.
+    // 3. Roboty - przez komendę, nie zapisem do encji.
     const now = Date.now()
     const DAY = 24 * 60 * 60 * 1000
     let created = 0
@@ -204,7 +204,7 @@ const seedCommand: ModuleCli = {
           organizationId: scope.organizationId,
           tenantId: scope.tenantId,
           ownerOrganizationId: scope.organizationId,
-          // Manipulatory montażowe obsługuje integrator — i to jest cała
+          // Manipulatory montażowe obsługuje integrator - i to jest cała
           // treść decyzji o rozdziale właściciela od operatora.
           operatorOrganizationId:
             entry.embodiment === 'fr3-assembly' ? integratorOrg : scope.organizationId,
@@ -220,7 +220,7 @@ const seedCommand: ModuleCli = {
       if (!robotId) continue
       created += 1
 
-      // 4. Kalibracje — trzy warianty, żeby rejestr miał co pokazać.
+      // 4. Kalibracje - trzy warianty, żeby rejestr miał co pokazać.
       if (entry.calib !== 'none') {
         const required = EMBODIMENTS.find((e) => e.key === entry.embodiment)!.requiredCalibrations
         const validDays = entry.calib === 'expiring' ? 3 : 120
@@ -240,7 +240,7 @@ const seedCommand: ModuleCli = {
         }
       }
 
-      // 5. Przeprowadzenie przez cykl życia — tylko tam, gdzie kalibracja pozwala.
+      // 5. Przeprowadzenie przez cykl życia - tylko tam, gdzie kalibracja pozwala.
       await commandBus.execute('fleet.robots.transition', {
         input: {
           organizationId: scope.organizationId,
@@ -260,7 +260,7 @@ const seedCommand: ModuleCli = {
             robotId,
             toState: 'ready',
             reason: 'Testy odbiorcze zaliczone',
-            // Bramka wymaga podpisu — zasiew deklaruje go jawnie zamiast omijać.
+            // Bramka wymaga podpisu - zasiew deklaruje go jawnie zamiast omijać.
             approvedBy: scope.organizationId,
           },
           ctx: commandContext,
@@ -279,7 +279,7 @@ const seedCommand: ModuleCli = {
     }
 
     console.log(`  roboty: ${ROBOTS.length} w definicji (nowych ${created}, istniejących ${skipped})`)
-    console.log('  robot UR10E-0003 zostaje w uruchamianiu — nie ma kalibracji i to jest zamierzone')
+    console.log('  robot UR10E-0003 zostaje w uruchamianiu - nie ma kalibracji i to jest zamierzone')
   },
 }
 
@@ -355,7 +355,7 @@ const statusCommand: ModuleCli = {
  *    sam ze sobą i nie stwierdzał niczego.
  * 2. Opis z jawnymi lukami (`unknown`) wolno zaewidencjonować, ale komenda
  *    mówi wprost, że na jego podstawie nie da się dopuścić polityki.
- * 3. Powtórne wczytanie tego samego pliku nie tworzy drugiej rewizji —
+ * 3. Powtórne wczytanie tego samego pliku nie tworzy drugiej rewizji -
  *    porównanie idzie po odcisku, nie po nazwie.
  */
 
@@ -364,7 +364,7 @@ const statusCommand: ModuleCli = {
  *
  * Demonstracyjne rozstawienie dla istniejących cel, żeby rzut miał co
  * narysować. W prawdziwym wdrożeniu te liczby biorą się z obmiaru hali albo
- * z rzutu architektonicznego — i **nie ma sensownej wartości domyślnej**,
+ * z rzutu architektonicznego - i **nie ma sensownej wartości domyślnej**,
  * dlatego komenda nadaje je jawnie, a cele nietknięte zostają nierozmieszczone
  * i widać to na ekranie.
  */
@@ -378,7 +378,7 @@ const layoutCommand: ModuleCli = {
     const bus = container.resolve('commandBus') as CommandBus
     const ctx = buildCommandContext(container, scope)
 
-    // Hala 40 × 24 m — tyle, ile podano przy obiekcie.
+    // Hala 40 × 24 m - tyle, ile podano przy obiekcie.
     await em.getConnection().execute(
       `update fleet_sites set floor_width_m = 40, floor_height_m = 24, updated_at = now()
         where tenant_id = ? and deleted_at is null and floor_width_m is null`,
@@ -400,7 +400,7 @@ const layoutCommand: ModuleCli = {
       const geometria = rozstawienie[cela.code]
       if (!geometria) {
         // Świadomie nie zgadujemy. Cela bez obmiaru zostaje nierozmieszczona.
-        console.log(`  ${cela.code.padEnd(10)}pominięta — brak obmiaru, zostaje nierozmieszczona`)
+        console.log(`  ${cela.code.padEnd(10)}pominięta - brak obmiaru, zostaje nierozmieszczona`)
         continue
       }
       await bus.execute('fleet.cells.layout', { input: { ...scope, cellId: cela.id, ...geometria }, ctx })
@@ -447,7 +447,7 @@ const embodimentCommand: ModuleCli = {
       const poprzedni = (istnieje as unknown as { specDigest: string }).specDigest
       if (poprzedni === digest) {
         console.log(`Odcisk : ${digest}`)
-        console.log('Stan   : bez zmian — ta rewizja już istnieje z tym samym kontraktem.')
+        console.log('Stan   : bez zmian - ta rewizja już istnieje z tym samym kontraktem.')
       } else {
         /*
          * Świadoma odmowa. Rewizja jest niezmienna: polityki dopuszczone dla
@@ -458,7 +458,7 @@ const embodimentCommand: ModuleCli = {
         console.log(`Odcisk w pliku : ${digest}`)
         throw new Error(
           `Rewizja ${spec.embodimentKey} r${spec.revision} istnieje z innym kontraktem. ` +
-            'Rewizja jest niezmienna — podnieś numer rewizji zamiast podmieniać kontrakt.',
+            'Rewizja jest niezmienna - podnieś numer rewizji zamiast podmieniać kontrakt.',
         )
       }
     } else {
@@ -483,11 +483,11 @@ const embodimentCommand: ModuleCli = {
     console.log(`Kalibr.: ${spec.requiredCalibrations.join(', ')}`)
 
     if (!verdict.complete) {
-      console.log(`\nOpis NIEKOMPLETNY — ${verdict.unknownFields.length} wartości do zmierzenia:`)
+      console.log(`\nOpis NIEKOMPLETNY - ${verdict.unknownFields.length} wartości do zmierzenia:`)
       for (const path of verdict.unknownFields) console.log(`  ${path}`)
       // Rozróżnienie jest tu sednem: ewidencja tak, dopuszczenie nie.
       console.log('\nRamię wolno zaewidencjonować. Dopuszczenie polityki do ruchu')
-      console.log('wymaga uzupełnienia powyższych pomiarem — nie zgadywaniem.')
+      console.log('wymaga uzupełnienia powyższych pomiarem - nie zgadywaniem.')
     }
   },
 }
@@ -509,7 +509,7 @@ const installSchedulesCommand: ModuleCli = {
   },
 }
 
-/** Ręczny przebieg detektora — ten sam, który wykonuje zadanie cykliczne. */
+/** Ręczny przebieg detektora - ten sam, który wykonuje zadanie cykliczne. */
 const expiryCommand: ModuleCli = {
   command: 'expiry',
   async run(rest) {
@@ -529,7 +529,7 @@ const expiryCommand: ModuleCli = {
 
     if (result.expired.length === 0) {
       console.log('Brak nowo wygasłych kalibracji.')
-      console.log('Uwaga: to nie znaczy „wszystkie ważne" — znaczy „nic nowego do ogłoszenia".')
+      console.log('Uwaga: to nie znaczy „wszystkie ważne" - znaczy „nic nowego do ogłoszenia".')
       console.log('Stan ważności pokazuje: mercato fleet status')
       return
     }
@@ -539,7 +539,7 @@ const expiryCommand: ModuleCli = {
       const znacznik = wpis.required ? 'WYMAGANA' : 'informacyjna'
       console.log(`  ${wpis.robotId}  ${wpis.kind}  do ${wpis.validUntil}  [${wpis.robotState}] ${znacznik}`)
     }
-    console.log('\nMaszyn nie zatrzymano — detektor ogłasza, o kwarantannie decyduje człowiek.')
+    console.log('\nMaszyn nie zatrzymano - detektor ogłasza, o kwarantannie decyduje człowiek.')
   },
 }
 
@@ -552,10 +552,10 @@ const expiryCommand: ModuleCli = {
  * ją tak: lista niepusta znaczy „wolno wyłącznie to, co na niej jest".
  *
  * Moduł doinstalowany później nie ma jak się na tej liście znaleźć, więc jego
- * widget nie pojawia się nawet w katalogu „Customize" — jest zarejestrowany,
+ * widget nie pojawia się nawet w katalogu „Customize" - jest zarejestrowany,
  * załadowany i niewidoczny dla nikogo. Bez tej komendy byłby martwym kodem.
  *
- * Dopisujemy wyłącznie do ról, które już mają uprawnienie `fleet.view` —
+ * Dopisujemy wyłącznie do ról, które już mają uprawnienie `fleet.view` -
  * bezpośrednio albo przez wieloznacznik. Rola bez tego uprawnienia i tak
  * odbiłaby się o kontrolę cech przy renderowaniu, a dopisanie jej widgetu
  * byłoby cichą zmianą cudzej konfiguracji.
@@ -568,7 +568,7 @@ const installWidgetsCommand: ModuleCli = {
 
     /*
      * Surowy SQL, nie encja rdzenia. Import klasy encji z obcego modułu
-     * kończy się podwójną rejestracją metadanych MikroORM — to jest ta sama
+     * kończy się podwójną rejestracją metadanych MikroORM - to jest ta sama
      * pułapka, którą opisuje komentarz w `deployment/commands/assignments.ts`.
      */
     const wynik = await em.getConnection().execute<Array<{ role_id: string }>>(

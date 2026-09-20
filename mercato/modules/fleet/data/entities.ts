@@ -7,7 +7,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  *
  * 1. **Właściciel ≠ operator.** Ten sam robot bywa własnością zakładu, a
  *    obsługiwany przez integratora, który serwisuje wiele flot naraz. Platforma
- *    Open Mercato daje jedno `organization_id` na wiersz — to za mało, więc
+ *    Open Mercato daje jedno `organization_id` na wiersz - to za mało, więc
  *    rozdzielamy `owner_organization_id` od `operator_organization_id` od
  *    początku. Dołożenie tego później dotknęłoby każdego zapytania w systemie.
  *    `organization_id` zostaje jako scope platformy (widoczność w panelu)
@@ -17,7 +17,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  *    koperty bezpieczeństwa i jednostką, na poziomie której działa zatrzymanie.
  *
  * Czego tu nie ma świadomie: stanu pożądanego oprogramowania (to `deployment`),
- * telemetrii, i tożsamości kryptograficznej agenta — ta mieszka w module `edge`,
+ * telemetrii, i tożsamości kryptograficznej agenta - ta mieszka w module `edge`,
  * bo robot trwa, a klucz się rotuje.
  */
 
@@ -51,7 +51,7 @@ export class Site {
   @Property({ type: 'text' })
   name!: string
 
-  /** Strefa czasowa obiektu — raporty zmianowe liczy się lokalnie, nie w UTC. */
+  /** Strefa czasowa obiektu - raporty zmianowe liczy się lokalnie, nie w UTC. */
   @Property({ type: 'text', default: 'Europe/Warsaw' })
   timezone: string = 'Europe/Warsaw'
 
@@ -59,7 +59,7 @@ export class Site {
   address?: string | null
 
   /**
-   * Wymiary hali w metrach — obrys, na którym rysuje się cele.
+   * Wymiary hali w metrach - obrys, na którym rysuje się cele.
    *
    * Opcjonalne, bo obiekt bez zmierzonej hali jest normalnym stanem wyjścia.
    * Brak wymiarów znaczy, że rzut składa się z samych obrysów cel, a nie że
@@ -82,7 +82,7 @@ export class Site {
 }
 
 /**
- * Cela — ograniczony obszar operacyjny z własną kopertą bezpieczeństwa.
+ * Cela - ograniczony obszar operacyjny z własną kopertą bezpieczeństwa.
  *
  * To jednostka, na poziomie której zatwierdza się uzasadnienie bezpieczeństwa
  * i na poziomie której działa zatrzymanie. Nie jest jednostką organizacyjną
@@ -111,7 +111,7 @@ export class Cell {
   name!: string
 
   /**
-   * Klasa celi — po niej wiąże się uzasadnienie bezpieczeństwa.
+   * Klasa celi - po niej wiąże się uzasadnienie bezpieczeństwa.
    *
    * Dwie cele tej samej klasy dzielą kopertę, więc dopuszczenie polityki
    * dotyczy klasy, nie pojedynczej celi. Bez tego każda nowa cela wymagałaby
@@ -123,9 +123,9 @@ export class Cell {
   /**
    * Klasa ryzyka rozstrzyga o długości dzierżawy stanu pożądanego.
    *
-   * `fenced` — cela ogrodzona: dzierżawa w dniach, odcięcie chmury nie może
-   * zatrzymać produkcji. `shared` — przestrzeń dzielona z ludźmi: godziny.
-   * `public` — przestrzeń publiczna: minuty. To decyzja polityczna udająca
+   * `fenced` - cela ogrodzona: dzierżawa w dniach, odcięcie chmury nie może
+   * zatrzymać produkcji. `shared` - przestrzeń dzielona z ludźmi: godziny.
+   * `public` - przestrzeń publiczna: minuty. To decyzja polityczna udająca
    * techniczną i dlatego jest polem, a nie stałą w kodzie.
    */
   @Property({ name: 'risk_class', type: 'text', default: 'fenced' })
@@ -138,7 +138,7 @@ export class Cell {
    * „prawie"**: cela bez kompletu współrzędnych nie jest rysowana na rzucie,
    * tylko trafia na listę nierozmieszczonych obok niego. Automatyczne
    * rozstawienie „gdzieś sensownie" dałoby obrazek wyglądający jak plan hali
-   * i nim niebędący — a plan hali czyta się po to, żeby wiedzieć, gdzie iść.
+   * i nim niebędący - a plan hali czyta się po to, żeby wiedzieć, gdzie iść.
    *
    * Obrót w stopniach, zgodnie z ruchem wskazówek zegara, bo oś Y rośnie
    * w dół (rysujemy w SVG).
@@ -171,8 +171,8 @@ export class Cell {
 /**
  * Kontrakt fizyczny klasy sprzętowej: co robot ma, co potrafi i w jakich granicach.
  *
- * Rewizja rośnie, gdy zmienia się **kontrakt** — inny sensor, inne limity
- * momentu — a nie gdy zmienia się kolor obudowy. Polityka wiąże się z rewizją
+ * Rewizja rośnie, gdy zmienia się **kontrakt** - inny sensor, inne limity
+ * momentu - a nie gdy zmienia się kolor obudowy. Polityka wiąże się z rewizją
  * embodimentu, nie z robotem: to jedyne miejsce, w którym da się powiedzieć
  * „ta polityka fizycznie nie może działać na tym sprzęcie" *przed* wdrożeniem.
  */
@@ -202,12 +202,12 @@ export class EmbodimentRevision {
    * Odcisk kontraktu: hash kanonicznej postaci przestrzeni obserwacji i akcji.
    *
    * Robot weryfikuje go lokalnie przed załadowaniem polityki i odmawia
-   * uruchomienia, gdy się nie zgadza — bez pytania centrali.
+   * uruchomienia, gdy się nie zgadza - bez pytania centrali.
    */
   @Property({ name: 'spec_digest', type: 'text' })
   specDigest!: string
 
-  /** Liczba stopni swobody — najprostsza kontrola zdrowego rozsądku przed wdrożeniem. */
+  /** Liczba stopni swobody - najprostsza kontrola zdrowego rozsądku przed wdrożeniem. */
   @Property({ name: 'dof_count', type: 'int', nullable: true })
   dofCount?: number | null
 
@@ -246,7 +246,7 @@ export class Robot {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string
 
-  /** Scope platformy — pokrywa się z operatorem, bo to on pracuje w panelu. */
+  /** Scope platformy - pokrywa się z operatorem, bo to on pracuje w panelu. */
   @Property({ name: 'organization_id', type: 'uuid' })
   organizationId!: string
 
@@ -287,7 +287,7 @@ export class Robot {
   /**
    * Powód ostatniego przejścia stanu.
    *
-   * Przy kwarantannie to jedyna rzecz, którą operator zobaczy najpierw —
+   * Przy kwarantannie to jedyna rzecz, którą operator zobaczy najpierw -
    * i jedyna, która pozwala odróżnić wygaśnięcie kalibracji od incydentu.
    */
   @Property({ name: 'state_reason', type: 'text', nullable: true })
@@ -313,7 +313,7 @@ export class Robot {
  * Zmierzone parametry wiążące konkretny egzemplarz z kontraktem jego embodimentu.
  *
  * Kalibracja jest **warunkiem dopuszczenia polityki**, a nie zadaniem
- * serwisowym — dlatego mieszka tutaj, a nie w module konserwacji. Wygaśnięcie
+ * serwisowym - dlatego mieszka tutaj, a nie w module konserwacji. Wygaśnięcie
  * degraduje robota, nawet gdy mechanicznie jest w pełni sprawny.
  */
 @Entity({ tableName: 'fleet_calibrations' })
@@ -350,7 +350,7 @@ export class Calibration {
   @Property({ name: 'valid_until', type: Date })
   validUntil!: Date
 
-  /** Niepewność pomiaru — bez niej „skalibrowany" jest słowem, nie liczbą. */
+  /** Niepewność pomiaru - bez niej „skalibrowany" jest słowem, nie liczbą. */
   @Property({ type: 'json', nullable: true })
   uncertainty?: Record<string, unknown> | null
 
@@ -360,7 +360,7 @@ export class Calibration {
   @Property({ name: 'measured_by', type: 'uuid', nullable: true })
   measuredBy?: string | null
 
-  /** Unieważnienie ręczne — np. po uderzeniu w robota, przed terminem. */
+  /** Unieważnienie ręczne - np. po uderzeniu w robota, przed terminem. */
   @Property({ name: 'invalidated_at', type: Date, nullable: true })
   invalidatedAt?: Date | null
 
@@ -368,11 +368,11 @@ export class Calibration {
   invalidatedReason?: string | null
 
   /**
-   * Odhaczenie powiadomienia o wygaśnięciu — nie status ważności.
+   * Odhaczenie powiadomienia o wygaśnięciu - nie status ważności.
    *
    * Ważność wyprowadzamy przy odczycie z `validUntil` i tak zostaje: kolumna
    * „wygasła true/false" psuje się dokładnie wtedy, gdy przestanie działać
-   * proces, który ją ustawia. To pole odpowiada na inne pytanie — „czy ten
+   * proces, który ją ustawia. To pole odpowiada na inne pytanie - „czy ten
    * konkretny fakt został już raz ogłoszony". Bez niego detektor cykliczny
    * nadawałby to samo zdarzenie co przebieg i po dobie nikt by go już nie
    * czytał.
@@ -388,7 +388,7 @@ export class Calibration {
 }
 
 /**
- * Księga przejść stanu robota — dopisywana, nigdy nadpisywana.
+ * Księga przejść stanu robota - dopisywana, nigdy nadpisywana.
  *
  * Ta sama zasada, co w księdze ruchów magazynowych sortowni: poprawka jest
  * kolejnym wpisem, nie zmianą poprzedniego. Tam chroniła bilans masy; tutaj

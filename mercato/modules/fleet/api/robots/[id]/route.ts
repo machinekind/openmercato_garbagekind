@@ -11,12 +11,12 @@ const logger = createLogger('fleet').child({ component: 'robotDetail' })
  *
  * Powód istnienia: do tej wersji rejestr floty był listą, w którą nie dało się
  * kliknąć. Operator widział, że maszyna stoi w kwarantannie, i nie miał jak
- * sprawdzić, **dlaczego** — a przy kwarantannie to jest jedyne pytanie, które
+ * sprawdzić, **dlaczego** - a przy kwarantannie to jest jedyne pytanie, które
  * ma znaczenie.
  *
  * Księga przejść jest tu całą treścią ekranu. Kolumna „powód" w liście niesie
  * ostatni powód; dopiero ciąg wpisów pokazuje, czy maszyna wpada w kwarantannę
- * raz na kwartał, czy trzeci raz w tym tygodniu — a to są dwie różne maszyny
+ * raz na kwartał, czy trzeci raz w tym tygodniu - a to są dwie różne maszyny
  * i dwie różne decyzje.
  */
 
@@ -33,12 +33,12 @@ export async function GET(request: Request, ctx?: { params?: Promise<{ id?: stri
     return await handle(request, ctx)
   } catch (error) {
     /*
-     * Bez tego opakowania trasa oddawała pustą pięćsetkę bez typu treści —
+     * Bez tego opakowania trasa oddawała pustą pięćsetkę bez typu treści -
      * przeglądarka pokazywała „Internal Server Error" i nic więcej, a w logu
      * serwera nie było ani słowa. Odpowiedź, z której nie da się wyczytać
      * powodu, kosztuje więcej czasu niż jej napisanie.
      */
-    logger.error('Szczegóły robota — odczyt nie powiódł się', { err: error })
+    logger.error('Szczegóły robota - odczyt nie powiódł się', { err: error })
     return json({ error: error instanceof Error ? error.message : String(error) }, 500)
   }
 }
@@ -48,7 +48,7 @@ async function handle(request: Request, ctx?: { params?: Promise<{ id?: string }
   if (!auth?.tenantId) return json({ error: 'Unauthorized' }, 401)
 
   const rozwiazane = ctx?.params ? await ctx.params : undefined
-  // Identyfikator z segmentu ścieżki, a w razie jego braku z zapytania —
+  // Identyfikator z segmentu ścieżki, a w razie jego braku z zapytania -
   // ta druga droga jest dla wywołań, które nie idą przez router Next.
   const robotId = rozwiazane?.id ?? new URL(request.url).searchParams.get('id') ?? ''
   if (!robotId) return json({ error: 'Brak identyfikatora robota.' }, 400)
@@ -74,7 +74,7 @@ async function handle(request: Request, ctx?: { params?: Promise<{ id?: string }
   const robot = roboty[0]
 
   /*
-   * Księga przejść dopisywana, nigdy nadpisywana — więc porządek malejący
+   * Księga przejść dopisywana, nigdy nadpisywana - więc porządek malejący
    * po dacie jest tu historią, a nie widokiem „ostatniego stanu".
    */
   const przejscia = await em.getConnection().execute<Array<Record<string, unknown>>>(

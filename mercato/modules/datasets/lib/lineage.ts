@@ -1,21 +1,21 @@
 import { createHash } from 'node:crypto'
 
 /**
- * Pochodzenie zbioru danych — zamknięcie pętli.
+ * Pochodzenie zbioru danych - zamknięcie pętli.
  *
  * Zdanie, które ten plik ma uczynić prawdziwym: **dla dowolnej wersji polityki
- * da się wskazać zbiór, a dla zbioru — listę epizodów źródłowych, i odwrotnie.**
+ * da się wskazać zbiór, a dla zbioru - listę epizodów źródłowych, i odwrotnie.**
  *
  * Bez tego regres jakości po treningu jest nie do zdiagnozowania. Polityka
- * v7 zachowuje się gorzej od v6 i pozostają dwie hipotezy — zmiana w danych
- * albo zmiana w treningu — których nie da się rozdzielić, jeśli nie wiadomo,
+ * v7 zachowuje się gorzej od v6 i pozostają dwie hipotezy - zmiana w danych
+ * albo zmiana w treningu - których nie da się rozdzielić, jeśli nie wiadomo,
  * czym się różniły zbiory.
  *
  * Wszystko poniżej jest czystą funkcją: pochodzenie liczone w SQL-u raportu
  * byłoby nieweryfikowalne inaczej niż drugim SQL-em.
  */
 
-/** Rola epizodu w zbiorze. Nie jest etykietą — rządzi tym, co model z niego weźmie. */
+/** Rola epizodu w zbiorze. Nie jest etykietą - rządzi tym, co model z niego weźmie. */
 export type MemberRole =
   /** Epizod udany, bez interwencji: demonstracja prawidłowego wykonania. */
   | 'demo'
@@ -39,7 +39,7 @@ export type EpisodeCandidate = {
  *
  * Kolejność pytań jest znacząca: **interwencja wygrywa z wynikiem**. Epizod
  * zakończony sukcesem, w którym człowiek poprawił chwyt, jest demonstracją
- * korekcyjną, a nie demonstracją prawidłowego wykonania — i wrzucenie go do
+ * korekcyjną, a nie demonstracją prawidłowego wykonania - i wrzucenie go do
  * `demo` uczyłoby model, że tak właśnie ma wyglądać poprawny przebieg.
  * To jest najczęstszy sposób, w jaki zbiór po cichu psuje następną wersję.
  */
@@ -64,7 +64,7 @@ export type DatasetMember = {
  * wtedy zdanie „polityka v7 uczyła się na zbiorze X w wersji 3" cokolwiek znaczy.
  *
  * Kolejność dodawania epizodów nie wchodzi do odcisku, bo nie jest własnością
- * zbioru — kolejność losowania w treningu i tak jest inna.
+ * zbioru - kolejność losowania w treningu i tak jest inna.
  */
 export function contentDigest(members: DatasetMember[]): string {
   const canonical = members
@@ -77,7 +77,7 @@ export function contentDigest(members: DatasetMember[]): string {
 export type Composition = {
   total: number
   byRole: Record<MemberRole, number>
-  /** Udział demonstracji korekcyjnych — liczba, od której zależy sens zbioru. */
+  /** Udział demonstracji korekcyjnych - liczba, od której zależy sens zbioru. */
   correctionRate: number
 }
 
@@ -94,7 +94,7 @@ export type CompositionWarning = { code: string; message: string }
  * Ostrzeżenia o składzie zbioru.
  *
  * To **nie są** twarde odmowy i celowo nie są. Zbiór z niewłaściwym składem
- * bywa dokładnie tym, czego ktoś potrzebuje — na przykład czysto korekcyjny
+ * bywa dokładnie tym, czego ktoś potrzebuje - na przykład czysto korekcyjny
  * do dostrojenia jednego etapu. Odmowa zmuszałaby do obchodzenia systemu,
  * a ostrzeżenie zapisane przy wersji zbioru zostaje w dokumentacji i wypływa
  * przy diagnozie regresu.
@@ -111,21 +111,21 @@ export function warnings(comp: Composition): CompositionWarning[] {
     out.push({
       code: 'no_corrections',
       message:
-        'zbiór nie zawiera ani jednej demonstracji korekcyjnej — model nie zobaczy żadnego przykładu wyjścia z sytuacji, w której polityka zawiodła',
+        'zbiór nie zawiera ani jednej demonstracji korekcyjnej - model nie zobaczy żadnego przykładu wyjścia z sytuacji, w której polityka zawiodła',
     })
   }
 
   if (comp.correctionRate > 0.5) {
     out.push({
       code: 'correction_heavy',
-      message: `demonstracje korekcyjne to ${(comp.correctionRate * 100).toFixed(0)}% zbioru — model uczony głównie na ratowaniu sytuacji bywa gorszy w ich unikaniu`,
+      message: `demonstracje korekcyjne to ${(comp.correctionRate * 100).toFixed(0)}% zbioru - model uczony głównie na ratowaniu sytuacji bywa gorszy w ich unikaniu`,
     })
   }
 
   if (comp.byRole.holdout === 0) {
     out.push({
       code: 'no_holdout',
-      message: 'zbiór nie ma części wydzielonej na ewaluację — wynik na danych treningowych nie mówi nic o wdrożeniu',
+      message: 'zbiór nie ma części wydzielonej na ewaluację - wynik na danych treningowych nie mówi nic o wdrożeniu',
     })
   }
 
@@ -160,11 +160,11 @@ export function verifyLoop(input: {
   links: LineageLink[]
 }): {
   closed: boolean
-  /** Wersje polityk bez wskazanego zbioru — „skąd się wzięła ta polityka". */
+  /** Wersje polityk bez wskazanego zbioru - „skąd się wzięła ta polityka". */
   policiesWithoutDataset: string[]
-  /** Wersje zbiorów bez epizodów — „z czego powstał ten zbiór". */
+  /** Wersje zbiorów bez epizodów - „z czego powstał ten zbiór". */
   datasetsWithoutEpisodes: string[]
-  /** Wersje zbiorów, na których nic się nie uczyło — nie jest to błąd, ale jest informacją. */
+  /** Wersje zbiorów, na których nic się nie uczyło - nie jest to błąd, ale jest informacją. */
   datasetsWithoutPolicy: string[]
 } {
   const linkedPolicies = new Set(input.links.map((l) => l.policyVersionId))
@@ -175,7 +175,7 @@ export function verifyLoop(input: {
   const datasetsWithoutPolicy = input.datasetVersions.filter((d) => !linkedDatasets.has(d.id)).map((d) => d.id)
 
   return {
-    // Zbiór, na którym jeszcze nic się nie uczyło, nie łamie pętli — pętla
+    // Zbiór, na którym jeszcze nic się nie uczyło, nie łamie pętli - pętla
     // jest zamknięta, gdy każda polityka ma skąd pochodzić i każdy zbiór
     // ma z czego się składać.
     closed: policiesWithoutDataset.length === 0 && datasetsWithoutEpisodes.length === 0,

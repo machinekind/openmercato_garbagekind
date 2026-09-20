@@ -6,7 +6,7 @@ import { closeBatchCommand } from '../commands/workOrders'
  *
  * Sprawdzana jest tu jedna rzecz nieoczywista: zdarzenie o rozjeździe jest
  * wyzwalane **werdyktem**, a nie flagą `requiresReview`. Te dwie rzeczy łatwo
- * pomylić, bo zwykle chodzą razem — ale `requiresReview` jest decyzją
+ * pomylić, bo zwykle chodzą razem - ale `requiresReview` jest decyzją
  * o skierowaniu maszyny do przeglądu i może być wyciszona progiem, a werdykt
  * jest tym, co zmierzono. Odbiorca budujący statystykę dryfu potrzebuje
  * pomiaru, nie cudzej decyzji o progu.
@@ -103,7 +103,7 @@ describe('emisja zdarzeń mostu', () => {
     const result = await closeBatchCommand.execute({ ...zamkniecie, weighedGrams: 29_400 }, makeCtx(1000))
     expect(result.verdict).toBe('ok')
     expect(seen.map((e) => e.id)).toEqual(['work_orders.batch.closed'])
-    // Werdykt jedzie także przy zgodności — statystyka dryfu potrzebuje mianownika.
+    // Werdykt jedzie także przy zgodności - statystyka dryfu potrzebuje mianownika.
     expect(seen[0].payload).toMatchObject({ verdict: 'ok', weighedGrams: 29_400 })
   })
 
@@ -116,7 +116,7 @@ describe('emisja zdarzeń mostu', () => {
       'work_orders.batch.drift_detected',
     ])
     const drift = seen[1].payload
-    // Nigdy masa wyliczona ze zgłoszeń robota — waga jest jedynym przyrządem
+    // Nigdy masa wyliczona ze zgłoszeń robota - waga jest jedynym przyrządem
     // pomiarowym w tym łańcuchu.
     expect(drift).toMatchObject({ weighedGrams: 24_000, expectedGrams: 30_000, verdict: 'overclaim' })
   })

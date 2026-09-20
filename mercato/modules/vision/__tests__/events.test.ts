@@ -9,7 +9,7 @@ import { purgeClipsCommand, recordWindowCommand, registerCameraCommand } from '.
  *
  * 1. Braki formalne kamery dostają **własne** zdarzenie, bo ich odbiorcą jest
  *    ktoś inny niż odbiorca rejestracji sprzętu.
- * 2. Powtórzone okno detekcji nie emituje niczego — powtórka po zerwaniu łącza
+ * 2. Powtórzone okno detekcji nie emituje niczego - powtórka po zerwaniu łącza
  *    nie jest drugim oknem i nie może podwajać zliczeń.
  * 3. Zaległość w usuwaniu materiału ogłasza się przy **każdym** przebiegu,
  *    wbrew regule wyzwalania zboczem obowiązującej w reszcie wtyczki. To jest
@@ -108,7 +108,7 @@ describe('emisja zdarzeń wzroku', () => {
     expect(seen.map((e) => e.id)).toEqual(['vision.camera.registered'])
   })
 
-  it('powtórzone okno detekcji nie emituje — powtórka nie jest drugim oknem', async () => {
+  it('powtórzone okno detekcji nie emituje - powtórka nie jest drugim oknem', async () => {
     const seen = captureEvents()
     const result = await recordWindowCommand.execute(
       {
@@ -138,12 +138,12 @@ describe('emisja zdarzeń wzroku', () => {
       makeCtx({ clips: [], unconfirmed: { count: '7', oldest: '2026-06-01T00:00:00Z' } }),
     )
     expect(result.purged).toEqual([])
-    // Nic nowego do oznaczenia, a mimo to zdarzenie pada — bo naruszenie trwa.
+    // Nic nowego do oznaczenia, a mimo to zdarzenie pada - bo naruszenie trwa.
     expect(seen.map((e) => e.id)).toEqual(['vision.clips.deletion_overdue'])
     expect(seen[0].payload).toMatchObject({ unconfirmed: 7 })
   })
 
-  it('brak zaległości i brak nowych oznaczeń — cisza', async () => {
+  it('brak zaległości i brak nowych oznaczeń - cisza', async () => {
     const seen = captureEvents()
     await purgeClipsCommand.execute({ tenantId: TENANT, organizationId: ORG }, makeCtx({ clips: [] }))
     expect(seen).toEqual([])

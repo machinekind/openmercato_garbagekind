@@ -57,7 +57,7 @@ type DashboardData = {
     receipts30dKg: number
     issues30dKg: number
     sorted30dKg: number
-    /** Kwity ze starego systemu — liczba do uzgodnienia z księgą legacy. */
+    /** Kwity ze starego systemu - liczba do uzgodnienia z księgą legacy. */
     movements30d: number
     /** Ruchy zapisane w WMS. Większa, gdy masa schodziła z kilku partii. */
     movementRows30d: number
@@ -127,7 +127,7 @@ function formatPln(amount: number): string {
 }
 
 function formatMoment(value: string | null): string {
-  if (!value) return '—'
+  if (!value) return '-'
   return new Date(value).toLocaleString('pl-PL', {
     day: '2-digit',
     month: '2-digit',
@@ -159,10 +159,10 @@ const LEGACY_TYPE: Record<string, string> = {
  */
 function describeRoute(row: MovementRow): string {
   if (row.type === 'adjust' && row.quantityKg < 0) {
-    return `${row.toCode ?? row.fromCode ?? '—'} → odbiorca`
+    return `${row.toCode ?? row.fromCode ?? '-'} → odbiorca`
   }
-  if (row.type === 'receipt') return `dostawca → ${row.toCode ?? '—'}`
-  return `${row.fromCode ?? '—'} → ${row.toCode ?? '—'}`
+  if (row.type === 'receipt') return `dostawca → ${row.toCode ?? '-'}`
+  return `${row.fromCode ?? '-'} → ${row.toCode ?? '-'}`
 }
 
 function utilisationTone(utilisation: number | null): string {
@@ -266,7 +266,7 @@ export default function SortowniaDashboard() {
                       ? `kwitów w ${totals.movementRows30d} ruchach`
                       : 'ruchów'
                   }, ostatni ${formatMoment(totals.lastMovementAt)}`
-                : '—'}
+                : '-'}
             </span>
           }
         />
@@ -277,7 +277,7 @@ export default function SortowniaDashboard() {
           <div>
             <h2 className="text-lg font-semibold">Sprzedaż frakcji</h2>
             <p className="text-sm text-muted-foreground">
-              Wydania z magazynu jako dokumenty sprzedaży — z ceną, odbiorcą i fakturą.
+              Wydania z magazynu jako dokumenty sprzedaży - z ceną, odbiorcą i fakturą.
               Stary system kończył się na ujemnej liczbie w księdze ruchów.
             </p>
           </div>
@@ -377,7 +377,7 @@ export default function SortowniaDashboard() {
               <span className="ml-auto font-medium">
                 {Math.abs(bilans.differenceKg) <= 1
                   ? 'bilans domyka się'
-                  : `różnica ${formatTons(bilans.differenceKg)} — sprawdź ewidencję`}
+                  : `różnica ${formatTons(bilans.differenceKg)} - sprawdź ewidencję`}
               </span>
             </div>
           </div>
@@ -443,7 +443,7 @@ export default function SortowniaDashboard() {
             <h2 className="text-lg font-semibold">Ewidencja przekazań odpadu</h2>
             <p className="text-sm text-muted-foreground">
               Każde wydanie ma kartę przekazania z masą, kodem odpadu, procesem odzysku
-              i numerami rejestrowymi obu stron. To odpowiednik karty przekazania odpadu —
+              i numerami rejestrowymi obu stron. To odpowiednik karty przekazania odpadu -
               nie dokument z systemu BDO, bo integracji z BDO tu nie ma.
             </p>
           </div>
@@ -483,7 +483,7 @@ export default function SortowniaDashboard() {
             <h2 className="text-lg font-semibold">Pochodzenie odpadu</h2>
             <p className="text-sm text-muted-foreground">
               Każde przyjęcie zakłada partię z dostawcą i datą. Stary system wiedział tylko,
-              że przyjechało 6 412 kg papieru — nie czyjego.
+              że przyjechało 6 412 kg papieru - nie czyjego.
             </p>
           </div>
           <div className="rounded-lg border">
@@ -558,7 +558,7 @@ export default function SortowniaDashboard() {
                     />
                   </div>
                   <span className="w-14 text-right text-xs tabular-nums text-muted-foreground">
-                    {row.utilisation === null ? '—' : `${row.utilisation.toFixed(1)}%`}
+                    {row.utilisation === null ? '-' : `${row.utilisation.toFixed(1)}%`}
                   </span>
                 </div>
               </div>
@@ -609,7 +609,7 @@ export default function SortowniaDashboard() {
           <div>
             <h2 className="text-sm font-semibold">Ostatnie ruchy</h2>
             <p className="text-xs text-muted-foreground">
-              Każdy wiersz niesie swój numer z systemu legacy — ślad, po którym da się wrócić do kwitu.
+              Każdy wiersz niesie swój numer z systemu legacy - ślad, po którym da się wrócić do kwitu.
             </p>
           </div>
           {data ? (
@@ -643,7 +643,7 @@ export default function SortowniaDashboard() {
                     ) : null}
                   </td>
                   <td className="px-4 py-2">
-                    <span className="font-mono text-xs">{row.fractionSku ?? '—'}</span>
+                    <span className="font-mono text-xs">{row.fractionSku ?? '-'}</span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 font-mono text-xs">
                     {describeRoute(row)}
@@ -652,7 +652,7 @@ export default function SortowniaDashboard() {
                     {formatTons(Math.abs(row.quantityKg))}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 font-mono text-xs text-muted-foreground">
-                    {row.legacyMoveNo === null ? '—' : `#${row.legacyMoveNo}`}
+                    {row.legacyMoveNo === null ? '-' : `#${row.legacyMoveNo}`}
                   </td>
                 </tr>
               ))}

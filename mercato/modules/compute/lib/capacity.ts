@@ -6,14 +6,14 @@
  *
  * **Dla wnioskowania autoregresyjnego wąskim gardłem jest przepustowość
  * pamięci, nie moc obliczeniowa.** Wygenerowanie jednego tokenu wymaga
- * przeczytania wag z pamięci; przy modelu gęstym — wszystkich, przy modelu
- * z mieszanką ekspertów — tylko aktywnych. Nagłówkowy petaflop nie pomaga,
+ * przeczytania wag z pamięci; przy modelu gęstym - wszystkich, przy modelu
+ * z mieszanką ekspertów - tylko aktywnych. Nagłówkowy petaflop nie pomaga,
  * gdy układ czeka na pamięć.
  *
  * Liczby dla DGX Spark, przeciw którym ta funkcja była pisana: 128 GB pamięci
  * zunifikowanej LPDDR5X, **273 GB/s** przepustowości, 1 PFLOPS w FP4.
  * Niezależne pomiary zgodnie wskazują, że to przepustowość, a nie petaflop,
- * rozstrzyga o wydajności — i że modele powyżej ~30 mld parametrów gęstych
+ * rozstrzyga o wydajności - i że modele powyżej ~30 mld parametrów gęstych
  * „mieszczą się, ale są wolne".
  *
  * Wniosek projektowy, który z tego płynie i który trzeba nazwać: taka maszyna
@@ -24,7 +24,7 @@
 export type NodeCapability = {
   /** Pamięć dostępna dla modelu, w gigabajtach. */
   memoryGb: number
-  /** Przepustowość pamięci w GB/s — liczba, która realnie rozstrzyga. */
+  /** Przepustowość pamięci w GB/s - liczba, która realnie rozstrzyga. */
   memoryBandwidthGbs: number
   /** Moc obliczeniowa w TFLOPS przy precyzji, w której model faktycznie liczy. */
   computeTflops: number
@@ -41,7 +41,7 @@ export type NodeCapability = {
 export type DecodeWorkload = {
   /** Parametry **aktywne** na token, w miliardach. Dla modelu gęstego = wszystkie. */
   activeParamsB: number
-  /** Parametry łącznie, w miliardach — decyduje, czy model w ogóle się zmieści. */
+  /** Parametry łącznie, w miliardach - decyduje, czy model w ogóle się zmieści. */
   totalParamsB: number
   /** Bajty na parametr: 0,5 dla FP4, 1 dla FP8/INT8, 2 dla FP16. */
   bytesPerParam: number
@@ -65,7 +65,7 @@ export type Bound = 'capacity' | 'memory_bandwidth' | 'compute'
 export type CapacityVerdict = {
   fits: boolean
   bound: Bound
-  /** Tokeny na sekundę albo klatki na sekundę — zależnie od obciążenia. */
+  /** Tokeny na sekundę albo klatki na sekundę - zależnie od obciążenia. */
   estimatedRate: number | null
   requiredMemoryGb: number
   headroomGb: number
@@ -73,7 +73,7 @@ export type CapacityVerdict = {
 }
 
 const DEFAULT_EFFICIENCY = 0.45
-/** Ułamek szczytowych TFLOPS osiągany realnie — tak samo jak przy pamięci. */
+/** Ułamek szczytowych TFLOPS osiągany realnie - tak samo jak przy pamięci. */
 const DEFAULT_COMPUTE_EFFICIENCY = 0.35
 
 export function estimateDecode(node: NodeCapability, workload: DecodeWorkload): CapacityVerdict {
@@ -83,7 +83,7 @@ export function estimateDecode(node: NodeCapability, workload: DecodeWorkload): 
   const headroomGb = node.memoryGb - requiredMemoryGb
 
   if (headroomGb < 0) {
-    // Brak miejsca jest granicą twardą — żadna przepustowość tego nie naprawi.
+    // Brak miejsca jest granicą twardą - żadna przepustowość tego nie naprawi.
     return {
       fits: false,
       bound: 'capacity',
@@ -92,7 +92,7 @@ export function estimateDecode(node: NodeCapability, workload: DecodeWorkload): 
       headroomGb,
       reason:
         `Model wymaga ${requiredMemoryGb.toFixed(1)} GB, a węzeł ma ${node.memoryGb} GB. ` +
-        'Brakuje miejsca — to granica twarda, nie kwestia wydajności.',
+        'Brakuje miejsca - to granica twarda, nie kwestia wydajności.',
     }
   }
 
@@ -101,7 +101,7 @@ export function estimateDecode(node: NodeCapability, workload: DecodeWorkload): 
    * Rozróżnienie aktywnych od wszystkich jest tu decydujące. Model
    * z mieszanką ekspertów o 120 mld parametrów, z których na token pracuje
    * 5 mld, czyta z pamięci dwudziestokrotnie mniej niż gęsty model tej samej
-   * wielkości — i dlatego bywa użyteczny tam, gdzie gęsty nie jest.
+   * wielkości - i dlatego bywa użyteczny tam, gdzie gęsty nie jest.
    */
   const activeBytesGb = workload.activeParamsB * workload.bytesPerParam
   const tokensPerSecond = (node.memoryBandwidthGbs * efficiency) / Math.max(0.001, activeBytesGb)
@@ -162,7 +162,7 @@ export function estimateVision(node: NodeCapability, workload: VisionWorkload): 
       ? `Około ${perStream.toFixed(0)} kl./s na strumień przy ${workload.streams} strumieniach ` +
         `(wymagane ${workload.targetFps}). Ograniczeniem jest ${bound === 'compute' ? 'moc obliczeniowa' : 'przepustowość pamięci'}.`
       : `Około ${perStream.toFixed(1)} kl./s na strumień, a potrzeba ${workload.targetFps}. ` +
-        `Ograniczeniem jest ${bound === 'compute' ? 'moc obliczeniowa' : 'przepustowość pamięci'} — ` +
+        `Ograniczeniem jest ${bound === 'compute' ? 'moc obliczeniowa' : 'przepustowość pamięci'} - ` +
         'zmniejsz liczbę strumieni, rozdzielczość albo częstość próbkowania.',
   }
 }
@@ -171,7 +171,7 @@ export function estimateVision(node: NodeCapability, workload: VisionWorkload): 
  * Role, których węzeł obliczeniowy ogólnego przeznaczenia **nie może** pełnić.
  *
  * To nie jest lista dobrych praktyk. Warstwa zatrzymująca maszynę musi być
- * deterministyczna i niezależna od tego, co robi polityka — a wieloprocesowy
+ * deterministyczna i niezależna od tego, co robi polityka - a wieloprocesowy
  * system ogólnego przeznaczenia z akceleratorem nie daje ani determinizmu,
  * ani niezależności. Kuszenie jest realne i przewidywalne: jak już stoi
  * mocna maszyna, wszystko chce na niej wylądować.
@@ -199,7 +199,7 @@ export function checkNodeRoles(roles: string[]): { allowed: boolean; rejected: s
       rejected,
       reason:
         `Węzeł obliczeniowy nie może pełnić roli: ${rejected.join(', ')}. ` +
-        'Zatrzymanie maszyny musi być deterministyczne i niezależne od polityki — realizuje je sterownik ' +
+        'Zatrzymanie maszyny musi być deterministyczne i niezależne od polityki - realizuje je sterownik ' +
         'celi albo obwód bezpieczeństwa, nigdy współdzielona maszyna ogólnego przeznaczenia z akceleratorem.',
     }
   }

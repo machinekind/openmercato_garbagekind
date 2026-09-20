@@ -6,7 +6,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  * Tu spotykają się dwa światy, które do tej pory stały osobno: moduł
  * `sortownia` prowadzący zamówienia, faktury i magazyn, oraz osiem modułów
  * robotycznych prowadzących roboty, polityki i epizody. Ten moduł nie dokłada
- * trzeciego świata — dokłada **przeliczenie jednego na drugi** i jeden
+ * trzeciego świata - dokłada **przeliczenie jednego na drugi** i jeden
  * rachunek kontrolny.
  *
  * Dwie decyzje przesądzone przed pierwszą tabelą:
@@ -22,14 +22,14 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  *    Epizody stają się masą; zamówienie sprzedaży **nie** uruchamia robota
  *    samo z siebie. Zlecenie robocze zakłada człowiek. ERP ma opóźnienia
  *    i tryby awarii właściwe dla systemu ewidencyjnego, nie dla sterowania
- *    ruchem — a zamówienie, które samo porusza maszyną, jest dokładnie tym
+ *    ruchem - a zamówienie, które samo porusza maszyną, jest dokładnie tym
  *    sprzężeniem, przez które błąd w ERP zatrzymuje albo rozpędza halę.
  *
  * Masy trzymamy w **gramach jako liczbach całkowitych**. Kilogramy
  * zmiennoprzecinkowe zemściły się już raz przy bilansie masy w sortowni:
  * suma stu ruchów po 3803,73 kg nie jest tym samym, co suma tych samych stu
  * ruchów wczytanych w innej kolejności. Przeliczenie na kilogramy dzieje się
- * na granicy — przy wywołaniu komendy magazynowej i na ekranie.
+ * na granicy - przy wywołaniu komendy magazynowej i na ekranie.
  */
 
 export type WorkOrderStatus = 'open' | 'completed' | 'cancelled'
@@ -38,7 +38,7 @@ export type BatchStatus = 'filling' | 'closed' | 'discarded'
 /**
  * Zlecenie robocze: która cela ma wyprodukować ile czego i na czyją rzecz.
  *
- * Wiąże trzy identyfikatory z trzech różnych światów — celę z rejestru floty,
+ * Wiąże trzy identyfikatory z trzech różnych światów - celę z rejestru floty,
  * wariant katalogowy z ERP i (opcjonalnie) zamówienie sprzedaży. To jest cała
  * treść „centralnego panelu": jedno miejsce, w którym te trzy rzeczy stoją
  * w jednym wierszu.
@@ -68,7 +68,7 @@ export class WorkOrder {
    * Wersja polityki, którą zlecenie ma być wykonane.
    *
    * Opcjonalna, bo zlecenie bywa realizowane ręcznie albo mieszanie. Gdy jest
-   * podana, uzgodnienie przypisuje błąd **tej wersji** — i to jest jedyny
+   * podana, uzgodnienie przypisuje błąd **tej wersji** - i to jest jedyny
    * sposób, żeby powiedzieć „v2 gubi więcej sztuk niż v1" w kilogramach,
    * a nie w procentach z własnego dziennika robota.
    */
@@ -78,7 +78,7 @@ export class WorkOrder {
   @Property({ name: 'catalog_variant_id', type: 'uuid' })
   catalogVariantId!: string
 
-  /** Kod odpadu / SKU frakcji — ta sama tożsamość, co w module `sortownia`. */
+  /** Kod odpadu / SKU frakcji - ta sama tożsamość, co w module `sortownia`. */
   @Property({ type: 'text' })
   sku!: string
 
@@ -98,7 +98,7 @@ export class WorkOrder {
    * To jest najbardziej niepewna liczba w całym module i dlatego stoi na
    * zleceniu, a nie w konfiguracji globalnej: butelka PET z tej linii waży
    * co innego niż butelka z tamtej. Uzgodnienie bez tej liczby jest możliwe,
-   * ale daje werdykt `no_reference` — i tak ma być, zamiast podstawiać średnią.
+   * ale daje werdykt `no_reference` - i tak ma być, zamiast podstawiać średnią.
    */
   @Property({ name: 'nominal_piece_grams', type: 'int', nullable: true })
   nominalPieceGrams?: number | null
@@ -136,7 +136,7 @@ export class WorkOrder {
  * Partia robocza: jeden fizyczny pojemnik napełniany przez celę.
  *
  * To jest jednostka, w której praca robota staje się rzeczą policzalną przez
- * przedsiębiorstwo. Pojedynczy epizod to jeden chwyt — gramy. Zamówienie idzie
+ * przedsiębiorstwo. Pojedynczy epizod to jeden chwyt - gramy. Zamówienie idzie
  * w tonach. Pojemnik jest pomostem: napełnia się godzinami, a potem staje na
  * wadze i **dopiero wtedy** wchodzi do magazynu.
  *
@@ -176,7 +176,7 @@ export class WorkBatch {
   @Property({ name: 'weighed_grams', type: 'bigint', nullable: true })
   weighedGrams?: number | null
 
-  /** Liczba epizodów zakończonych powodzeniem w oknie partii — deklaracja robota. */
+  /** Liczba epizodów zakończonych powodzeniem w oknie partii - deklaracja robota. */
   @Property({ name: 'claimed_pieces', type: 'int', nullable: true })
   claimedPieces?: number | null
 
@@ -204,7 +204,7 @@ export class WorkBatch {
 }
 
 /**
- * Uzgodnienie deklaracji robota z wagą — dopisywane, nigdy nadpisywane.
+ * Uzgodnienie deklaracji robota z wagą - dopisywane, nigdy nadpisywane.
  *
  * Ta tabela jest właściwym powodem istnienia całego modułu. Wszystko inne
  * (zlecenie, pojemnik, przyjęcie magazynowe) da się kupić w dowolnym systemie
@@ -212,7 +212,7 @@ export class WorkBatch {
  * zgubiła w zeszłym tygodniu 41 kg materiału, którego nie zgłosiła jako
  * porażki"**.
  *
- * Ponowne ważenie pojemnika tworzy kolejny wpis, a nie zmienia poprzedniego —
+ * Ponowne ważenie pojemnika tworzy kolejny wpis, a nie zmienia poprzedniego -
  * ta sama zasada, co w księdze ruchów magazynowych i w księdze przejść robota.
  */
 @Entity({ tableName: 'work_orders_reconciliations' })

@@ -5,7 +5,7 @@ import { lazyDashboardWidget, type DashboardWidgetModule } from '@open-mercato/s
  *
  * Jedyna liczba na pulpicie, której **rosnąca wartość jest zła**: liczba
  * uzasadnień deklarujących uczoną politykę jako funkcję bezpieczeństwa.
- * W zdrowym systemie jest zerem i ma nim zostać — każda inna wartość
+ * W zdrowym systemie jest zerem i ma nim zostać - każda inna wartość
  * oznacza dokument, który w postępowaniu przed organem nadzoru zaszkodzi
  * bardziej niż jego brak.
  */
@@ -16,7 +16,7 @@ const SafetyClearanceWidget = lazyDashboardWidget<SafetyClearanceSettings>(() =>
 
 /*
  * Tytuł i opis w metadanych zostają po angielsku, bo platforma nie
- * przepuszcza ich przez tłumacza — tak samo trzyma je każdy widget rdzenia.
+ * przepuszcza ich przez tłumacza - tak samo trzyma je każdy widget rdzenia.
  * Treść widgetu jest tłumaczona normalnie, przez `useT`.
  */
 const widget: DashboardWidgetModule<SafetyClearanceSettings> = {

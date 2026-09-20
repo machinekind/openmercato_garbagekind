@@ -9,7 +9,7 @@ export const metadata: ModuleInfo = {
   license: 'MIT',
   /**
    * Zależność jest jednostronna i taka ma zostać: agent bez robota nie ma
-   * sensu, robot bez agenta owszem — flota inwentaryzowana ręcznie to
+   * sensu, robot bez agenta owszem - flota inwentaryzowana ręcznie to
    * najczęstszy punkt wyjścia każdego wdrożenia.
    */
   requires: ['fleet', 'episodes', 'vision'],

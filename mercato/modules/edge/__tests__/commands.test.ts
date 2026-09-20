@@ -15,7 +15,7 @@ import { createFakeEm, makeCtx, type FakeEm } from './fakeEm'
  * Testy wiązania komend.
  *
  * Reguły żywotności i kryptografia mają własne testy jako czyste funkcje.
- * Tutaj sprawdzamy rzecz osobną: czy komendy naprawdę ich **używają** — bo
+ * Tutaj sprawdzamy rzecz osobną: czy komendy naprawdę ich **używają** - bo
  * reguła, której nikt nie woła, nie chroni niczego. W szczególności sprawdzamy
  * całą ścieżkę fazy 0: bilet → wpis → uderzenie serca → cisza → utrata.
  */
@@ -66,7 +66,7 @@ describe('edge.enrollment.issue', () => {
   })
 
   it('odmawia progu utraty krótszego niż okno spóźnienia', async () => {
-    // Inaczej „utracony" następowałby przed „spóźniony" — a rozdział tych
+    // Inaczej „utracony" następowałby przed „spóźniony" - a rozdział tych
     // stanów jest jedynym powodem, dla którego oba istnieją.
     const em = createFakeEm()
     await expect(
@@ -86,7 +86,7 @@ describe('edge.agents.enroll', () => {
     expect(em.rows('AgentKey')).toHaveLength(1)
     expect(em.rows('AgentSession')).toHaveLength(1)
     expect(em.rows('EnrollmentToken')[0].usedAt).toBeInstanceOf(Date)
-    // Agent zaraz po wpisie jeszcze się nie odezwał — i pulpit ma to pokazać.
+    // Agent zaraz po wpisie jeszcze się nie odezwał - i pulpit ma to pokazać.
     expect(em.rows('Agent')[0].lastSeenAt).toBeNull()
   })
 
@@ -248,7 +248,7 @@ describe('edge.keys.rotate', () => {
     expect(keys[0].revokedAt).toBeUndefined()
   })
 
-  it('rotację podpisuje NOWY klucz — dowodem jest posiadanie następcy', async () => {
+  it('rotację podpisuje NOWY klucz - dowodem jest posiadanie następcy', async () => {
     const em = createFakeEm()
     const { token } = await issue(em)
     const agent = await enroll(em, token)
@@ -332,7 +332,7 @@ describe('edge.agents.revoke', () => {
 
     const second = await issue(em)
     await expect(enroll(em, second.token)).resolves.toMatchObject({ robotId: ROBOT })
-    // Historia tożsamości zostaje w całości — to materiał audytowy.
+    // Historia tożsamości zostaje w całości - to materiał audytowy.
     expect(em.rows('Agent')).toHaveLength(2)
   })
 })

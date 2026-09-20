@@ -11,7 +11,7 @@ import { IncidentDialog } from './IncidentDialog'
  *
  * Ekran jest zbudowany wokół kolumny „czego brakuje", a nie wokół statusu.
  * Lista uzasadnień ze statusami jest rejestrem dokumentów; dopiero powód
- * odmowy przy każdej parze (wersja, klasa celi) czyni z niej narzędzie —
+ * odmowy przy każdej parze (wersja, klasa celi) czyni z niej narzędzie -
  * bo mówi, co zrobić, żeby dopuszczenie powstało.
  *
  * Kafelek „polityka jako funkcja bezpieczeństwa" pokazuje liczbę, która
@@ -177,7 +177,7 @@ export default function SafetyBoard() {
       <div className="rounded-md border">
         <div className="border-b px-4 py-3">
           <div className="font-medium">{t('safety.ui.clearanceMatrix', "Macierz dopuszczeń")}</div>
-          <div className="text-xs text-muted-foreground">{t("safety.prose.2", "dopuszczenie dotyczy klasy celi, nie pojedynczej celi — inaczej każda nowa cela wymagałaby osobnego uzasadnienia dla niezmienionej konfiguracji")}</div>
+          <div className="text-xs text-muted-foreground">{t("safety.prose.2", "dopuszczenie dotyczy klasy celi, nie pojedynczej celi - inaczej każda nowa cela wymagałaby osobnego uzasadnienia dla niezmienionej konfiguracji")}</div>
         </div>
         <table className="w-full text-sm">
           <thead>
@@ -201,7 +201,7 @@ export default function SafetyBoard() {
                   {row.cleared ? 'dopuszczona' : 'ZABLOKOWANA'}
                 </td>
                 <td className="px-4 py-2 text-xs text-muted-foreground">
-                  {row.cleared ? '—' : row.reasons.join('; ')}
+                  {row.cleared ? '-' : row.reasons.join('; ')}
                 </td>
               </tr>
             ))}
@@ -213,7 +213,7 @@ export default function SafetyBoard() {
         <div className="rounded-md border">
           <div className="border-b px-4 py-3">
             <div className="font-medium">{t("safety.h.zestawyEwaluacyjne", "Zestawy ewaluacyjne")}</div>
-            <div className="text-xs text-muted-foreground">{t("safety.prose.3", "limity siły i nacisku (ISO/TS 15066) mają sens tam, gdzie kontakt z człowiekiem jest możliwy — wymaganie ich za płotem byłoby rytuałem")}</div>
+            <div className="text-xs text-muted-foreground">{t("safety.prose.3", "limity siły i nacisku (ISO/TS 15066) mają sens tam, gdzie kontakt z człowiekiem jest możliwy - wymaganie ich za płotem byłoby rytuałem")}</div>
           </div>
           <table className="w-full text-sm">
             <tbody>
@@ -255,7 +255,7 @@ export default function SafetyBoard() {
                   </td>
                   <td className="px-4 py-2">{HARM_LABEL[incident.harm] ? t(...HARM_LABEL[incident.harm]) : incident.harm}</td>
                   <td className="px-4 py-2 text-xs">
-                    {incident.safetyLayerEngaged ? t('safety.ui.engaged', "zadziałała") : '—'}
+                    {incident.safetyLayerEngaged ? t('safety.ui.engaged', "zadziałała") : '-'}
                     {incident.policyImplicated ? ' / polityka zamieszana' : ''}
                   </td>
                   <td className={`px-4 py-2 ${PRIORITY_TONE[incident.priority] ?? ''}`}>

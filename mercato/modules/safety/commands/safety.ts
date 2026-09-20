@@ -29,12 +29,12 @@ const riskClasses = ['fenced', 'shared', 'public'] as const
 const harms = ['none', 'near_miss', 'first_aid', 'lost_time', 'serious'] as const
 
 /**
- * Deterministyczne mechanizmy zatrzymania — słownik zamknięty.
+ * Deterministyczne mechanizmy zatrzymania - słownik zamknięty.
  *
  * Każda pozycja działa bez udziału wyuczonego modelu i bez zależności od tego,
  * co robi polityka. Czego tu celowo nie ma: cokolwiek realizowanego przez
  * sieć neuronową, przez współdzieloną maszynę obliczeniową albo przez usługę
- * po sieci. Nie jest to lista preferencji — to jest granica, poza którą
+ * po sieci. Nie jest to lista preferencji - to jest granica, poza którą
  * uzasadnienia nie da się zapisać.
  */
 const SAFETY_LAYER_KINDS = [
@@ -151,7 +151,7 @@ const draftCaseCommand: CommandHandler<CaseDraftInput, { safetyCaseId: string }>
 
     if (existing && existing.status !== 'withdrawn') {
       throw new Error(
-        `Uzasadnienie dla tej wersji polityki i klasy celi ${input.cellClass} już istnieje — wycofaj je, zamiast zakładać drugie.`,
+        `Uzasadnienie dla tej wersji polityki i klasy celi ${input.cellClass} już istnieje - wycofaj je, zamiast zakładać drugie.`,
       )
     }
 
@@ -162,7 +162,7 @@ const draftCaseCommand: CommandHandler<CaseDraftInput, { safetyCaseId: string }>
        * Unikat `(tenant, wersja, klasa celi)` jest celowy: dwa uzasadnienia dla
        * tej samej pary to dwa dokumenty, z których jeden na pewno jest
        * nieaktualny, a przy odczycie nie wiadomo który. Drugi obieg tej samej
-       * pary — po wycofaniu i poprawkach — jest normalną ścieżką i ma działać,
+       * pary - po wycofaniu i poprawkach - jest normalną ścieżką i ma działać,
        * więc rekord wraca do `draft` z wyczyszczonym podpisem. Zatwierdzenie
        * trzeba złożyć od nowa; to jest właściwa cena poprawki.
        */
@@ -236,7 +236,7 @@ const approveCaseCommand: CommandHandler<CaseApproveInput, { safetyCaseId: strin
     } | null
     if (!safetyCase) throw new Error(`Uzasadnienie ${input.safetyCaseId} nie istnieje.`)
     if (safetyCase.status !== 'draft') {
-      throw new Error(`Uzasadnienie jest w stanie ${safetyCase.status} — zatwierdzić da się wyłącznie wersję roboczą.`)
+      throw new Error(`Uzasadnienie jest w stanie ${safetyCase.status} - zatwierdzić da się wyłącznie wersję roboczą.`)
     }
 
     if (safetyCase.declaredAsSafetyFunction) {
@@ -244,7 +244,7 @@ const approveCaseCommand: CommandHandler<CaseApproveInput, { safetyCaseId: strin
        * Odmowa na poziomie zatwierdzenia, a nie dopiero przy dopuszczeniu.
        *
        * Zatwierdzone uzasadnienie, które deklaruje uczoną politykę jako
-       * funkcję bezpieczeństwa, jest dokumentem wprowadzającym w błąd —
+       * funkcję bezpieczeństwa, jest dokumentem wprowadzającym w błąd -
        * i w postępowaniu przed organem nadzoru szkodzi bardziej niż jego brak.
        */
       throw new Error(
@@ -256,13 +256,13 @@ const approveCaseCommand: CommandHandler<CaseApproveInput, { safetyCaseId: strin
 
     if (!safetyCase.safetyLayer || !safetyCase.safetyLayer.trim()) {
       // Uzasadnienie, które nie mówi, CO zatrzyma maszynę, gdy polityka
-      // zawiedzie, nie jest uzasadnieniem — jest opisem nadziei.
+      // zawiedzie, nie jest uzasadnieniem - jest opisem nadziei.
       throw new Error('Uzasadnienie nie wskazuje deterministycznej warstwy bezpieczeństwa (pole safetyLayer).')
     }
 
     if (!safetyCase.safetyLayerKind) {
       /*
-       * Sam opis nie wystarcza i nie wystarczał nigdy — tyle że do tej pory
+       * Sam opis nie wystarcza i nie wystarczał nigdy - tyle że do tej pory
        * nie było tego jak sprawdzić. Wolny tekst przyjmuje zdanie „warstwą
        * bezpieczeństwa jest model nadzorczy na węźle obliczeniowym", które
        * brzmi poważnie i nie jest warstwą bezpieczeństwa.
@@ -348,7 +348,7 @@ const defineSuiteCommand: CommandHandler<z.infer<typeof suiteDefineSchema>, { su
     if (existing) {
       // Katalog zestawów jest konfiguracją, nie księgą: aktualizacja w miejscu
       // jest tu poprawna. To jedyne miejsce w całym projekcie, gdzie nadpisanie
-      // jest właściwym zachowaniem — i dlatego jest opisane.
+      // jest właściwym zachowaniem - i dlatego jest opisane.
       existing.name = input.name
       existing.description = input.description ?? null
       existing.requiredFor = input.requiredFor
@@ -462,13 +462,13 @@ const recordRunCommand: CommandHandler<RunRecordInput, { evalRunId: string }> = 
 }
 
 /**
- * Sprawdzenie dopuszczenia — czytane przez moduł wdrożeń przed przypisaniem.
+ * Sprawdzenie dopuszczenia - czytane przez moduł wdrożeń przed przypisaniem.
  *
  * Kierunek zależności: `deployment` → `safety`. Wybrany świadomie przeciwko
  * wariantowi z subskrybentem zdarzeń, który odwoływałby przypisanie po fakcie.
  * Ten drugi wygląda czyściej (moduł bezpieczeństwa nie jest wtedy zależnością
  * kanału stanu pożądanego), ale zostawia okno, w którym robot pracuje
- * niedopuszczoną polityką — a długość tego okna zależy od opóźnienia kolejki.
+ * niedopuszczoną polityką - a długość tego okna zależy od opóźnienia kolejki.
  * Dopuszczenie jest warunkiem wstępnym przypisania, nie jego skutkiem ubocznym.
  */
 const checkClearanceCommand: CommandHandler<ClearanceInput, ClearanceVerdict> = {
@@ -589,7 +589,7 @@ const reportIncidentCommand: CommandHandler<
      * Nie zatrzymuje pojedynczego wdrożenia: skoro dopuszczenie dotyczy klasy
      * celi, to zdarzenie podważające je podważa je dla wszystkich cel tej
      * klasy. Wycofanie uzasadnienia sprawia, że każde kolejne przypisanie tej
-     * wersji w tej klasie odbija się samo — bez wyliczania, komu ją zdjąć.
+     * wersji w tej klasie odbija się samo - bez wyliczania, komu ją zdjąć.
      */
     if (verdict.haltDeployment && input.policyVersionId && cellClass) {
       await em.getConnection().execute(
@@ -626,7 +626,7 @@ const reportIncidentCommand: CommandHandler<
     })
 
     if (verdict.haltDeployment && input.policyVersionId && cellClass) {
-      // Emitowane pod tym samym warunkiem, co wycofanie hurtowe wyżej — nie
+      // Emitowane pod tym samym warunkiem, co wycofanie hurtowe wyżej - nie
       // pod samym `haltDeployment`. Incydent bez wskazanej wersji polityki
       // albo bez klasy celi niczego nie wycofał i ogłaszanie, że wycofał,
       // byłoby nieprawdą.

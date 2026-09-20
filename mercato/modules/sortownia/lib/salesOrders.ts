@@ -11,7 +11,7 @@ import type { LegacyOrderRow } from './legacyFiles'
  *
  * W starym systemie wydanie to jeden wiersz `salesorders` i ujemna liczba
  * w księdze ruchów. Nie ma z tego ani faktury, ani należności, ani śladu, kto
- * i po jakiej cenie odebrał frakcję — księgowa dopisuje to ręcznie w Excelu.
+ * i po jakiej cenie odebrał frakcję - księgowa dopisuje to ręcznie w Excelu.
  *
  * Po stronie Mercato to samo wydanie staje się zamówieniem sprzedaży z pozycją
  * wskazującą wariant katalogowy frakcji, ilością w kilogramach i ceną za
@@ -20,7 +20,7 @@ import type { LegacyOrderRow } from './legacyFiles'
  *
  * Idempotencja: `orderNumber` ma w bazie unikalny indeks w zakresie
  * organizacji i tenanta, więc powtórzony import odbija się od bazy, a nie od
- * naszej pamięci — dokładnie tak, jak przy ruchach magazynowych.
+ * naszej pamięci - dokładnie tak, jak przy ruchach magazynowych.
  */
 
 export type SalesOrderContext = {
@@ -51,13 +51,13 @@ export type SalesOrderIndex = Map<number, string>
  * Uproszczenie świadome i warte nazwania: obrót niektórymi odpadami
  * i surowcami wtórnymi bywa w Polsce objęty odwrotnym obciążeniem albo inną
  * stawką niż podstawowa. Demo liczy 23% jednolicie i nie udaje, że rozstrzyga
- * kwalifikację podatkową — od tego jest księgowość, której tu z założenia nie ma.
+ * kwalifikację podatkową - od tego jest księgowość, której tu z założenia nie ma.
  */
 export const VAT_RATE = 23
 
 export const CURRENCY_FALLBACK = 'PLN'
 
-/** Numer dokumentu odtwarzalny z numeru legacy — stąd idempotencja. */
+/** Numer dokumentu odtwarzalny z numeru legacy - stąd idempotencja. */
 export function orderNumberFor(orderno: number): string {
   return `WZ/${orderno}`
 }
@@ -103,7 +103,7 @@ export async function applySalesOrders(
       outcomes.push({
         orderno: row.orderno,
         action: 'failed',
-        error: `frakcja ${row.stockid} nie jest w katalogu — zaimportuj frakcje przed zamówieniami`,
+        error: `frakcja ${row.stockid} nie jest w katalogu - zaimportuj frakcje przed zamówieniami`,
       })
       continue
     }
@@ -113,7 +113,7 @@ export async function applySalesOrders(
       outcomes.push({
         orderno: row.orderno,
         action: 'failed',
-        error: `kontrahent ${row.debtorno} nie jest w CRM — zaimportuj kontrahentów przed zamówieniami`,
+        error: `kontrahent ${row.debtorno} nie jest w CRM - zaimportuj kontrahentów przed zamówieniami`,
       })
       continue
     }
@@ -147,7 +147,7 @@ export async function applySalesOrders(
               productVariantId: fraction.variantId,
               name: `Frakcja ${row.stockid}`,
               // Magazyn prowadzi frakcję w kilogramach i dokument sprzedaży
-              // musi mówić tą samą jednostką — inaczej rozjazd wyjdzie dopiero
+              // musi mówić tą samą jednostką - inaczej rozjazd wyjdzie dopiero
               // przy uzgadnianiu faktury ze stanem.
               quantity: row.iloscKg,
               quantityUnit: 'kg',
@@ -159,7 +159,7 @@ export async function applySalesOrders(
           ],
         },
         ctx: ctx.commandContext,
-        // Koperta `{ result, logEntry }` — jak przy komendach CRM.
+        // Koperta `{ result, logEntry }` - jak przy komendach CRM.
       })) as { result?: { orderId?: string } } | undefined
 
       const orderId = created?.result?.orderId
@@ -173,13 +173,13 @@ export async function applySalesOrders(
       if (ctx.issueInvoices) {
         // Kwoty przepisujemy z zamówienia, którego totale policzył
         // `salesCalculationService` platformy. Powód jest zasadniczy:
-        // `sales.invoices.create` — w przeciwieństwie do `sales.orders.create`
-        // — nie woła silnika wyliczeń, więc pozycje faktury zapisują się
+        // `sales.invoices.create` - w przeciwieństwie do `sales.orders.create`
+        // - nie woła silnika wyliczeń, więc pozycje faktury zapisują się
         // z zerowymi kwotami mimo poprawnej ilości, ceny i stawki VAT.
         // Sprawdzone na żywej bazie: 40 faktur, każda na 0,00 zł.
         //
         // Własne mnożenie ilości przez cenę byłoby drugą, równoległą logiką
-        // podatkową obok platformowej — a dwie takie logiki prędzej czy później
+        // podatkową obok platformowej - a dwie takie logiki prędzej czy później
         // się rozjadą. Dlatego czytamy wynik tamtej.
         const placed = await ctx.em.findOne(SalesOrder, { id: orderId } as never)
         const totals = placed as unknown as {
@@ -219,7 +219,7 @@ export async function applySalesOrders(
         })) as { result?: { invoiceId?: string } } | undefined
 
         // Obejście błędu w `sales.invoices.create`: komenda przyjmuje `orderId`,
-        // sprawdza, że zamówienie istnieje w tym samym zakresie — a potem
+        // sprawdza, że zamówienie istnieje w tym samym zakresie - a potem
         // zapisuje encję przez `em.create(SalesInvoice, { orderId })`. Encja ma
         // jednak tylko relację `order` (`@ManyToOne`, kolumna `order_id`), więc
         // MikroORM po cichu odrzuca nieznaną właściwość i faktura ląduje

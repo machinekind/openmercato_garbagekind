@@ -14,21 +14,21 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  * Rozdział od `fleet` nie jest estetyczny. Robot trwa dziesięć lat, a klucz
  * kryptograficzny rotuje się co kwartał; komputer pokładowy bywa wymieniany
  * bez zmiany maszyny. Trzymanie klucza jako atrybutu robota kazałoby wersjonować
- * robota przy każdej rotacji — i mieszałoby dwie różne osie czasu.
+ * robota przy każdej rotacji - i mieszałoby dwie różne osie czasu.
  *
  * Kierunek zależności jest jednostronny: `edge` wie o `robot_id`, `fleet` nie
  * wie o agencie. Pulpit floty składa oba źródła po stronie przeglądarki,
  * dzięki czemu rejestr działa również wtedy, gdy kanału brzegowego nie ma.
  */
 
-/** Stan agenta. Odwołanie jest nieodwracalne — nowy agent dostaje nową tożsamość. */
+/** Stan agenta. Odwołanie jest nieodwracalne - nowy agent dostaje nową tożsamość. */
 export type AgentStatus = 'enrolled' | 'revoked'
 
 /**
  * Jednorazowy bilet wpisowy.
  *
  * W bazie leży **wyłącznie skrót** biletu. Jawna postać istnieje przez jedną
- * odpowiedź komendy i nigdy nie jest zapisywana — bo bilet wpisowy, który da
+ * odpowiedź komendy i nigdy nie jest zapisywana - bo bilet wpisowy, który da
  * się odczytać z tabeli, jest kluczem do floty leżącym obok floty.
  */
 @Entity({ tableName: 'edge_enrollment_tokens' })
@@ -78,7 +78,7 @@ export class EnrollmentToken {
  *
  * Tożsamością jest para `(tenant_id, robot_id)` wśród agentów nieodwołanych:
  * jeden robot ma w danej chwili co najwyżej jednego ważnego agenta. Drugi,
- * odzywający się równolegle, jest albo klonem, albo nieudanym wdrożeniem —
+ * odzywający się równolegle, jest albo klonem, albo nieudanym wdrożeniem -
  * i jedno, i drugie ma wyjść na wierzch, a nie zostać po cichu zaakceptowane.
  */
 @Entity({ tableName: 'edge_agents' })
@@ -97,7 +97,7 @@ export class Agent {
   @Property({ name: 'robot_id', type: 'uuid' })
   robotId!: string
 
-  /** `onboard` — komputer na robocie, `cell_controller` — sterownik celi, `sim` — symulacja. */
+  /** `onboard` - komputer na robocie, `cell_controller` - sterownik celi, `sim` - symulacja. */
   @Property({ name: 'agent_kind', type: 'text', default: 'onboard' })
   agentKind: 'onboard' | 'cell_controller' | 'sim' = 'onboard'
 
@@ -110,7 +110,7 @@ export class Agent {
   /**
    * Odstęp między uderzeniami serca i okres tolerancji, w sekundach.
    *
-   * Liczby przychodzą z zewnątrz — nadaje je ten, kto wystawia bilet wpisowy,
+   * Liczby przychodzą z zewnątrz - nadaje je ten, kto wystawia bilet wpisowy,
    * na podstawie klasy ryzyka celi. `edge` przechowuje je i egzekwuje, ale
    * **nie wie, skąd się wzięły**, i celowo nie ma dostępu do klasy ryzyka.
    * Tu kończy się kanał, a zaczyna dziedzina.
@@ -185,7 +185,7 @@ export class AgentKey {
   @Property({ type: 'text', default: 'ed25519' })
   algorithm: string = 'ed25519'
 
-  /** Skrót klucza — tym operator porównuje to, co widzi na robocie, z tym, co w bazie. */
+  /** Skrót klucza - tym operator porównuje to, co widzi na robocie, z tym, co w bazie. */
   @Property({ type: 'text' })
   fingerprint!: string
 
@@ -207,13 +207,13 @@ export class AgentKey {
  * Nieprzerwany okres łączności agenta z centralą.
  *
  * Sesja, a nie tylko `last_seen_at`, bo liczba sesji na dobę jest miarą
- * migotania łącza — a migoczący robot i robot stabilny wyglądają w kolumnie
+ * migotania łącza - a migoczący robot i robot stabilny wyglądają w kolumnie
  * „ostatnio widziany" identycznie.
  *
  * Licznik `last_sequence` jest per sesja, nie per agent: agent po restarcie
  * zaczyna liczyć od nowa, więc licznik globalny odrzucałby każdy legalny
  * restart jako powtórkę. Wykrywanie klonów opiera się za to na tym, że dwie
- * żywe sesje tego samego agenta nie mogą istnieć naraz — starsza jest
+ * żywe sesje tego samego agenta nie mogą istnieć naraz - starsza jest
  * wypierana i ten fakt zostaje zapisany.
  */
 @Entity({ tableName: 'edge_agent_sessions' })
@@ -233,7 +233,7 @@ export class AgentSession {
   @Property({ name: 'agent_id', type: 'uuid' })
   agentId!: string
 
-  /** Którym kluczem otwarto sesję — żeby rotacja była widoczna w historii. */
+  /** Którym kluczem otwarto sesję - żeby rotacja była widoczna w historii. */
   @Property({ name: 'key_id', type: 'uuid' })
   keyId!: string
 
@@ -255,7 +255,7 @@ export class AgentSession {
   @Property({ name: 'ended_at', type: Date, nullable: true })
   endedAt?: Date | null
 
-  /** `superseded` — ktoś otworzył drugą sesję, `timeout` — cisza, `revoked` — odwołanie agenta. */
+  /** `superseded` - ktoś otworzył drugą sesję, `timeout` - cisza, `revoked` - odwołanie agenta. */
   @Property({ name: 'ended_reason', type: 'text', nullable: true })
   endedReason?: 'superseded' | 'timeout' | 'revoked' | 'graceful' | null
 }

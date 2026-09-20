@@ -13,7 +13,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  * po dacie jest katalogiem plików; dopiero odcisk kontraktu embodimentu robi
  * z niej rejestr, w którym da się odmówić wdrożenia przed ruchem ramienia.
  *
- * Drugą rzeczą wyciągniętą na wierzch jest skrót treści — bo to on, a nie
+ * Drugą rzeczą wyciągniętą na wierzch jest skrót treści - bo to on, a nie
  * numer, jest tożsamością wersji. Numer pokazujemy mniejszym drukiem obok.
  */
 
@@ -150,7 +150,7 @@ export default function PolicyRegistry() {
           value={totals ? totals.embodimentDrift + totals.orphanedEmbodiment : null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">{t('policy_registry.ui.zeroInHealthy', "w zdrowym rejestrze zero — każda inna wartość jest awarią")}</span>
+            <span className="text-xs text-muted-foreground">{t('policy_registry.ui.zeroInHealthy', "w zdrowym rejestrze zero - każda inna wartość jest awarią")}</span>
           }
         />
       </div>
@@ -196,14 +196,14 @@ export default function PolicyRegistry() {
                         {version.embodiment ? (
                           <span className={version.embodimentDrift ? 'text-red-600' : ''}>
                             {version.embodiment}
-                            {version.embodimentDrift ? ' — kontrakt się rozjechał' : ''}
+                            {version.embodimentDrift ? ' - kontrakt się rozjechał' : ''}
                           </span>
                         ) : (
                           <span className="text-red-600">{t('policy_registry.ui.revisionGone', "rewizja zniknęła z rejestru floty")}</span>
                         )}
                       </td>
                       <td className="px-4 py-2 text-xs text-muted-foreground">
-                        {version.artifactRoles.join(', ') || '—'}
+                        {version.artifactRoles.join(', ') || '-'}
                       </td>
                       <td className={`px-4 py-2 ${STATUS_TONE[version.status] ?? ''}`}>
                         {STATUS_LABEL[version.status] ?? version.status}
@@ -216,7 +216,7 @@ export default function PolicyRegistry() {
                 </tbody>
               </table>
             ) : (
-              <div className="px-4 py-3 text-sm text-muted-foreground">{t('policy_registry.ui.policyNoVersions', "Polityka bez żadnej wersji — zadeklarowany embodiment, brak wag.")}</div>
+              <div className="px-4 py-3 text-sm text-muted-foreground">{t('policy_registry.ui.policyNoVersions', "Polityka bez żadnej wersji - zadeklarowany embodiment, brak wag.")}</div>
             )}
           </div>
         ))}

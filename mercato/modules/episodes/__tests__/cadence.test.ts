@@ -6,7 +6,7 @@ import { cadence, cadenceBy, trend, verifyAgainstLedger, type EpisodeEntry } fro
  * Najważniejsze są tu przypadki brzegowe serii: to one decydują o tym, czy
  * liczba „epizodów na interwencję" mówi prawdę, czy pochlebia. Test
  * sprawdzający tylko szczęśliwą ścieżkę przeszedłby również dla funkcji,
- * która liczy serie o jeden za długie — czyli zawyża wynik dokładnie tam,
+ * która liczy serie o jeden za długie - czyli zawyża wynik dokładnie tam,
  * gdzie wdrożenie idzie źle.
  */
 
@@ -14,7 +14,7 @@ function ep(sequence: number, interventionCount = 0, outcome: EpisodeEntry['outc
   return { id: `e${sequence}`, sequence, outcome, interventionCount }
 }
 
-describe('cadence — serie', () => {
+describe('cadence - serie', () => {
   it('epizod z interwencją NIE należy do serii, którą kończy', () => {
     // Zaliczenie go zawyżałoby wynik o jeden przy każdym przerwaniu.
     const report = cadence([ep(1), ep(2), ep(3, 1), ep(4), ep(5)])
@@ -41,7 +41,7 @@ describe('cadence — serie', () => {
 
   it('kilka interwencji w jednym epizodzie liczy się jako jeden epizod przerwany', () => {
     // Człowiek, który poprawił coś trzy razy w jednym podejściu, nie przerwał
-    // trzech epizodów — ale przerwał trzy razy i liczniki mają to rozdzielać.
+    // trzech epizodów - ale przerwał trzy razy i liczniki mają to rozdzielać.
     const report = cadence([ep(1), ep(2, 3), ep(3)])
     expect(report.interventions).toBe(3)
     expect(report.intervenedEpisodes).toBe(1)
@@ -56,7 +56,7 @@ describe('cadence — serie', () => {
   })
 })
 
-describe('cadence — epizody na interwencję', () => {
+describe('cadence - epizody na interwencję', () => {
   it('liczy stosunek epizodów do interwencji', () => {
     const report = cadence([ep(1), ep(2), ep(3, 1), ep(4), ep(5), ep(6, 1)])
     expect(report.meanEpisodesBetweenInterventions).toBe(3)
@@ -64,14 +64,14 @@ describe('cadence — epizody na interwencję', () => {
 
   it('brak interwencji daje null, a nie nieskończoność ani wielką liczbę', () => {
     // Brak interwencji w serii pięciu epizodów nie jest dowodem autonomii,
-    // tylko brakiem danych — i raport ma to mówić wprost.
+    // tylko brakiem danych - i raport ma to mówić wprost.
     const report = cadence([ep(1), ep(2), ep(3)])
     expect(report.meanEpisodesBetweenInterventions).toBeNull()
     expect(Number.isFinite(report.meanEpisodesBetweenInterventions as number)).toBe(false)
   })
 
   it('autonomia i skuteczność to dwie różne liczby', () => {
-    // Epizod bywa nieudany bez żadnej interwencji — i to jest dobra wiadomość.
+    // Epizod bywa nieudany bez żadnej interwencji - i to jest dobra wiadomość.
     const report = cadence([ep(1, 0, 'failure'), ep(2, 0, 'failure'), ep(3, 0, 'success')])
     expect(report.autonomyRate).toBe(1)
     expect(report.successRate).toBeCloseTo(1 / 3)
@@ -175,7 +175,7 @@ describe('trend', () => {
     expect(result.reason).toContain('brak podstawy')
   })
 
-  it('zniknięcie interwencji to poprawa, pojawienie się — pogorszenie', () => {
+  it('zniknięcie interwencji to poprawa, pojawienie się - pogorszenie', () => {
     expect(trend(okres(20, 3), okres(20, 0)).direction).toBe('up')
     expect(trend(okres(20, 0), okres(20, 3)).direction).toBe('down')
   })

@@ -10,12 +10,12 @@ import { cadence, cadenceBy, verifyAgainstLedger, type EpisodeEntry } from '../.
  * Raport liczony jest **w czystej funkcji na wczytanej księdze**, a nie
  * agregatem w SQL-u. To jest decyzja, nie lenistwo: reguła wyliczona w SQL-u
  * raportu byłaby nieweryfikowalna inaczej niż drugim SQL-em, a ta ma być
- * sprawdzalna testem jednostkowym w każdym wariancie. Cena — wczytanie księgi
- * do pamięci — jest przy flocie manipulatorów akceptowalna; przy milionie
+ * sprawdzalna testem jednostkowym w każdym wariancie. Cena - wczytanie księgi
+ * do pamięci - jest przy flocie manipulatorów akceptowalna; przy milionie
  * epizodów na dobę pierwszym krokiem będzie okno czasowe, a nie przepisanie
  * reguły na agregat.
  *
- * `getAuthFromRequest`, nie wariant ciastkowy — skrypty dowodowe niosą sesję
+ * `getAuthFromRequest`, nie wariant ciastkowy - skrypty dowodowe niosą sesję
  * w nagłówku.
  */
 
@@ -92,7 +92,7 @@ export async function GET(req: Request): Promise<Response> {
     startedAt: new Date(row.started_at).toISOString(),
   }))
 
-  // Księga jako druga, niezależna strona rachunku — liczona przez bazę, nie przez nas.
+  // Księga jako druga, niezależna strona rachunku - liczona przez bazę, nie przez nas.
   const ledgerRows = await em.getConnection().execute<Array<{ episodes: string; interventions: string }>>(
     `select (select count(*) from episodes_episodes where tenant_id = ?) as episodes,
             (select count(*) from episodes_interventions where tenant_id = ?) as interventions`,

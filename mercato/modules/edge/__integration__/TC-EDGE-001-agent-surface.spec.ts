@@ -6,7 +6,7 @@ export const integrationMeta = {
 }
 
 /**
- * Powierzchnia agenta — jedyne w tej wtyczce punkty wejścia **bez**
+ * Powierzchnia agenta - jedyne w tej wtyczce punkty wejścia **bez**
  * uwierzytelnienia sesyjnego.
  *
  * Testy jednostkowe modułu `edge` sprawdzają kryptografię i cykl sesji na
@@ -18,7 +18,7 @@ export const integrationMeta = {
  *
  * Świadomie nie budujemy tu pełnej ścieżki wpisania agenta: wymagałaby
  * robota bez agenta, a jedynym sposobem, żeby go dostać, jest odwołanie
- * agenta istniejącego — czyli zniszczenie stanu, z którego korzystają
+ * agenta istniejącego - czyli zniszczenie stanu, z którego korzystają
  * inne testy. Ścieżkę pozytywną pokrywa `edge/__tests__/commands.test.ts`
  * na pełnej kryptografii Ed25519.
  */
@@ -46,7 +46,7 @@ test.describe('TC-EDGE-001 powierzchnia agenta', () => {
        * Dowodem, że trasa istnieje, jest **JSON z polem `error`**, a nie kod
        * stanu. Nasza obsługa zwraca 404 z własnym komunikatem, gdy nie
        * rozpozna kontekstu żądania (nieistniejący bilet, nieistniejąca
-       * sesja) — i to jest poprawna odmowa, a nie brak trasy. Brak trasy
+       * sesja) - i to jest poprawna odmowa, a nie brak trasy. Brak trasy
        * wygląda inaczej: Next oddaje stronę HTML.
        */
       const typ = odpowiedz.headers()['content-type'] ?? ''
@@ -84,7 +84,7 @@ test.describe('TC-EDGE-001 powierzchnia agenta', () => {
     expect(dane.totals).toBeTruthy()
     expect(Array.isArray(dane.agents)).toBeTruthy()
 
-    // Suma stanów musi się zgadzać z listą — rozjazd znaczy, że któryś stan
+    // Suma stanów musi się zgadzać z listą - rozjazd znaczy, że któryś stan
     // żywotności jest liczony dwa razy albo wcale.
     const t = dane.totals as Record<string, number>
     expect(t.online + t.late + t.lost + t.neverSeen).toBeLessThanOrEqual(t.agents)

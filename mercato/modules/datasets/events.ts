@@ -10,7 +10,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * nie ma jak tego zobaczyć.
  *
  * `run.completed` jest jedynym miejscem, gdzie powstaje wiązanie wersja
- * zbioru ↔ wersja polityki, więc jego ładunek niesie oba identyfikatory —
+ * zbioru ↔ wersja polityki, więc jego ładunek niesie oba identyfikatory -
  * to jedyny punkt, w którym pętla domyka się w danych.
  */
 

@@ -40,7 +40,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -69,7 +69,7 @@ function sign(privateKey: KeyObject, payload: string): string {
  * Wpięcie świeżego agenta dla robota i zwrócenie sesji.
  *
  * Każde wywołanie zakłada nową sesję, bo licznik kolejny dzierżaw jest per
- * sesja — tak samo jak licznik uderzeń serca. Agent po restarcie zaczyna od nowa.
+ * sesja - tak samo jak licznik uderzeń serca. Agent po restarcie zaczyna od nowa.
  */
 async function enrollAgent(
   bus: CommandBus,
@@ -81,12 +81,12 @@ async function enrollAgent(
   /**
    * Poprzedni agent robota jest odwoływany, a nie omijany.
    *
-   * Kanał brzegowy dopuszcza jednego czynnego agenta na robota i słusznie —
+   * Kanał brzegowy dopuszcza jednego czynnego agenta na robota i słusznie -
    * dwa komputery pokładowe podpisujące się jako ta sama maszyna to stan,
    * którego nie da się rozstrzygnąć. Dowód potrzebuje własnej pary kluczy,
    * więc przechodzi tę samą drogą, co technik wymieniający komputer pokładowy:
-   * odwołanie starego, wpis nowego. Odrzucona alternatywa — sięgnięcie po
-   * istniejącą sesję — jest niewykonalna z założenia, bo klucz prywatny
+   * odwołanie starego, wpis nowego. Odrzucona alternatywa - sięgnięcie po
+   * istniejącą sesję - jest niewykonalna z założenia, bo klucz prywatny
    * poprzedniego agenta nigdy nie opuścił robota.
    */
   const current = await em.getConnection().execute<Array<{ id: string }>>(
@@ -95,7 +95,7 @@ async function enrollAgent(
   )
   if (current?.length) {
     await bus.execute('edge.agents.revoke', {
-      input: { agentId: current[0].id, reason: 'Dowód fazy 2 — wymiana komputera pokładowego' },
+      input: { agentId: current[0].id, reason: 'Dowód fazy 2 - wymiana komputera pokładowego' },
       ctx,
     })
   }
@@ -139,7 +139,7 @@ async function findRobot(em: EntityManager, tenantId: string, serial: string): P
 /**
  * Cela publiczna zakładana surowym INSERT-em, a nie komendą modułu `fleet`.
  *
- * `fleet` nie ma komendy tworzenia celi — ma ją zasiew, który celowo zakłada
+ * `fleet` nie ma komendy tworzenia celi - ma ją zasiew, który celowo zakłada
  * jedną celę ogrodzoną. Dopisywanie tu komendy do obcego modułu byłoby
  * rozlewaniem granicy; celowany INSERT z jawnym `on conflict do nothing` jest
  * uczciwszy i widać go w kodzie. Gdyby cele zaczęły powstawać z interfejsu,
@@ -154,7 +154,7 @@ async function ensurePublicCell(em: EntityManager, scope: Scope): Promise<{ id: 
 
   await em.getConnection().execute(
     `insert into fleet_cells (organization_id, tenant_id, site_id, code, name, cell_class, risk_class, created_at, updated_at)
-     values (?, ?, ?, 'CELA-P', 'Cela P — stanowisko w przestrzeni publicznej', 'public-handover', 'public', now(), now())
+     values (?, ?, ?, 'CELA-P', 'Cela P - stanowisko w przestrzeni publicznej', 'public-handover', 'public', now(), now())
      on conflict on constraint fleet_cells_code_unique do nothing`,
     [scope.organizationId, scope.tenantId, sites[0].id],
   )
@@ -171,7 +171,7 @@ async function ensurePublicCell(em: EntityManager, scope: Scope): Promise<{ id: 
  *
  * Istnieje, bo bez niego jedyną drogą do stanu pożądanego jest dowód fazy,
  * a dowód ma pokazywać zachowanie, nie być narzędziem administracyjnym.
- * Komenda nie omija żadnej bramki — idzie tą samą szyną, co panel.
+ * Komenda nie omija żadnej bramki - idzie tą samą szyną, co panel.
  */
 const assignCliCommand: ModuleCli = {
   command: 'assign',
@@ -286,7 +286,7 @@ const statusCommand: ModuleCli = {
           : null,
       })
       console.log(
-        `  ${row.serial_number.padEnd(14)} ${`${row.policy_key} v${row.version}`.padEnd(20)} ${row.risk_class.padEnd(10)} ${String(row.lease_seconds).padStart(7)}s   ${auth.working ? 'ważny' : 'WYGASŁ'} — ${auth.reason}`,
+        `  ${row.serial_number.padEnd(14)} ${`${row.policy_key} v${row.version}`.padEnd(20)} ${row.risk_class.padEnd(10)} ${String(row.lease_seconds).padStart(7)}s   ${auth.working ? 'ważny' : 'WYGASŁ'} - ${auth.reason}`,
       )
     }
   },
@@ -300,10 +300,10 @@ const statusCommand: ModuleCli = {
  * w celi `fenced` pracuje dalej.*
  *
  * „Ten sam robot" jest tu wzięte dosłownie: jedna maszyna dostaje dwie
- * dzierżawy — jedną stojąc w celi ogrodzonej, drugą po przestawieniu do celi
+ * dzierżawy - jedną stojąc w celi ogrodzonej, drugą po przestawieniu do celi
  * publicznej. Oba wiersze są prawdziwe i oba wydane w odstępie sekundy, więc
  * po odczekaniu tej samej ciszy porównujemy wyłącznie klasę ryzyka. Wariant
- * z dwoma różnymi robotami byłby wygodniejszy i słabszy — mieszałby do dowodu
+ * z dwoma różnymi robotami byłby wygodniejszy i słabszy - mieszałby do dowodu
  * różnicę egzemplarzy.
  */
 const proveCommand: ModuleCli = {
@@ -317,7 +317,7 @@ const proveCommand: ModuleCli = {
     const scope = await resolveScope(em, args)
     const ctx = buildCommandContext(container, scope)
 
-    console.log('DOWÓD FAZY 2 — dzierżawa jako odwrotność heartbeatu\n')
+    console.log('DOWÓD FAZY 2 - dzierżawa jako odwrotność heartbeatu\n')
     console.log('Długość dzierżawy per klasa ryzyka (z lib/lease.ts):')
     for (const [klasa, sekundy] of Object.entries(LEASE_SECONDS)) {
       console.log(`  ${klasa.padEnd(8)} ${String(sekundy).padStart(7)} s`)
@@ -325,7 +325,7 @@ const proveCommand: ModuleCli = {
 
     const robot = await findRobot(em, scope.tenantId, String(args.robot ?? 'UR10E-0001'))
     if (robot.state !== 'operational') {
-      console.log(`\nRobot ${robot.serial_number} jest w stanie ${robot.state}, a nie operational — przerywam.`)
+      console.log(`\nRobot ${robot.serial_number} jest w stanie ${robot.state}, a nie operational - przerywam.`)
       return
     }
 
@@ -349,7 +349,7 @@ const proveCommand: ModuleCli = {
         input: { ...scope, policyVersionId: version.id, toStatus: 'released', reason: 'Dowód fazy 2' },
         ctx,
       })
-      console.log(`\nWypuszczono ${version.policy_key} v${version.version} — bez tego przypisanie odbija się o status.`)
+      console.log(`\nWypuszczono ${version.policy_key} v${version.version} - bez tego przypisanie odbija się o status.`)
     }
 
     const originalCellId = robot.cell_id
@@ -363,7 +363,7 @@ const proveCommand: ModuleCli = {
           ...scope,
           robotId: robot.id,
           policyVersionId: version.id,
-          reason: 'Dowód fazy 2 — cela ogrodzona',
+          reason: 'Dowód fazy 2 - cela ogrodzona',
         },
         ctx,
       })
@@ -372,7 +372,7 @@ const proveCommand: ModuleCli = {
 
     const fencedAgent = await enrollAgent(bus, ctx, scope, robot.id, em)
     // Podpis liczony z **tego samego** znacznika czasu, który idzie w żądaniu.
-    // Dwa osobne `new Date()` dałyby dwa różne ciągi i odmowę podpisu —
+    // Dwa osobne `new Date()` dałyby dwa różne ciągi i odmowę podpisu -
     // pułapka warta nazwania, bo wygląda niewinnie i wywala się raz na dziesięć.
     const fencedStamp = new Date().toISOString()
     const fencedLease = (
@@ -391,7 +391,7 @@ const proveCommand: ModuleCli = {
 
     // --- 2. Ten sam robot, cela publiczna ----------------------------------
     console.log(`\n2) ten sam robot przestawiony do celi publicznej (${publicCell.name})`)
-    // Celowany UPDATE jednego wiersza — przestawienie maszyny między celami
+    // Celowany UPDATE jednego wiersza - przestawienie maszyny między celami
     // jest czynnością hali, a nie masową korektą danych.
     await em.getConnection().execute(`update fleet_robots set cell_id = ?, updated_at = now() where id = ?`, [
       publicCell.id,
@@ -404,7 +404,7 @@ const proveCommand: ModuleCli = {
           ...scope,
           robotId: robot.id,
           policyVersionId: version.id,
-          reason: 'Dowód fazy 2 — przestawienie do przestrzeni publicznej',
+          reason: 'Dowód fazy 2 - przestawienie do przestrzeni publicznej',
         },
         ctx,
       })
@@ -433,7 +433,7 @@ const proveCommand: ModuleCli = {
             + (select count(*) from deployment_assignments where tenant_id = ?) as n`,
       [scope.tenantId, scope.tenantId],
     )
-    console.log(`\n3) cisza przez ${waitSeconds} s — centrala nie zapisuje niczego`)
+    console.log(`\n3) cisza przez ${waitSeconds} s - centrala nie zapisuje niczego`)
     await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000))
 
     const writesAfter = await em.getConnection().execute<Array<{ n: string }>>(
@@ -468,7 +468,7 @@ const proveCommand: ModuleCli = {
         },
       })
       console.log(
-        `   cela ${lease.risk_class.padEnd(7)} (dzierżawa ${String(lease.lease_seconds).padStart(6)} s): ${auth.working ? 'PRACUJE' : 'NIE PRACUJE'} — ${auth.reason}`,
+        `   cela ${lease.risk_class.padEnd(7)} (dzierżawa ${String(lease.lease_seconds).padStart(6)} s): ${auth.working ? 'PRACUJE' : 'NIE PRACUJE'} - ${auth.reason}`,
       )
     }
 

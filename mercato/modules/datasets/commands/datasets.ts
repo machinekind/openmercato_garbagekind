@@ -18,7 +18,7 @@ import { emitDatasetsEvent } from '../events'
  * z przesłanej listy. To jest decyzja: wersja zbudowana z listy podanej przez
  * wołającego byłaby zapisem tego, co ktoś twierdzi, że wziął. Budowanie
  * z kryteriów po stronie serwera sprawia, że skład zbioru jest funkcją księgi
- * i da się go odtworzyć — a to jest warunek zdania „wiadomo, z czego powstał".
+ * i da się go odtworzyć - a to jest warunek zdania „wiadomo, z czego powstał".
  */
 
 const scoped = z.object({
@@ -131,7 +131,7 @@ export type VersionBuildResult = {
  * Deterministyczny wybór części ewaluacyjnej.
  *
  * Losowanie `Math.random()` dałoby przy każdym budowaniu inny podział i dwa
- * przebiegi z tych samych kryteriów byłyby dwiema różnymi wersjami zbioru —
+ * przebiegi z tych samych kryteriów byłyby dwiema różnymi wersjami zbioru -
  * co unieważniłoby deduplikację po odcisku zawartości. Podział liczony
  * z identyfikatora epizodu jest stabilny i odtwarzalny.
  */
@@ -166,7 +166,7 @@ const buildVersionCommand: CommandHandler<VersionBuildInput, VersionBuildResult>
      * zbiorze.
      *
      * Zbiór zebrany na jednym sprzęcie nie jest zbiorem dla innego. Filtr jest
-     * tutaj, a nie w kryteriach wołającego, bo to nie jest preferencja —
+     * tutaj, a nie w kryteriach wołającego, bo to nie jest preferencja -
      * to jest warunek sensowności zbioru.
      */
     conditions.push(
@@ -373,7 +373,7 @@ const registerRunCommand: CommandHandler<RunRegisterInput, { trainingRunId: stri
 }
 
 /**
- * Domknięcie przebiegu treningowego — moment, w którym pętla się zamyka.
+ * Domknięcie przebiegu treningowego - moment, w którym pętla się zamyka.
  *
  * Dopiero tutaj powstaje wiązanie wersja zbioru ↔ wersja polityki. Wiązanie
  * zapisywane przy rejestracji przebiegu byłoby wiązaniem z polityką, której

@@ -3,7 +3,7 @@ import { hashEnrollmentToken } from '../../lib/crypto'
 import { runAgentCommand } from '../agentRoute'
 
 /**
- * Wpis agenta przez sieć — pierwszy kontakt robota z centralą.
+ * Wpis agenta przez sieć - pierwszy kontakt robota z centralą.
  *
  * Bez tego endpointu kanał brzegowy byłby niekompletny w sposób trudny do
  * zauważenia: uderzenia serca dałoby się przyjmować, ale nie dałoby się
@@ -22,7 +22,7 @@ export async function POST(req: Request): Promise<Response> {
     async (em: EntityManager, payload) => {
       const token = typeof payload.token === 'string' ? payload.token : null
       if (!token) return null
-      // Szukamy po skrócie, nigdy po jawnej postaci — w bazie jawnej nie ma.
+      // Szukamy po skrócie, nigdy po jawnej postaci - w bazie jawnej nie ma.
       const rows = await em.getConnection().execute<Array<{ organization_id: string }>>(
         'select organization_id from edge_enrollment_tokens where token_hash = ? limit 1',
         [hashEnrollmentToken(token)],

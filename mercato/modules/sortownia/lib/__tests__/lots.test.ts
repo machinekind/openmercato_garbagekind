@@ -59,7 +59,7 @@ describe('ensureLots', () => {
     expect(calls.map((call) => call.id)).toEqual(['wms.lots.create'])
   })
 
-  it('partia powstaje tylko przy wjeździe — sortowanie i wydanie jej nie tworzą', async () => {
+  it('partia powstaje tylko przy wjeździe - sortowanie i wydanie jej nie tworzą', async () => {
     const { ctx, calls } = makeCtx()
     const result = await ensureLots(ctx, [
       move({ typ: 'SORT', stkmoveno: 100002 }),
@@ -76,7 +76,7 @@ describe('ensureLots', () => {
     expect(metadata.dostawca).toBe('Gmina Wierzbowo')
   })
 
-  it('gdy kontrahent nie jest znany, zostaje kod — lepszy niż puste pole', async () => {
+  it('gdy kontrahent nie jest znany, zostaje kod - lepszy niż puste pole', async () => {
     const { ctx, calls } = makeCtx()
     await ensureLots(ctx, [move({ debtorno: 'D999' })])
     expect((calls[0].input.metadata as Record<string, unknown>).dostawca).toBe('D999')

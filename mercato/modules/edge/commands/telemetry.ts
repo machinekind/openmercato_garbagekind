@@ -136,9 +136,9 @@ export const ingestTelemetryCommand: CommandHandler<
 
     const em = resolveEm(ctx)
     const session = (await em.findOne(AgentSession, { id: input.sessionId } as never)) as unknown as SessionRef | null
-    if (!session || session.endedAt) throw new Error('Sesja jest zamknięta — wymagane ponowne połączenie.')
+    if (!session || session.endedAt) throw new Error('Sesja jest zamknięta - wymagane ponowne połączenie.')
     if (input.sequence <= Number(session.lastSequence ?? 0)) {
-      throw new Error('Numer kolejny nie jest większy od poprzedniego — powtórka lub klon agenta.')
+      throw new Error('Numer kolejny nie jest większy od poprzedniego - powtórka lub klon agenta.')
     }
 
     const signed = payloads.telemetry(input.sessionId, input.sequence, input.timestamp, input.kind, input.payload)

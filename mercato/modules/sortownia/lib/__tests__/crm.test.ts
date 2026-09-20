@@ -10,7 +10,7 @@ import {
 
 /**
  * Firmy i szanse sprzedaży mają być jedną prawdą. Sprawdzamy regułę, która je
- * spina: klient ma wygraną szansę, potencjalny — otwartą, dostawca — żadnej;
+ * spina: klient ma wygraną szansę, potencjalny - otwartą, dostawca - żadnej;
  * a w drugą stronę firma bez etapu dostaje go ze swojej szansy.
  */
 
@@ -23,7 +23,7 @@ function deal(overrides: Partial<CrmDeal> = {}): CrmDeal {
 }
 
 describe('mapowanie etap ⇄ status', () => {
-  it('klient ma szansę wygraną, potencjalny — otwartą', () => {
+  it('klient ma szansę wygraną, potencjalny - otwartą', () => {
     expect(dealStatusForStage('customer')).toBe('win')
     expect(dealStatusForStage('subscriber')).toBe('win')
     expect(dealStatusForStage('prospect')).toBe('open')
@@ -36,7 +36,7 @@ describe('mapowanie etap ⇄ status', () => {
     expect(dealStatusForStage(null)).toBeNull()
   })
 
-  it('wygrana robi klienta, otwarta — potencjalnego, sama przegrana nic nie przesądza', () => {
+  it('wygrana robi klienta, otwarta - potencjalnego, sama przegrana nic nie przesądza', () => {
     expect(stageForDealStatuses(['lost', 'win'])).toBe('customer')
     expect(stageForDealStatuses(['in_progress'])).toBe('prospect')
     expect(stageForDealStatuses(['lost'])).toBeNull()
@@ -44,11 +44,11 @@ describe('mapowanie etap ⇄ status', () => {
   })
 })
 
-describe('planCrmSync — firma → szansa', () => {
+describe('planCrmSync - firma → szansa', () => {
   it('klient bez szansy dostaje wygraną szansę pod swoją nazwą', () => {
     const actions = planCrmSync([company({ lifecycleStage: 'customer' })], [])
     expect(actions).toEqual([
-      { kind: 'create-deal', companyId: 'firma-1', status: 'win', title: 'PlastMet Sp. z o.o. — sprzedaż frakcji' },
+      { kind: 'create-deal', companyId: 'firma-1', status: 'win', title: 'PlastMet Sp. z o.o. - sprzedaż frakcji' },
     ])
   })
 
@@ -57,7 +57,7 @@ describe('planCrmSync — firma → szansa', () => {
     expect(actions[0]).toMatchObject({ kind: 'create-deal', status: 'open' })
   })
 
-  it('nic nie robi, gdy pasująca szansa już jest — drugi przebieg nie dubluje', () => {
+  it('nic nie robi, gdy pasująca szansa już jest - drugi przebieg nie dubluje', () => {
     const actions = planCrmSync([company({ lifecycleStage: 'customer' })], [deal({ status: 'win' })])
     expect(actions).toEqual([])
   })
@@ -70,12 +70,12 @@ describe('planCrmSync — firma → szansa', () => {
     expect(actions).toEqual([{ kind: 'update-deal', dealId: 'szansa-1', status: 'win' }])
   })
 
-  it('cudzej szansy nie rusza — zakłada obok własną', () => {
+  it('cudzej szansy nie rusza - zakłada obok własną', () => {
     const actions = planCrmSync([company({ lifecycleStage: 'customer' })], [deal({ status: 'open' })])
     expect(actions).toEqual([expect.objectContaining({ kind: 'create-deal', status: 'win' })])
   })
 
-  it('dostawca nie może mieć szansy — istniejąca idzie do kosza', () => {
+  it('dostawca nie może mieć szansy - istniejąca idzie do kosza', () => {
     const actions = planCrmSync([company({ lifecycleStage: SUPPLIER_STAGE })], [deal({ status: 'win' })])
     expect(actions).toEqual([{ kind: 'delete-deal', dealId: 'szansa-1', reason: expect.any(String) }])
   })
@@ -95,7 +95,7 @@ describe('planCrmSync — firma → szansa', () => {
   })
 })
 
-describe('planCrmSync — szansa → firma', () => {
+describe('planCrmSync - szansa → firma', () => {
   it('firma bez etapu dostaje go ze statusu szansy i nie dostaje drugiej szansy', () => {
     const actions = planCrmSync([company()], [deal({ status: 'win' })])
     expect(actions).toEqual([
@@ -108,14 +108,14 @@ describe('planCrmSync — szansa → firma', () => {
     expect(actions[0]).toMatchObject({ kind: 'set-stage', stage: 'prospect' })
   })
 
-  it('wygrana szansa awansuje potencjalnego klienta na klienta — wygrana to fakt', () => {
+  it('wygrana szansa awansuje potencjalnego klienta na klienta - wygrana to fakt', () => {
     const actions = planCrmSync([company({ lifecycleStage: 'prospect' })], [deal({ status: 'win' })])
     expect(actions).toEqual([
       { kind: 'set-stage', companyId: 'firma-1', stage: 'customer', reason: expect.any(String) },
     ])
   })
 
-  it('wygrana szansa nie robi z dostawcy klienta — szansa ma zniknąć', () => {
+  it('wygrana szansa nie robi z dostawcy klienta - szansa ma zniknąć', () => {
     const actions = planCrmSync([company({ lifecycleStage: SUPPLIER_STAGE })], [deal({ status: 'win' })])
     expect(actions.map((a) => a.kind)).toEqual(['delete-deal'])
   })

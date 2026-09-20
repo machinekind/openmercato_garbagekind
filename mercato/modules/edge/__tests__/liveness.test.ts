@@ -52,13 +52,13 @@ describe('evaluateLiveness', () => {
   })
 
   it('ODCIĘCIE ZASILANIA: robot znika z pulpitu w progu wyliczonym, nie zapisanym', () => {
-    // Nikt nic nie zapisywał między T0 a tym wywołaniem — cisza sama upłynęła.
+    // Nikt nic nie zapisywał między T0 a tym wywołaniem - cisza sama upłynęła.
     const verdict = evaluateLiveness({ ...PARAMS, lastSeenAt: T0 }, at(3600))
     expect(verdict.state).toBe('lost')
     expect(verdict.silenceSeconds).toBe(3600)
   })
 
-  it('agent odwołany nie jest „offline" — nie ma prawa być online', () => {
+  it('agent odwołany nie jest „offline" - nie ma prawa być online', () => {
     const verdict = evaluateLiveness({ ...PARAMS, lastSeenAt: at(0), status: 'revoked' }, at(1))
     expect(verdict.state).toBe('lost')
     expect(verdict.reason).toMatch(/odwołany/)
@@ -98,7 +98,7 @@ describe('isTimestampFresh', () => {
     expect(isTimestampFresh(at(-(CLOCK_SKEW_TOLERANCE_SECONDS - 1)), T0)).toBe(true)
   })
 
-  it('odrzuca znacznik spoza okna — także z przyszłości', () => {
+  it('odrzuca znacznik spoza okna - także z przyszłości', () => {
     expect(isTimestampFresh(at(CLOCK_SKEW_TOLERANCE_SECONDS + 1), T0)).toBe(false)
     expect(isTimestampFresh(at(-(CLOCK_SKEW_TOLERANCE_SECONDS + 1)), T0)).toBe(false)
   })

@@ -5,7 +5,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  *
  * Najważniejsze jest `version.released` i nie jest to to samo co
  * `version.registered`: zarejestrowanie wersji znaczy „komplet artefaktów
- * leży na półce", a zwolnienie — „wolno to wgrać na maszynę". Dwa różne
+ * leży na półce", a zwolnienie - „wolno to wgrać na maszynę". Dwa różne
  * fakty, dwaj różni odbiorcy. Zlanie ich w jedno zdarzenie „wersja zmieniła
  * status" kazałoby każdemu subskrybentowi dopasowywać string.
  */

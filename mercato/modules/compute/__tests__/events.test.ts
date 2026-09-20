@@ -11,7 +11,7 @@ import { placeWorkloadCommand, registerNodeCommand } from '../commands/compute'
  * że coś się stało.
  *
  * Poza tym sprawdzamy, że przepustowość pamięci jedzie w ładunku rejestracji
- * węzła — bo to ona, a nie liczba operacji zmiennoprzecinkowych z materiałów
+ * węzła - bo to ona, a nie liczba operacji zmiennoprzecinkowych z materiałów
  * producenta, rozstrzyga o przepustowości dekodowania.
  */
 

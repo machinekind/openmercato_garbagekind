@@ -62,7 +62,7 @@ describe('computeContentDigest', () => {
 
   it('zmienia się, gdy do kompletu dojdzie preprocesor', () => {
     // Polityka z preprocesorem i bez niego to dwie różne polityki, choćby wagi
-    // były bit w bit te same — preprocesor zmienia przestrzeń obserwacji.
+    // były bit w bit te same - preprocesor zmienia przestrzeń obserwacji.
     const bare = computeContentDigest([{ role: 'weights', digest: A }])
     const withPre = computeContentDigest([
       { role: 'weights', digest: A },

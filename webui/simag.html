@@ -466,7 +466,7 @@
       }
     },
     STANY: {
-      code: "M-11/MAG/STANY", name: "STANY MAGAZYNOWE — UKŁAD KRZYŻOWY", group: "2. MAGAZYN", item: "2.1",
+      code: "M-11/MAG/STANY", name: "STANY MAGAZYNOWE - UKŁAD KRZYŻOWY", group: "2. MAGAZYN", item: "2.1",
       filters: [ { id:"f_stockid", label:"Indeks", ph:"%" } ],
       columns: ["STOCKID"].concat(LOCATIONS.map(function (l) { return l.loccode; })).concat(["RAZEM [kg]","RAZEM [Mg]"]),
       rows: function (f) {
@@ -509,7 +509,7 @@
                  like(m.debtorno, f.f_debtorno) && inRange(m.trandate, f.f_od, f.f_do);
         }).map(function (m) {
           return [cell(String(m.stkmoveno)), cell(m.stockid), cell(m.type), cell(m.loccode),
-                  cell(stamp(m.trandate)), cell(m.debtorno || "—"),
+                  cell(stamp(m.trandate)), cell(m.debtorno || "-"),
                   num(money(m.qty), m.qty < 0), num(money(m.qty / 1000, 3), m.qty < 0),
                   num(money(m.standardcost, 4)), num(money(m.qty * m.standardcost), m.qty < 0)];
         });
@@ -739,13 +739,13 @@
     var rows = [
       ["WERSJA JĄDRA", "SIMAG 3.11.07b (kompilacja 19980412)"],
       ["BAZA DANYCH", "SORTOWNIA (SQLite, tryb: READ ONLY)"],
-      ["JEDNOSTKA MASY", "kg — konwersja na Mg wykonywana POZA systemem"],
+      ["JEDNOSTKA MASY", "kg - konwersja na Mg wykonywana POZA systemem"],
       ["TYPY DOKUMENTÓW", "PZ, SORT, WZ (uproszczenie; webERP używa systypes numerycznych)"],
       ["SESJA", "PHPSESSID, ważność 3600 s"],
       ["KODY BŁĘDÓW", "-1 brak sesji, -2 brak rekordu, 3 złe hasło, 4 zła firma"],
-      ["ZAPIS DO SYSTEMU", "ZABLOKOWANY — system jest wyłącznie źródłem danych"],
+      ["ZAPIS DO SYSTEMU", "ZABLOKOWANY - system jest wyłącznie źródłem danych"],
       ["KOPIA ZAPASOWA", "nie skonfigurowano (kod 0x0057)"],
-      ["DRUKARKA IGŁOWA", "LPT1: — nie odpowiada"]
+      ["DRUKARKA IGŁOWA", "LPT1: - nie odpowiada"]
     ];
     var table = el("table", { class: "kv" }, rows.map(function (r) {
       return el("tr", {}, [el("th", { scope: "row", text: r[0] }), el("td", { text: r[1] })]);
@@ -765,7 +765,7 @@
     var api = [
       ["weberp.xmlrpc_Login", "user, password, company", "int + Set-Cookie PHPSESSID"],
       ["weberp.xmlrpc_GetCustomer", "debtorno", "rekord kontrahenta"],
-      ["weberp.xmlrpc_GetLocationList", "—", "lista lokalizacji"],
+      ["weberp.xmlrpc_GetLocationList", "-", "lista lokalizacji"],
       ["weberp.xmlrpc_GetLocationDetails", "loccode", "rekord lokalizacji"],
       ["weberp.xmlrpc_GetStockBalance", "stockid, loccode", "stan magazynowy"],
       ["weberp.xmlrpc_GetSalesOrderHeader", "orderno", "nagłówek wydania"]
@@ -779,9 +779,9 @@
       }))
     ]);
     content.appendChild(el("fieldset", {}, [
-      el("legend", { text: "Interfejs XML-RPC — POST /api/api_xml-rpc.php" }),
+      el("legend", { text: "Interfejs XML-RPC - POST /api/api_xml-rpc.php" }),
       el("div", { class: "tablewrap" }, [apiTable]),
-      el("p", { class: "note", text: "Wywołanie bez ważnej sesji zwraca -1. Interfejs nie udostępnia list zbiorczych ani księgi ruchów — patrz eksport plikowy poniżej." })
+      el("p", { class: "note", text: "Wywołanie bez ważnej sesji zwraca -1. Interfejs nie udostępnia list zbiorczych ani księgi ruchów - patrz eksport plikowy poniżej." })
     ]));
 
     var drops = [
@@ -826,7 +826,7 @@
     });
 
     content.appendChild(el("fieldset", {}, [
-      el("legend", { text: "Eksport plikowy — katalog wsad/" }),
+      el("legend", { text: "Eksport plikowy - katalog wsad/" }),
       el("div", { class: "tablewrap" }, [dropTable]),
       el("div", { style: "margin-top:6px" }, [runBtn]),
       log

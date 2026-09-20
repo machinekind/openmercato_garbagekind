@@ -6,7 +6,7 @@ import { executeCommandRoute } from '../../../fleet/lib/commandRoute'
  *
  * Najniższy próg zgłoszenia w całej wtyczce i to jest decyzja projektowa:
  * uprawnienie `safety.incidents.report` dostaje każdy, kto stoi przy maszynie.
- * Zgłoszenie, które wymaga przejścia przez przełożonego, nie powstaje — a
+ * Zgłoszenie, które wymaga przejścia przez przełożonego, nie powstaje - a
  * zdarzenie potencjalnie wypadkowe niezgłoszone jest zdarzeniem, którego
  * w statystyce nie ma i przez to nie ma go też w analizie przyczyn.
  *

@@ -111,7 +111,7 @@ const baseInput = {
   ...demoJointContract(6),
 }
 
-describe('policy_registry.versions.register — zgodność z embodimentem', () => {
+describe('policy_registry.versions.register - zgodność z embodimentem', () => {
   it('odrzuca rozjazd między deklarowanym wymiarem a uporządkowanymi polami', async () => {
     const { ctx } = makeCtx()
     await expect(
@@ -191,12 +191,12 @@ describe('policy_registry.versions.register — zgodność z embodimentem', () =
   })
 })
 
-describe('policy_registry.versions.register — tożsamość przez skrót', () => {
+describe('policy_registry.versions.register - tożsamość przez skrót', () => {
   it('zwraca istniejącą wersję zamiast tworzyć drugą, gdy wagi te same', async () => {
     const { ctx, persisted } = makeCtx({ duplicate: { id: VERSION_ID, version: 2, ...demoJointContract(6) } })
     const result = await registerVersionCommand.execute(baseInput, ctx)
     expect(result).toMatchObject({ policyVersionId: VERSION_ID, version: 2, deduplicated: true })
-    // Nic nie zostało zapisane — to jest cała treść „dwa wgrania to jedna wersja".
+    // Nic nie zostało zapisane - to jest cała treść „dwa wgrania to jedna wersja".
     expect(persisted).toHaveLength(0)
   })
 
@@ -239,7 +239,7 @@ describe('policy_registry.versions.register — tożsamość przez skrót', () =
   })
 })
 
-describe('policy_registry.versions.register — zapis', () => {
+describe('policy_registry.versions.register - zapis', () => {
   it('zapisuje wersję, komplet artefaktów i wpis do dziennika', async () => {
     const { ctx, persisted } = makeCtx()
     await registerVersionCommand.execute(baseInput, ctx)
@@ -251,7 +251,7 @@ describe('policy_registry.versions.register — zapis', () => {
 
   it('robi dwa zrzuty, bo identyfikator wersji nadaje baza', async () => {
     // Gdyby artefakty szły w tym samym zrzucie co wersja, wskazywałyby na puste
-    // `policy_version_id` — to jest ten sam błąd, który wywrócił rejestrację robota.
+    // `policy_version_id` - to jest ten sam błąd, który wywrócił rejestrację robota.
     const { ctx, flushes } = makeCtx()
     await registerVersionCommand.execute(baseInput, ctx)
     expect(flushes.length).toBeGreaterThanOrEqual(2)

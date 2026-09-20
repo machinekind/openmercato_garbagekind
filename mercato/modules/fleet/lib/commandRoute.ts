@@ -15,7 +15,7 @@ import { createLogger } from '@open-mercato/shared/lib/logger'
  * Trasa HTTP dla akcji dziedzinowej wołanej przez **człowieka**.
  *
  * Nie mylić z `edge/api/agentRoute.ts`: tamten obsługuje maszyny i uwierzytelnia
- * podpisem, ten obsługuje ludzi i uwierzytelnia sesją. Różnią się wszystkim —
+ * podpisem, ten obsługuje ludzi i uwierzytelnia sesją. Różnią się wszystkim -
  * kto woła, czym się legitymuje i co znaczy odmowa.
  *
  * Kształt zerżnięty świadomie z `executeWmsCustomPostRoute` rdzenia, bo to jest
@@ -38,7 +38,7 @@ const logger = createLogger('fleet').child({ component: 'commandRoute' })
 
 export type CommandRouteOptions<TInput, TResult> = {
   request: Request
-  /** Ścieżka do logów i do opisu zasobu — nie do routingu. */
+  /** Ścieżka do logów i do opisu zasobu - nie do routingu. */
   routePath: string
   inputSchema: z.ZodType<TInput>
   commandId: string
@@ -47,7 +47,7 @@ export type CommandRouteOptions<TInput, TResult> = {
    *
    * Komendy wtyczki wymagają `organizationId` i `tenantId` w wejściu. Gdyby
    * przychodziły w treści żądania, byłyby parametrem, którym da się sięgnąć
-   * poza własnego tenanta — ta sama pułapka, którą opisuje `agentRoute.ts`.
+   * poza własnego tenanta - ta sama pułapka, którą opisuje `agentRoute.ts`.
    */
   withScope?: boolean
   describeResource: (input: TInput) => { resourceKind: string; resourceId: string }
@@ -77,7 +77,7 @@ export async function executeCommandRoute<TInput, TResult>(
        * której hali dotyczy, więc odmawiamy i mówimy to wprost.
        */
       return NextResponse.json(
-        { error: 'Wybierz organizację — zapis musi wiedzieć, której hali dotyczy.' },
+        { error: 'Wybierz organizację - zapis musi wiedzieć, której hali dotyczy.' },
         { status: 400 },
       )
     }
@@ -139,7 +139,7 @@ export async function executeCommandRoute<TInput, TResult>(
      * 422, nie 500: komendy tej wtyczki odmawiają wyjątkiem z komunikatem
      * napisanym dla człowieka („Nie można dopuścić robota: brak ważnej
      * kalibracji camera_extrinsics"). To jest odpowiedź merytoryczna, a nie
-     * awaria — i ma dotrzeć do formularza w całości, bo operator ma z niej
+     * awaria - i ma dotrzeć do formularza w całości, bo operator ma z niej
      * wiedzieć, co zrobić dalej.
      *
      * Cena tej decyzji: prawdziwa awaria bazy też wróci jako 422 z komunikatem

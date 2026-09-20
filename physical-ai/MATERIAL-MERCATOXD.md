@@ -1,4 +1,4 @@
-# Materiał `mercatoXD` — co domyka nasze bramy, a co zostaje otwarte
+# Materiał `mercatoXD` - co domyka nasze bramy, a co zostaje otwarte
 
 Źródło: commit `fd5fe08f24ae35fe37c8053086327fdc1a14363a`, utworzony
 **2026-09-19 21:37:49 +02:00**, autor Greg. Pełny dozwolony snapshot oraz
@@ -8,7 +8,7 @@ pochodzenie są w
 ## Czym ten dokument jest, a czym nie jest
 
 To jest **inwentaryzacja materiału po naszej stronie**: co z prac
-hackathonowych daje się użyć jako dowód dla bram P0–P3 i jako materiał
+hackathonowych daje się użyć jako dowód dla bram P0-P3 i jako materiał
 wejściowy do portu produkcyjnego.
 
 To **nie jest ocena pracy zespołu physical**, i nie wolno go tak czytać ani
@@ -30,15 +30,15 @@ niewykonaną pracą po czyjejś stronie.
 ## Co zostało rzeczywiście wykazane na sprzęcie
 
 - A1X przyjmuje pozycje przez CAN-FD; w kontrolowanej próbie ruch osiągnął
-  około 98–102% zadanego kroku.
-- Zmapowano kody funkcyjne 1–6. Kod 2 wyłącza moment, ale zamraża telemetrię;
+  około 98-102% zadanego kroku.
+- Zmapowano kody funkcyjne 1-6. Kod 2 wyłącza moment, ale zamraża telemetrię;
   sekwencja 1 → 5 → 6 przywraca przyjmowanie komend.
 - Interfejs zachowuje się jak sterowanie pozycyjne. `t_ff`, `kp`, `kd`,
   `v_des` i `mode` nie dały deklarowanej podatności; `kp=0` może spowodować
   odrzucenie całej ramki i wymagać restartu zasilania.
 - **Incydent załączenia:** włączenie bez równoległego utrzymywania
   `p_des = q` dało ruch **76,36°** przy nasyconym wysiłku. To najcenniejszy
-  pojedynczy fakt z całego materiału — reguła bezpiecznego załączania jest
+  pojedynczy fakt z całego materiału - reguła bezpiecznego załączania jest
   wymagana, ale nie ma jeszcze osobnej, podpisanej paczki odbiorowej tej
   reguły ani testu akceptacyjnego po naszej stronie.
 - Panel implementuje pojedynczego właściciela CAN, okna stawów, limit
@@ -72,7 +72,7 @@ Testy używają atrap, więc potwierdzają zachowanie programu, nie maszyny.
   podpisanego indeksu mediów ani fizycznego potwierdzenia limitów.
 - Brak wag polityki, niezależnego `declaredSpecDigest`, wersji datasetu,
   hiperparametrów treningu i zestawów ewaluacyjnych.
-- Nie wykonano pełnego shadow runu ani rolloutu wg bram P0–P3.
+- Nie wykonano pełnego shadow runu ani rolloutu wg bram P0-P3.
 
 ## Stan naszego zestawu dowodowego po uwzględnieniu materiału
 
@@ -87,8 +87,8 @@ Kolumna mówi, czy ten konkretny materiał domyka naszą bramę. „Brak" znaczy
 | B1 przestrzeń obserwacji/akcji | częściowo | kod opisuje 6 stawów + chwytak i radiany; brak wersjonowanego kontraktu polityki |
 | B2/B3 digest i artefakty | nie | brak wag, URI i skrótów polityki |
 | B4 wygaśnięcie dzierżawy | nie | pojęcie dzierżawy nie występuje w źródle |
-| C1–C4 polityka | nie | zero-shot bez akcji chwytaka; brak wytrenowanej polityki i shadow evidence |
-| D1–D3 ewaluacja | nie | brak wersjonowanych suite'ów, wyników i progów |
+| C1-C4 polityka | nie | zero-shot bez akcji chwytaka; brak wytrenowanej polityki i shadow evidence |
+| D1-D3 ewaluacja | nie | brak wersjonowanych suite'ów, wyników i progów |
 | E1/E2 epizody i interwencje | częściowo | etapy i wyniki istnieją w innym kształcie; do przeniesienia na nasz podpisany kontrakt |
 | E3 agent edge | nie | źródło używa statycznego klucza API do własnego API; nasza sesja Ed25519 wymaga portu |
 | E4 okna detekcji | nie | tracking istnieje w kodzie, brak paczki telemetrycznej w naszym formacie |
@@ -102,18 +102,18 @@ Ponieważ autor budował niezależnie, z opisu dziedziny, materiał jest
 naturalnym eksperymentem: pokazuje, które z naszych abstrakcji są nieuchronne,
 a które są nasze.
 
-**Zbiegło się bez uzgodnienia** — epizod jako jednostka pracy z wynikiem,
+**Zbiegło się bez uzgodnienia** - epizod jako jednostka pracy z wynikiem,
 raportowanie etapu osobno od zakończenia, limity planu jako osobna warstwa,
 detekcja pustego chwytu po pozycji i wysiłku chwytaka, zwolnienie napędu
 w `finally`.
 
-**Rozjechało się całkowicie** — tożsamość agenta, model pracy (odpytywanie
+**Rozjechało się całkowicie** - tożsamość agenta, model pracy (odpytywanie
 o zadanie zamiast stanu pożądanego), dzierżawa, wersjonowanie polityki
 i rewizja embodimentu.
 
 Wniosek praktyczny: część zbieżna nie wymaga specyfikacji, bo wymyśli ją
 każdy kompetentny implementator. Część rozbieżna nie jest oczywista dla
-nikogo poza nami — i to ona, a nie całość, jest kandydatem na spisany
+nikogo poza nami - i to ona, a nie całość, jest kandydatem na spisany
 kontrakt z testem zgodności.
 
 ## Decyzja integracyjna

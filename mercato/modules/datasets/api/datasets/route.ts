@@ -5,7 +5,7 @@ import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 import { verifyLoop } from '../../lib/lineage'
 
 /**
- * Pochodzenie — obie strony pętli w jednej odpowiedzi.
+ * Pochodzenie - obie strony pętli w jednej odpowiedzi.
  *
  * Endpoint odpowiada na dwa pytania zadane z przeciwnych stron:
  * **z czego powstał ten zbiór** i **która polityka się na nim uczyła**.
@@ -89,7 +89,7 @@ export async function GET(req: Request): Promise<Response> {
   )
 
   /**
-   * Strona odwrotna pętli: dla wersji polityki — z jakich epizodów powstała.
+   * Strona odwrotna pętli: dla wersji polityki - z jakich epizodów powstała.
    *
    * Liczba **rozróżnialnych** epizodów, bo jedna polityka bywa dostrajana
    * kolejno na dwóch zbiorach, które częściowo się pokrywają. Suma liczności
@@ -161,14 +161,14 @@ export async function GET(req: Request): Promise<Response> {
         /**
          * Pętla jest zamknięta, gdy każda polityka ma skąd pochodzić i każdy
          * zbiór ma z czego się składać. Zbiór, na którym jeszcze nic się nie
-         * uczyło, jej nie łamie — i dlatego jest liczony osobno.
+         * uczyło, jej nie łamie - i dlatego jest liczony osobno.
          */
         loopClosed: loop.closed,
         policiesWithoutDataset: loop.policiesWithoutDataset.length,
         datasetsWithoutEpisodes: loop.datasetsWithoutEpisodes.length,
         datasetsWithoutPolicy: loop.datasetsWithoutPolicy.length,
       },
-      /** Polityki, o których nie wiadomo, skąd się wzięły — nazwane, nie policzone. */
+      /** Polityki, o których nie wiadomo, skąd się wzięły - nazwane, nie policzone. */
       orphanPolicies: loop.policiesWithoutDataset.map((id) => labelById.get(id) ?? id).sort(),
       versions: versions.map((v) => ({
         id: v.id,

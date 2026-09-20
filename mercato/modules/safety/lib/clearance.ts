@@ -8,17 +8,17 @@
  *   2027. Konsekwencja, która wyprzedza wszystkie architektoniczne: uczona
  *   polityka **nie może** być funkcją bezpieczeństwa, bo wpycha produkt
  *   klienta w Annex I część A, czyli w obowiązkową ocenę przez jednostkę
- *   notyfikowaną — dla której nie istnieje ustalona metoda wykazania
+ *   notyfikowaną - dla której nie istnieje ustalona metoda wykazania
  *   zgodności. Platforma ma to wymuszać i dokumentować, a nie zakładać.
- * - **AI Act art. 6 ust. 1** — klasyfikacja wysokiego ryzyka przez
+ * - **AI Act art. 6 ust. 1** - klasyfikacja wysokiego ryzyka przez
  *   przynależność do komponentu bezpieczeństwa maszyny.
- * - **ISO 10218-1/-2:2025** — wymagania dla robotów przemysłowych i ich
+ * - **ISO 10218-1/-2:2025** - wymagania dla robotów przemysłowych i ich
  *   integracji.
- * - **ISO/TS 15066:2016** — współpraca człowiek–robot, limity siły i nacisku.
+ * - **ISO/TS 15066:2016** - współpraca człowiek-robot, limity siły i nacisku.
  *
  * Rozstrzygnięcie nośne: **dopuszczenie dotyczy klasy celi, nie pojedynczej
  * celi.** Inaczej każda nowa cela o tej samej, niezmienionej konfiguracji
- * wymagałaby osobnego uzasadnienia — a to jest koszt, którego nikt nie
+ * wymagałaby osobnego uzasadnienia - a to jest koszt, którego nikt nie
  * poniesie i który w praktyce kończy się dopuszczeniami udzielanymi hurtem
  * bez czytania.
  *
@@ -58,7 +58,7 @@ export type EvalRun = {
 
 export type ClearanceInput = {
   policyVersionId: string
-  /** Odcisk kontraktu wersji polityki — porównywany z tym z przebiegu ewaluacji. */
+  /** Odcisk kontraktu wersji polityki - porównywany z tym z przebiegu ewaluacji. */
   policyEmbodimentSpecDigest?: string | null
   cellClass: string
   riskClass: RiskClass
@@ -110,13 +110,13 @@ export function evaluateClearance(input: ClearanceInput): ClearanceVerdict {
    * Sprawdzana przed wszystkim innym i nie do obejścia żadnym kompletem
    * ewaluacji. Uczona polityka umieszczona w łańcuchu bezpieczeństwa wpycha
    * produkt klienta w ocenę przez jednostkę notyfikowaną, dla której nie
-   * istnieje ustalona metoda wykazania zgodności — więc komplet zaliczonych
+   * istnieje ustalona metoda wykazania zgodności - więc komplet zaliczonych
    * testów nie tylko nie pomaga, ale jest mylący.
    *
    * Pod uwagę biorą się wyłącznie uzasadnienia **nie wycofane**. Deklaracja wycofana przestaje blokować i to jest decyzja, nie przeoczenie:
    * inaczej jedna pomyłka w polu wyboru unieruchamiałaby wersję polityki na
    * zawsze, bez żadnej drogi wyjścia poza ręcznym DELETE w bazie. Reguła,
-   * która nie ma legalnej drogi odwrotu, uczy obchodzenia systemu — a wtedy
+   * która nie ma legalnej drogi odwrotu, uczy obchodzenia systemu - a wtedy
    * przestaje chronić cokolwiek. Ślad po wycofanej deklaracji zostaje w tabeli
    * razem z powodem wycofania.
    */
@@ -127,7 +127,7 @@ export function evaluateClearance(input: ClearanceInput): ClearanceVerdict {
     return {
       cleared: false,
       reasons: [
-        'uzasadnienie deklaruje uczoną politykę jako funkcję bezpieczeństwa — to wpycha maszynę w Annex I część A rozporządzenia 2023/1230, czyli w ocenę przez jednostkę notyfikowaną; bezpieczeństwo egzekwuje osobna warstwa deterministyczna',
+        'uzasadnienie deklaruje uczoną politykę jako funkcję bezpieczeństwa - to wpycha maszynę w Annex I część A rozporządzenia 2023/1230, czyli w ocenę przez jednostkę notyfikowaną; bezpieczeństwo egzekwuje osobna warstwa deterministyczna',
       ],
       missingSuites: [],
       failedSuites: [],
@@ -175,7 +175,7 @@ export function evaluateClearance(input: ClearanceInput): ClearanceVerdict {
      * Przebieg policzony na innym sprzęcie nie liczy się.
      *
      * Zestaw zaliczony na rewizji embodimentu A nie mówi niczego o rewizji B,
-     * choćby polityka była ta sama — a to jest najczęstsza droga do
+     * choćby polityka była ta sama - a to jest najczęstsza droga do
      * dopuszczenia „na podstawie testów", których nikt nie powtórzył po
      * wymianie chwytaka.
      */
@@ -234,7 +234,7 @@ export function classifyIncident(incident: IncidentClass): {
     return {
       priority: 'wstrzymanie_wdrożenia',
       haltDeployment: true,
-      reason: 'zdarzenie ze skutkiem dla człowieka — wdrożenie wstrzymane do czasu wyjaśnienia',
+      reason: 'zdarzenie ze skutkiem dla człowieka - wdrożenie wstrzymane do czasu wyjaśnienia',
     }
   }
 
@@ -243,15 +243,15 @@ export function classifyIncident(incident: IncidentClass): {
      * Zadziałanie warstwy bezpieczeństwa jest zawsze pilne, nawet bez skutków.
      *
      * Warstwa deterministyczna jest ostatnią linią. Jeśli zadziałała, to
-     * znaczy, że wszystko przed nią zawiodło — a zerowy skutek był kwestią
+     * znaczy, że wszystko przed nią zawiodło - a zerowy skutek był kwestią
      * tego, że ostatnia linia akurat zadziałała, a nie że nic się nie stało.
      */
     return {
       priority: incident.policyImplicated ? 'wstrzymanie_wdrożenia' : 'pilny',
       haltDeployment: incident.policyImplicated,
       reason: incident.policyImplicated
-        ? 'warstwa bezpieczeństwa zadziałała przeciwko polityce — wdrożenie wstrzymane'
-        : 'warstwa bezpieczeństwa zadziałała — ostatnia linia nie jest miejscem na rutynę',
+        ? 'warstwa bezpieczeństwa zadziałała przeciwko polityce - wdrożenie wstrzymane'
+        : 'warstwa bezpieczeństwa zadziałała - ostatnia linia nie jest miejscem na rutynę',
     }
   }
 
@@ -263,7 +263,7 @@ export function classifyIncident(incident: IncidentClass): {
 }
 
 /**
- * Zestawy wymagane per klasa ryzyka — domyślny katalog.
+ * Zestawy wymagane per klasa ryzyka - domyślny katalog.
  *
  * Rosnąco: cela ogrodzona wymaga najmniej, przestrzeń publiczna najwięcej.
  * Katalog jest danymi w bazie; ta stała jest punktem wyjścia zasiewu i

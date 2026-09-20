@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Bezpieczeństwo i zgodność — schemat początkowy.
+ * Bezpieczeństwo i zgodność - schemat początkowy.
  *
  * Trzy rzeczy warte przeczytania:
  *

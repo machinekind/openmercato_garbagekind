@@ -1,5 +1,5 @@
 /**
- * Zgodność polityki ze sprzętem — sprawdzana przed wdrożeniem, nie po ruchu ramienia.
+ * Zgodność polityki ze sprzętem - sprawdzana przed wdrożeniem, nie po ruchu ramienia.
  *
  * To jest cały powód istnienia wiązania wersji z **rewizją embodimentu**
  * zamiast z robotem. Robot jest egzemplarzem; kontraktem jest rewizja.
@@ -23,7 +23,7 @@ export type CompatibilityClaim = {
   /**
    * Odcisk kontraktu, pod który polityka została wytrenowana.
    *
-   * Przychodzi od wgrywającego, a nie jest odczytywany z bazy — o to chodzi.
+   * Przychodzi od wgrywającego, a nie jest odczytywany z bazy - o to chodzi.
    * Gdyby był odczytywany, kontrola porównywałaby wartość samą ze sobą
    * i zawsze przechodziła. Rozjazd wychodzi wyłącznie wtedy, gdy obie strony
    * mówią niezależnie.
@@ -37,7 +37,7 @@ export type CompatibilityClaim = {
 
 export type CompatibilityVerdict = {
   compatible: boolean
-  /** Powód odmowy — nazwany, nie „walidacja nie przeszła". */
+  /** Powód odmowy - nazwany, nie „walidacja nie przeszła". */
   reason?: string
   /** Kod maszynowy dla wywołującego, żeby nie parsował polskiego zdania. */
   code?: 'embodiment_key_mismatch' | 'spec_digest_mismatch' | 'dof_mismatch' | 'no_embodiment'
@@ -50,7 +50,7 @@ export type CompatibilityVerdict = {
  * 2. Czy to ta rodzina sprzętu.
  * 3. Czy kontrakt jest bit w bit ten sam.
  *
- * Kontrola stopni swobody jest ostatnia i najsłabsza — zgodne DOF przy
+ * Kontrola stopni swobody jest ostatnia i najsłabsza - zgodne DOF przy
  * niezgodnym `spec_digest` nie znaczy nic, ale niezgodne DOF przy zgodnym
  * skrócie oznacza, że ktoś ręcznie podmienił skrót i warto o tym powiedzieć.
  */
@@ -63,7 +63,7 @@ export function checkEmbodimentCompatibility(
       compatible: false,
       code: 'no_embodiment',
       reason:
-        'polityka bez zadeklarowanej rewizji embodimentu nie daje się zapisać — nie istniałoby miejsce, w którym da się stwierdzić, na czym wolno ją uruchomić',
+        'polityka bez zadeklarowanej rewizji embodimentu nie daje się zapisać - nie istniałoby miejsce, w którym da się stwierdzić, na czym wolno ją uruchomić',
     }
   }
 

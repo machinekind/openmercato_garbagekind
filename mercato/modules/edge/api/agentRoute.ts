@@ -31,7 +31,7 @@ export type ScopeLookup = (em: EntityManager, payload: Record<string, unknown>) 
  * Drugi argument nie jest wygodą: komendy `deployment.*` mają
  * `organizationId` w schemacie wejścia, a nie tylko w kontekście. Dopóki route
  * wstawiał tam pustą wartość, każde żądanie agenta kończyło się odmową 401
- * z błędu walidacji UUID — a że własne testy wołają komendę wprost z poprawnym
+ * z błędu walidacji UUID - a że własne testy wołają komendę wprost z poprawnym
  * zakresem, nie było tego czym złapać. Znalazł to dopiero niezależny agent
  * uruchomiony przeciwko żywej instancji.
  */
@@ -68,7 +68,7 @@ export async function runAgentCommand(
     /**
      * 401, nie 400: odrzucony podpis, zużyty bilet i powtórzony numer kolejny
      * to odmowa uwierzytelnienia, a nie błąd składni. Agent ma z tego wyciągnąć
-     * jeden wniosek — połącz się na nowo — a nie poprawiać treść żądania.
+     * jeden wniosek - połącz się na nowo - a nie poprawiać treść żądania.
      */
     return json({ error: error instanceof Error ? error.message : String(error) }, 401)
   }

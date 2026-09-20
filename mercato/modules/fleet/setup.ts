@@ -40,7 +40,7 @@ export async function ensureCalibrationExpirySchedule(
     schedulerService = undefined
   }
   if (!schedulerService) {
-    logger.warn('Moduł harmonogramu niedostępny — wygaśnięcie kalibracji NIE będzie ogłaszane')
+    logger.warn('Moduł harmonogramu niedostępny - wygaśnięcie kalibracji NIE będzie ogłaszane')
     return
   }
 
@@ -50,7 +50,7 @@ export async function ensureCalibrationExpirySchedule(
       name: 'Wygasłe kalibracje',
       description:
         'Ogłasza zdarzenie fleet.calibration.expired dla pomiarów, których ważność upłynęła. ' +
-        'Nie zatrzymuje maszyn — o kwarantannie decyduje subskrybent albo człowiek.',
+        'Nie zatrzymuje maszyn - o kwarantannie decyduje subskrybent albo człowiek.',
       scopeType: 'system',
       scheduleType: 'interval',
       scheduleValue: CALIBRATION_EXPIRY_INTERVAL,
@@ -70,13 +70,13 @@ export async function ensureCalibrationExpirySchedule(
 /**
  * Domyślne nadanie uprawnień rolom przy instalacji modułu.
  *
- * Operator floty dostaje podgląd, zmianę stanu i kalibrację — bo to on
+ * Operator floty dostaje podgląd, zmianę stanu i kalibrację - bo to on
  * zatrzymuje i wypuszcza maszyny. Wycofanie zostaje przy administratorze:
  * to decyzja nieodwracalna, unieważniająca trwale tożsamość agenta.
  *
  * Kontrakt generatora: rejestr czyta `default` albo nazwany eksport `setup`.
  * Sam `defaultRoleFeatures` nie zostanie zauważony i uprawnienia po cichu
- * nie powstaną — nauczka kosztująca jeden przebieg diagnostyczny.
+ * nie powstaną - nauczka kosztująca jeden przebieg diagnostyczny.
  */
 export const setup: ModuleSetupConfig = {
   defaultRoleFeatures: {

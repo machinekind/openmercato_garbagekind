@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Rejestr floty — schemat początkowy.
+ * Rejestr floty - schemat początkowy.
  *
  * Dwie rzeczy warte uwagi przy czytaniu:
  *
@@ -13,7 +13,7 @@ import { Migration } from '@mikro-orm/migrations'
  *
  * 2. Kalibracja ma unikat na `(robot_id, kind, measured_at)`. To jest klucz
  *    idempotencji: powtórzony import tego samego protokołu pomiarowego odbija
- *    się od bazy, a nie od naszej pamięci — ta sama zasada, co przy księdze
+ *    się od bazy, a nie od naszej pamięci - ta sama zasada, co przy księdze
  *    ruchów magazynowych.
  */
 export class Migration20260919120000_fleet extends Migration {

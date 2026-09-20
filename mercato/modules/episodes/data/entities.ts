@@ -5,14 +5,14 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  *
  * Epizod jest atomem pracy manipulatora stacjonarnego: jedno podejście do
  * jednego zadania, z wynikiem. Interwencja człowieka jest **osobnym obiektem
- * pierwszorzędnym**, a nie polem `aborted_by` na epizodzie — i to jest całe
+ * pierwszorzędnym**, a nie polem `aborted_by` na epizodzie - i to jest całe
  * rozstrzygnięcie tej fazy.
  *
  * Powód nie jest estetyczny. Interwencja ma własny czas, własny etap, własnego
  * sprawcę i własną przyczynę; wtłoczona w kolumnę epizodu gubi wszystkie
  * cztery, a wtedy jedyne, co da się o niej powiedzieć, to że była. Liczba
- * epizodów między interwencjami — jedyna liczba, która mówi, czy wdrożenie
- * idzie do przodu — daje się policzyć i z pola, i z tabeli. Ale pytanie
+ * epizodów między interwencjami - jedyna liczba, która mówi, czy wdrożenie
+ * idzie do przodu - daje się policzyć i z pola, i z tabeli. Ale pytanie
  * „na którym etapie ludzie przerywają najczęściej", od którego zaczyna się
  * następny trening, daje się zadać wyłącznie tabeli.
  *
@@ -26,11 +26,11 @@ export type EpisodeOutcome = 'success' | 'failure' | 'aborted' | 'timeout'
 /**
  * Rodzaj interwencji, uporządkowany rosnąco po ciężarze.
  *
- * `adjust` — człowiek poprawił coś w otoczeniu, robot pracował dalej.
- * `manual_reset` — robot stanął, człowiek go odblokował.
- * `teleop_takeover` — człowiek przejął sterowanie.
- * `abort` — człowiek przerwał zadanie.
- * `estop` — zatrzymanie awaryjne.
+ * `adjust` - człowiek poprawił coś w otoczeniu, robot pracował dalej.
+ * `manual_reset` - robot stanął, człowiek go odblokował.
+ * `teleop_takeover` - człowiek przejął sterowanie.
+ * `abort` - człowiek przerwał zadanie.
+ * `estop` - zatrzymanie awaryjne.
  *
  * Kolejność jest treścią: raport, który liczy wszystkie przerwania razem,
  * pokazuje wdrożenie dojrzałe (same `adjust`) identycznie jak wdrożenie
@@ -83,7 +83,7 @@ export class Episode {
   @Property({ type: 'int' })
   sequence!: number
 
-  /** Identyfikator epizodu po stronie robota — klucz idempotencji ponownego wysłania. */
+  /** Identyfikator epizodu po stronie robota - klucz idempotencji ponownego wysłania. */
   @Property({ name: 'external_ref', type: 'text' })
   externalRef!: string
 
@@ -102,7 +102,7 @@ export class Episode {
   @Property({ type: 'text' })
   outcome!: EpisodeOutcome
 
-  /** Powód niepowodzenia w słowach robota — nie zastępuje przyczyny interwencji. */
+  /** Powód niepowodzenia w słowach robota - nie zastępuje przyczyny interwencji. */
   @Property({ name: 'outcome_detail', type: 'text', nullable: true })
   outcomeDetail?: string | null
 
@@ -129,7 +129,7 @@ export class Episode {
 }
 
 /**
- * Przerwanie pracy przez człowieka — obiekt pierwszorzędny.
+ * Przerwanie pracy przez człowieka - obiekt pierwszorzędny.
  *
  * Interwencja nie jest błędem do ukrycia w logach. Jest główną miarą
  * dojrzałości wdrożenia i wejściem do następnego treningu: to właśnie te
@@ -183,7 +183,7 @@ export class Intervention {
   @Property({ type: 'text', nullable: true })
   stage?: string | null
 
-  /** Kategoria przyczyny — po niej grupuje się wnioski do następnego treningu. */
+  /** Kategoria przyczyny - po niej grupuje się wnioski do następnego treningu. */
   @Property({ name: 'reason_category', type: 'text' })
   reasonCategory!: string
 

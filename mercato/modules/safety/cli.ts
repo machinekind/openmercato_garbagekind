@@ -9,7 +9,7 @@ import { DEFAULT_SUITES, type ClearanceVerdict } from './lib/clearance'
  *
  * `prove` odtwarza dowód fazy: wersja polityki bez kompletu przejść
  * ewaluacyjnych nie daje się wdrożyć w celi klasy, dla której uzasadnienie
- * nie zostało zatwierdzone — i odmowa przychodzi z **kanału stanu
+ * nie zostało zatwierdzone - i odmowa przychodzi z **kanału stanu
  * pożądanego**, a nie z osobnego raportu.
  */
 
@@ -37,7 +37,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -53,7 +53,7 @@ function buildCommandContext(
 }
 
 const SUITE_NAMES: Record<string, string> = {
-  'reach-envelope': 'Koperta zasięgu — ramię nie wychodzi poza obszar roboczy',
+  'reach-envelope': 'Koperta zasięgu - ramię nie wychodzi poza obszar roboczy',
   'grasp-release-integrity': 'Integralność chwytu i zwolnienia',
   'out-of-distribution-halt': 'Zatrzymanie przy obserwacji spoza rozkładu',
   'force-pressure-limits': 'Limity siły i nacisku (ISO/TS 15066)',
@@ -85,7 +85,7 @@ const seedCommand: ModuleCli = {
       console.log(`  ${suite.suiteKey.padEnd(26)} wymagany dla: ${suite.requiredFor.join(', ')}`)
     }
     console.log('\n  Cela ogrodzona wymaga najmniej, przestrzeń publiczna najwięcej.')
-    console.log('  Limity siły z ISO/TS 15066 nie obowiązują za płotem — rytuał uczy omijania wymagań.')
+    console.log('  Limity siły z ISO/TS 15066 nie obowiązują za płotem - rytuał uczy omijania wymagań.')
   },
 }
 
@@ -124,7 +124,7 @@ const statusCommand: ModuleCli = {
     for (const row of cases) {
       const ostrzezenie = row.declared_as_safety_function ? '  !! FUNKCJA BEZPIECZEŃSTWA' : ''
       console.log(
-        `  ${row.label.padEnd(21)} ${row.cell_class.padEnd(23)} ${row.status.padEnd(12)} ${row.valid_until ? new Date(row.valid_until).toISOString().slice(0, 10) : '—'}${ostrzezenie}`,
+        `  ${row.label.padEnd(21)} ${row.cell_class.padEnd(23)} ${row.status.padEnd(12)} ${row.valid_until ? new Date(row.valid_until).toISOString().slice(0, 10) : '-'}${ostrzezenie}`,
       )
     }
   },
@@ -189,7 +189,7 @@ const proveCommand: ModuleCli = {
       })
     }
 
-    console.log('DOWÓD FAZY 5 — dopuszczenie dotyczy klasy celi, nie celi\n')
+    console.log('DOWÓD FAZY 5 - dopuszczenie dotyczy klasy celi, nie celi\n')
     console.log(`   robot ${robot.serial_number}, klasa celi ${robot.cell_class}, ryzyko ${robot.risk_class}`)
     console.log(`   wersja ${version.label}`)
 
@@ -200,11 +200,11 @@ const proveCommand: ModuleCli = {
      * a nie masowe czyszczenie tabel. Wycofanie obejmuje wszystkie klasy celi
      * tej wersji, bo poprzedni przebieg zostawia sondę w klasie testowej,
      * a deklaracja funkcji bezpieczeństwa blokuje wersję wszędzie. Dowód ma być powtarzalny, ale nie
-     * kosztem kasowania cudzych danych — ta sama zasada, co przy poprawkach
+     * kosztem kasowania cudzych danych - ta sama zasada, co przy poprawkach
      * w księdze epizodów.
      */
     await em.getConnection().execute(
-      `update safety_cases set status = 'withdrawn', withdrawn_reason = 'Dowód fazy 5 — reset punktu wyjścia', updated_at = now()
+      `update safety_cases set status = 'withdrawn', withdrawn_reason = 'Dowód fazy 5 - reset punktu wyjścia', updated_at = now()
         where tenant_id = ? and policy_version_id = ? and status <> 'withdrawn'`,
       [scope.tenantId, version.id],
     )
@@ -219,7 +219,7 @@ const proveCommand: ModuleCli = {
     )
     const dlaKlasy = wymagane.filter((s) => (s.required_for ?? []).includes(robot.risk_class))
     console.log(
-      `   zestawy wymagane dla ryzyka ${robot.risk_class}: ${dlaKlasy.map((s) => s.suite_key).join(', ') || '(brak — uruchom safety seed)'}`,
+      `   zestawy wymagane dla ryzyka ${robot.risk_class}: ${dlaKlasy.map((s) => s.suite_key).join(', ') || '(brak - uruchom safety seed)'}`,
     )
 
     async function sprobujWdrozyc(etykieta: string): Promise<void> {
@@ -229,7 +229,7 @@ const proveCommand: ModuleCli = {
             ...scope,
             robotId: robot.id,
             policyVersionId: version.id,
-            reason: `Dowód fazy 5 — ${etykieta}`,
+            reason: `Dowód fazy 5 - ${etykieta}`,
           },
           ctx,
         })
@@ -295,7 +295,7 @@ const proveCommand: ModuleCli = {
     console.log(`   dopuszczenie: ${w2.cleared}; powody: ${w2.reasons.join(' | ')}`)
     await sprobujWdrozyc('uzasadnienie robocze')
 
-    // 3. Uzasadnienie zatwierdzone — wdrożenie przechodzi.
+    // 3. Uzasadnienie zatwierdzone - wdrożenie przechodzi.
     console.log('\n3) uzasadnienie zatwierdzone dla KLASY celi')
     const rok = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
     await bus.execute('safety.cases.approve', {
@@ -355,12 +355,12 @@ const proveCommand: ModuleCli = {
         input: { ...scope, safetyCaseId: zly.safetyCaseId, approvedBy: scope.organizationId, validUntil: rok },
         ctx,
       })
-      .then(() => 'ZATWIERDZONE — BŁĄD DOWODU')
+      .then(() => 'ZATWIERDZONE - BŁĄD DOWODU')
       .catch((error: Error) => `odbite: ${error.message}`)
     console.log(`   ${odmowa}`)
 
     /**
-     * Sprzątanie po sondzie — i to nie jest kosmetyka.
+     * Sprzątanie po sondzie - i to nie jest kosmetyka.
      *
      * Deklaracja „polityka jest funkcją bezpieczeństwa" dotyczy natury polityki,
      * nie jednej celi, więc dopuszczenie odmawia jej **we wszystkich** klasach.
@@ -369,12 +369,12 @@ const proveCommand: ModuleCli = {
      * ślad po próbie zostaje w bazie razem z powodem.
      */
     await bus.execute('safety.cases.withdraw', {
-      input: { ...scope, safetyCaseId: zly.safetyCaseId, reason: 'Dowód fazy 5 — sonda, sprzątanie' },
+      input: { ...scope, safetyCaseId: zly.safetyCaseId, reason: 'Dowód fazy 5 - sonda, sprzątanie' },
       ctx,
     })
     const w5 = await sprawdzDopuszczenie()
     console.log(`   po wycofaniu sondy dopuszczenie dla ${robot.cell_class}: ${w5.cleared} (powody: ${w5.reasons.join(' | ') || 'brak'})`)
-    console.log('   (deklaracja dotyczy natury polityki, nie jednej celi — dopóki istniała,')
+    console.log('   (deklaracja dotyczy natury polityki, nie jednej celi - dopóki istniała,')
     console.log('    blokowała tę wersję we WSZYSTKICH klasach celi)')
 
     console.log('\n   Wniosek: odmowa przychodzi z kanału stanu pożądanego, a nie z osobnego')
@@ -392,10 +392,10 @@ const proveCommand: ModuleCli = {
  * ją tak: lista niepusta znaczy „wolno wyłącznie to, co na niej jest".
  *
  * Moduł doinstalowany później nie ma jak się na tej liście znaleźć, więc jego
- * widget nie pojawia się nawet w katalogu „Customize" — jest zarejestrowany,
+ * widget nie pojawia się nawet w katalogu „Customize" - jest zarejestrowany,
  * załadowany i niewidoczny dla nikogo. Bez tej komendy byłby martwym kodem.
  *
- * Dopisujemy wyłącznie do ról, które już mają uprawnienie `safety.view` —
+ * Dopisujemy wyłącznie do ról, które już mają uprawnienie `safety.view` -
  * bezpośrednio albo przez wieloznacznik. Rola bez tego uprawnienia i tak
  * odbiłaby się o kontrolę cech przy renderowaniu, a dopisanie jej widgetu
  * byłoby cichą zmianą cudzej konfiguracji.
@@ -408,7 +408,7 @@ const installWidgetsCommand: ModuleCli = {
 
     /*
      * Surowy SQL, nie encja rdzenia. Import klasy encji z obcego modułu
-     * kończy się podwójną rejestracją metadanych MikroORM — to jest ta sama
+     * kończy się podwójną rejestracją metadanych MikroORM - to jest ta sama
      * pułapka, którą opisuje komentarz w `deployment/commands/assignments.ts`.
      */
     const wynik = await em.getConnection().execute<Array<{ role_id: string }>>(

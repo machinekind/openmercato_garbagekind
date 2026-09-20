@@ -5,7 +5,7 @@ import { arrangeInCell, boundsOf, fitTransform, isPlaced, splitPlaced, toPixels 
  *
  * Testy pilnują przede wszystkim jednej rzeczy: że **brak współrzędnych nie
  * zamienia się cicho w jakieś współrzędne**. Plan hali czyta się po to, żeby
- * wiedzieć, gdzie iść — zmyślona pozycja jest gorsza niż jej brak.
+ * wiedzieć, gdzie iść - zmyślona pozycja jest gorsza niż jej brak.
  */
 
 const CELA = { x: 10, y: 5, width: 8, height: 6 }
@@ -66,7 +66,7 @@ describe('fitTransform', () => {
     expect(rog.y).toBeLessThanOrEqual(viewport.height)
   })
 
-  it('SKALA JEST JEDNA DLA OBU OSI — prostokąt zostaje prostokątem', () => {
+  it('SKALA JEST JEDNA DLA OBU OSI - prostokąt zostaje prostokątem', () => {
     // Osobne skale wypełniłyby kadr lepiej i zniekształciły proporcje.
     // Na planie hali cela ma wyglądać tak, jak wygląda na miejscu.
     const bounds = boundsOf([{ x: 0, y: 0, width: 100, height: 10 }])!

@@ -11,7 +11,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  *
  * Pierwsza wartość, jaką ta platforma dostarcza, nie jest wyrafinowana:
  * **ile robotów rejestr twierdzi, że istnieje, a ile stoi w hali**. Ta liczba
- * się nie zgadza w każdym wdrożeniu — dlatego ekran zaczyna się od stanu
+ * się nie zgadza w każdym wdrożeniu - dlatego ekran zaczyna się od stanu
  * liczbowego, a nie od wykresu.
  */
 
@@ -34,11 +34,11 @@ type Robot = {
 /**
  * Stan łączności przychodzi z osobnego modułu (`edge`) i osobnym zapytaniem.
  *
- * Składanie dzieje się tutaj, w przeglądarce, a nie po stronie serwera —
+ * Składanie dzieje się tutaj, w przeglądarce, a nie po stronie serwera -
  * dzięki czemu `fleet` nie wie nic o agencie, a rejestr działa również wtedy,
  * gdy kanału brzegowego nie ma wcale (świeże wdrożenie, flota spisana ręcznie).
  * Brak odpowiedzi z `/api/edge/agents` nie jest tu błędem, tylko brakiem
- * kolumny — i tak jest to napisane niżej.
+ * kolumny - i tak jest to napisane niżej.
  */
 type LinkState = 'online' | 'late' | 'lost' | 'never_seen'
 
@@ -91,7 +91,7 @@ const STATE_TONE: Record<string, string> = {
 }
 
 function formatMoment(locale: string, value: string | null): string {
-  if (!value) return '—'
+  if (!value) return '-'
   return new Date(value).toLocaleString(locale, {
     day: '2-digit',
     month: '2-digit',
@@ -103,7 +103,7 @@ function formatMoment(locale: string, value: string | null): string {
 /**
  * Opis łączności.
  *
- * `null` znaczy „nie wiemy", a nie „nie działa" — i te dwie rzeczy nie mogą
+ * `null` znaczy „nie wiemy", a nie „nie działa" - i te dwie rzeczy nie mogą
  * wyglądać tak samo, bo pierwsza jest normalnym stanem floty bez agentów,
  * a druga jest awarią.
  */
@@ -116,7 +116,7 @@ function describeLink(t: Tf, link: AgentLink | undefined): { text: string; tone:
   if (link.state === 'lost') return { text: t('fleet.link.lostFor', 'bez łączności od {sec} s', { sec: String(link.silenceSeconds) }), tone: 'text-red-600' }
   if (link.state === 'late') return { text: t('fleet.link.lateFor', 'spóźniony {sec} s', { sec: String(link.silenceSeconds) }), tone: 'text-amber-600' }
   // Migotanie łącza i stabilna łączność wyglądają w „ostatnio widziany"
-  // identycznie — liczba sesji na dobę jest jedyną rzeczą, która je rozdziela.
+  // identycznie - liczba sesji na dobę jest jedyną rzeczą, która je rozdziela.
   if (link.sessionsLastDay > 3) {
     return { text: t('fleet.link.flapping', 'łączność, ale {n} sesji/dobę', { n: String(link.sessionsLastDay) }), tone: 'text-amber-600' }
   }
@@ -211,7 +211,7 @@ export default function FleetRegistry() {
           value={totals?.quarantined ?? null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">{t('fleet.ui.notClearedHint', "niedopuszczone — bywają mechanicznie sprawne")}</span>
+            <span className="text-xs text-muted-foreground">{t('fleet.ui.notClearedHint', "niedopuszczone - bywają mechanicznie sprawne")}</span>
           }
         />
         <KpiCard
@@ -286,7 +286,7 @@ export default function FleetRegistry() {
                       ) : null}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {[robot.embodiment, robot.site, robot.cell].filter(Boolean).join(' · ') || '—'}
+                      {[robot.embodiment, robot.site, robot.cell].filter(Boolean).join(' · ') || '-'}
                     </div>
                   </div>
 
@@ -297,7 +297,7 @@ export default function FleetRegistry() {
                     {/* Powód jest tu, a nie w szczegółach: przy kwarantannie to
                         jedyna rzecz odróżniająca wygasłą kalibrację od incydentu. */}
                     <div className="truncate text-xs text-muted-foreground" title={robot.stateReason ?? ''}>
-                      {robot.stateReason ?? '—'}
+                      {robot.stateReason ?? '-'}
                     </div>
                   </div>
 

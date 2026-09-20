@@ -32,7 +32,7 @@
   "deployment.ui.nRobotsSilent": "{n} robots reported nothing",
   "deployment.ui.noAssignments": "No robot has a policy assigned. Run",
   "deployment.ui.notReported": "not reported",
-  "deployment.ui.nothingRecorded": "the centre recorded nothing — the mandate simply lapsed",
+  "deployment.ui.nothingRecorded": "the centre recorded nothing - the mandate simply lapsed",
   "deployment.ui.stateDrift": "State drift",
   "deployment.ui.stoppedByLease": "Stopped by lease",
   "deployment.ui.untilExpiry": "until expiry",

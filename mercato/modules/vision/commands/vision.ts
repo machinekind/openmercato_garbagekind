@@ -42,7 +42,7 @@ export const registerCameraSchema = scoped.extend({
     .min(1, 'Okres przechowywania musi być dodatni.')
     .max(
       MAX_RETENTION_DAYS,
-      `Okres przechowywania nie może przekroczyć ${MAX_RETENTION_DAYS} dni — art. 22² § 3 Kodeksu pracy nakazuje ` +
+      `Okres przechowywania nie może przekroczyć ${MAX_RETENTION_DAYS} dni - art. 22² § 3 Kodeksu pracy nakazuje ` +
         'zniszczenie nagrań po trzech miesiącach. Dłużej wolno wyłącznie nagraniu stanowiącemu dowód w postępowaniu.',
     ),
   peopleInView: z.boolean().default(true),
@@ -97,7 +97,7 @@ const registerCameraCommand: CommandHandler<
 
     /*
      * Ostrzeżenia wracają do wołającego, a nie znikają w logu. Brak
-     * poinformowania załogi jest wadą usuwalną — ale tylko wtedy, gdy ktoś
+     * poinformowania załogi jest wadą usuwalną - ale tylko wtedy, gdy ktoś
      * się o niej dowie przed uruchomieniem kamery.
      */
     const cameraId = (camera as unknown as { id: string }).id
@@ -115,7 +115,7 @@ const registerCameraCommand: CommandHandler<
     if (verdict.warnings.length) {
       // Osobne zdarzenie, bo odbiorca jest inny: rejestracja kamery interesuje
       // tablicę wyposażenia, braki formalne interesują tego, kto odpowiada
-      // za zgodność — i ma je usunąć, zanim kamera ruszy.
+      // za zgodność - i ma je usunąć, zanim kamera ruszy.
       await emitVisionEvent('vision.camera.compliance_warning', {
         id: cameraId,
         organizationId: input.organizationId,
@@ -158,7 +158,7 @@ const registerDetectorCommand: CommandHandler<
     if (input.confidenceThreshold <= 0) {
       /*
        * Próg zero znaczy „licz wszystko, czego model dotknął". Taka liczba
-       * nie jest pomiarem obiektów, tylko pomiarem czułości modelu — i wchodzi
+       * nie jest pomiarem obiektów, tylko pomiarem czułości modelu - i wchodzi
        * potem do triangulacji jako pełnoprawny świadek.
        */
       throw new Error('Próg ufności równy zeru nie daje zliczeń obiektów, tylko zliczenia hipotez detektora.')
@@ -175,7 +175,7 @@ const registerDetectorCommand: CommandHandler<
       if (istnieje.weightsDigest === input.weightsDigest) {
         return { detectorVersionId: istnieje.id, presenceOnly: verdict.presenceOnly }
       }
-      // Rewizja jest niezmienna — te same powody, co przy rewizji embodimentu:
+      // Rewizja jest niezmienna - te same powody, co przy rewizji embodimentu:
       // zliczenia z przeszłości wiążą się z tym numerem.
       throw new Error(
         `Rewizja ${input.detectorKey} r${input.revision} istnieje z innymi wagami. Podnieś numer rewizji.`,
@@ -253,7 +253,7 @@ const recordWindowCommand: CommandHandler<RecordWindowInput, { windowId: string;
     /*
      * Klasy spoza zadeklarowanego słownika są odrzucane. Zliczenie klasy,
      * której detektor według rejestru nie potrafi zwrócić, znaczy, że
-     * na brzegu działa co innego, niż tu zapisano — a wtedy próg ufności
+     * na brzegu działa co innego, niż tu zapisano - a wtedy próg ufności
      * i skrót wag w rejestrze nie opisują niczego.
      */
     const obce = Object.keys(input.counts).filter((klasa) => !detector.classVocabulary.includes(klasa))
@@ -338,7 +338,7 @@ const attachClipCommand: CommandHandler<AttachClipInput, { clipId: string; delet
     /*
      * Termin usunięcia **liczony z kamery**, nigdy przyjmowany od wołającego.
      * Gdyby wchodził wejściem, byłby pierwszym polem, które ktoś ustawi na
-     * rok — i art. 22² § 3 KP przestałby cokolwiek znaczyć.
+     * rok - i art. 22² § 3 KP przestałby cokolwiek znaczyć.
      */
     const deleteAfter = deleteAfterFor(input.recordedAt, camera.retentionDays)
 
@@ -392,7 +392,7 @@ const purgeClipsCommand: CommandHandler<
     for (const clip of przeterminowane) {
       if (clip.deleteAfter.getTime() > now.getTime()) continue
       if (clip.legalHoldReference) {
-        // Jedyny wyjątek przewidziany w ustawie — i wymaga sygnatury,
+        // Jedyny wyjątek przewidziany w ustawie - i wymaga sygnatury,
         // a nie samego zaznaczenia pola.
         heldBack += 1
         continue
@@ -410,7 +410,7 @@ const purgeClipsCommand: CommandHandler<
      * wołane przez tego, kto naprawdę skasował bajty.
      *
      * Bajty leżą w magazynie obiektów, do którego ta platforma nie ma i nie
-     * powinna mieć dostępu — inaczej ERP stałby się systemem, który potrafi
+     * powinna mieć dostępu - inaczej ERP stałby się systemem, który potrafi
      * nieodwracalnie usunąć materiał dowodowy. Wpis w bazie mówi „ten plik
      * ma zniknąć"; kasuje ten, kto go trzyma.
      */
@@ -430,7 +430,7 @@ const purgeClipsCommand: CommandHandler<
      * a nie w workerze, bo w workerze była liczona globalnie i przez to
      * nie dało się jej nikomu przypisać.
      *
-     * To zdarzenie **powtarza się** przy każdym przebiegu, dopóki stan trwa —
+     * To zdarzenie **powtarza się** przy każdym przebiegu, dopóki stan trwa -
      * świadomie, wbrew zasadzie wyzwalania zboczem obowiązującej w reszcie
      * wtyczki. „Dziś nadal przechowujemy nagranie po ustawowym terminie"
      * jest prawdziwe każdego dnia z osobna i każdego dnia z osobna jest
@@ -491,7 +491,7 @@ const confirmDeletionCommand: CommandHandler<ConfirmDeletionInput, { confirmed: 
       if (!clip.markedForDeletionAt) {
         /*
          * Potwierdzenie usunięcia czegoś, czego nikt nie oznaczył, znaczy,
-         * że materiał skasowano poza procesem — może przed terminem, może
+         * że materiał skasowano poza procesem - może przed terminem, może
          * mimo wstrzymania dowodowego. Odmawiamy i zwracamy listę, zamiast
          * przyjąć zapis, który zamyka sprawę wyglądającą na zamkniętą.
          */

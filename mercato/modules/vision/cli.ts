@@ -32,7 +32,7 @@ async function resolveScope(em: EntityManager, args: Record<string, string | boo
   const rows = await em.getConnection().execute<Array<{ tenant_id: string; id: string }>>(
     'select tenant_id, id from organizations where deleted_at is null order by created_at asc limit 1',
   )
-  if (!rows?.length) throw new Error('Brak organizacji — uruchom najpierw inicjalizację aplikacji.')
+  if (!rows?.length) throw new Error('Brak organizacji - uruchom najpierw inicjalizację aplikacji.')
   return { tenantId: rows[0].tenant_id, organizationId: rows[0].id }
 }
 
@@ -40,7 +40,7 @@ function buildCommandContext(
   container: Awaited<ReturnType<typeof createRequestContainer>>,
   scope: Scope,
 ): CommandRuntimeContext {
-  // Pełny kształt zakresu — nauczka z modułu `work_orders`.
+  // Pełny kształt zakresu - nauczka z modułu `work_orders`.
   return {
     container,
     auth: null,
@@ -76,7 +76,7 @@ const proveCommand: ModuleCli = {
     }
     const cela = cele[0]
 
-    console.log('DOWÓD WZROKU — trzeci świadek, który umie być podejrzanym\n')
+    console.log('DOWÓD WZROKU - trzeci świadek, który umie być podejrzanym\n')
 
     /* ---------- 1. Dwie odmowy ---------- */
     console.log('1) Czego ten moduł nie przyjmie\n')
@@ -96,7 +96,7 @@ const proveCommand: ModuleCli = {
         },
         ctx,
       })
-      console.log('   !! kamera z rocznym przechowywaniem PRZESZŁA — to jest błąd')
+      console.log('   !! kamera z rocznym przechowywaniem PRZESZŁA - to jest błąd')
     } catch (error) {
       console.log(`   odmowa: ${(error as Error).message.slice(0, 160)}`)
     }
@@ -114,7 +114,7 @@ const proveCommand: ModuleCli = {
         },
         ctx,
       })
-      console.log('   !! detektor emocji PRZESZEDŁ — to jest błąd')
+      console.log('   !! detektor emocji PRZESZEDŁ - to jest błąd')
     } catch (error) {
       console.log(`   odmowa: ${(error as Error).message.slice(0, 200)}`)
     }
@@ -128,7 +128,7 @@ const proveCommand: ModuleCli = {
           code: `BIN-CAM-${stamp}`,
           name: 'Kamera nad pojemnikiem odkładczym',
           viewRole: 'bin_outfeed',
-          // Kontrola produkcji — cel wprost z katalogu art. 22² § 1 KP.
+          // Kontrola produkcji - cel wprost z katalogu art. 22² § 1 KP.
           purpose: 'production_control',
           retentionDays: 14,
           peopleInView: true,
@@ -157,7 +157,7 @@ const proveCommand: ModuleCli = {
     ).result as { detectorVersionId: string; presenceOnly: string[] }
 
     console.log(`\n2) Zarejestrowano: kamera ${cela.name}, próg ufności 0,55`)
-    console.log(`   klasy warunkowe: ${detektor.presenceOnly.join(', ') || '(brak)'} — wyłącznie obecność`)
+    console.log(`   klasy warunkowe: ${detektor.presenceOnly.join(', ') || '(brak)'} - wyłącznie obecność`)
 
     /* ---------- 3. Cztery zestawy trzech liczb ---------- */
     console.log('\n3) Ten sam robot, ta sama waga, różne odczyty kamery\n')
@@ -234,7 +234,7 @@ const proveCommand: ModuleCli = {
     )
 
     if (!partie.length) {
-      console.log('4) Brak zamkniętych partii roboczych — uruchom najpierw: yarn mercato work_orders prove\n')
+      console.log('4) Brak zamkniętych partii roboczych - uruchom najpierw: yarn mercato work_orders prove\n')
     } else {
       console.log('4) Ten sam rachunek na prawdziwych partiach z modułu work_orders\n')
       /*
@@ -254,7 +254,7 @@ const proveCommand: ModuleCli = {
          * minut długości) wypadała poza partie krótsze niż minuta i dowód
          * pokazywał „brak trzeciego świadka" tam, gdzie właśnie go dołożył.
          *
-         * To trzecie wystąpienie tej samej klasy błędu w tym projekcie —
+         * To trzecie wystąpienie tej samej klasy błędu w tym projekcie -
          * po fazie 4 i po moście do ERP. Wniosek jest za każdym razem ten sam:
          * okno wyprowadzać z danych, nigdy z zegara ani ze stałej.
          */
@@ -279,12 +279,12 @@ const proveCommand: ModuleCli = {
         })
         console.log(`   ${partia.container_code}: wizja ${wizja} wobec ${zgloszone} zgłoszonych przez robota`)
       }
-      console.log('\n   (zliczenia wytworzone na potrzeby dowodu — żadna kamera ich nie policzyła;')
+      console.log('\n   (zliczenia wytworzone na potrzeby dowodu - żadna kamera ich nie policzyła;')
       console.log('    sprawdzane jest łączenie po celi i oknie czasowym, nie wzrok maszynowy)\n')
     }
 
     console.log('Wniosek: dwaj świadkowie mówią, ŻE coś się nie zgadza.')
-    console.log('Trzeci zaczyna mówić, GDZIE — i sam bywa podejrzanym (scenariusz czwarty).')
+    console.log('Trzeci zaczyna mówić, GDZIE - i sam bywa podejrzanym (scenariusz czwarty).')
   },
 }
 
@@ -319,11 +319,11 @@ const triangulateCommand: ModuleCli = {
     )
     if (!partie.length) throw new Error(`Nie ma partii o etykiecie ${kod}.`)
     const p = partie[0]
-    if (!p.closed_at) throw new Error('Partia jest jeszcze otwarta — nie ma masy z wagi.')
+    if (!p.closed_at) throw new Error('Partia jest jeszcze otwarta - nie ma masy z wagi.')
 
     /*
      * Zliczenia wizji z okna partii. Sumujemy po klasie odpowiadającej frakcji
-     * zlecenia; okna wiąże z partią ten sam mechanizm, co epizody — czas i cela.
+     * zlecenia; okna wiąże z partią ten sam mechanizm, co epizody - czas i cela.
      */
     const okna = await em.getConnection().execute<Array<{ counts: Record<string, number>; counting_mode: string }>>(
       `select w.counts, w.counting_mode
@@ -338,7 +338,7 @@ const triangulateCommand: ModuleCli = {
     const tryby = new Set(okna.map((o) => o.counting_mode))
     if (tryby.size > 1) {
       // Zliczenia ścieżek i detekcji nie sumują się do jednej liczby.
-      throw new Error('Okna w tym przedziale mieszają tryby zliczania (ścieżki i detekcje) — suma byłaby bez sensu.')
+      throw new Error('Okna w tym przedziale mieszają tryby zliczania (ścieżki i detekcje) - suma byłaby bez sensu.')
     }
 
     const razem: Record<string, number> = {}
@@ -359,10 +359,10 @@ const triangulateCommand: ModuleCli = {
     const sklad = contamination(razem, klasaFrakcji)
 
     console.log(`Partia     : ${p.container_code} (frakcja ${p.sku})`)
-    console.log(`Okien wizji: ${okna.length}${okna.length ? ` (tryb: ${[...tryby][0]})` : ' — brak trzeciego świadka'}`)
-    console.log(`Wizja      : ${deposited ?? '—'}`)
+    console.log(`Okien wizji: ${okna.length}${okna.length ? ` (tryb: ${[...tryby][0]})` : ' - brak trzeciego świadka'}`)
+    console.log(`Wizja      : ${deposited ?? '-'}`)
     console.log(`Robot      : ${p.claimed_pieces ?? 0}`)
-    console.log(`Masa       : ${(Number(p.weighed_grams ?? 0) / 1000).toFixed(2)} kg → ${wynik.massImpliedCount ?? '—'} szt.`)
+    console.log(`Masa       : ${(Number(p.weighed_grams ?? 0) / 1000).toFixed(2)} kg → ${wynik.massImpliedCount ?? '-'} szt.`)
     console.log(`Podejrzany : ${wynik.suspect}`)
     console.log(`             ${wynik.reason}`)
     if (sklad.ratio !== null) {
@@ -435,11 +435,11 @@ const statusCommand: ModuleCli = {
     console.log(`\n  klipy: ${k.razem} łącznie, ${k.po_terminie} po terminie i nieoznaczonych, ${k.wstrzymane} wstrzymanych jako dowód`)
     /*
      * Właściwa liczba zgodności: oznaczone, ale nadal istniejące. Liczba
-     * oznaczeń sama w sobie nie mówi nic — z punktu widzenia art. 22² § 3 KP
+     * oznaczeń sama w sobie nie mówi nic - z punktu widzenia art. 22² § 3 KP
      * nagranie, którego nikt nie skasował, wciąż tam jest.
      */
     if (Number(k.nieusuniete) > 0) {
-      console.log(`  !! ${k.nieusuniete} oznaczonych, ale NIEUSUNIĘTYCH — materiał po terminie nadal istnieje`)
+      console.log(`  !! ${k.nieusuniete} oznaczonych, ale NIEUSUNIĘTYCH - materiał po terminie nadal istnieje`)
       console.log('     zgodność zamyka dopiero potwierdzenie z magazynu obiektów')
     }
     if (Number(k.po_terminie) > 0) console.log('  → harmonogram oznacza je automatycznie co 24 h')
@@ -452,7 +452,7 @@ const statusCommand: ModuleCli = {
  *
  * Wołane przez ten system albo proces, który naprawdę skasował pliki
  * z magazynu obiektów. Do tego momentu materiał jest **oznaczony i nadal
- * istniejący** — a z punktu widzenia art. 22² § 3 Kodeksu pracy to znaczy,
+ * istniejący** - a z punktu widzenia art. 22² § 3 Kodeksu pracy to znaczy,
  * że nagranie wciąż tam jest.
  */
 const confirmCommand: ModuleCli = {
@@ -480,7 +480,7 @@ const confirmCommand: ModuleCli = {
         ).map((r) => r.id)
 
     if (!identyfikatory.length) {
-      console.log('Brak materiału oznaczonego i nieusuniętego — nie ma czego potwierdzać.')
+      console.log('Brak materiału oznaczonego i nieusuniętego - nie ma czego potwierdzać.')
       return
     }
 
@@ -492,7 +492,7 @@ const confirmCommand: ModuleCli = {
 
     console.log(`Potwierdzono usunięcie: ${result.confirmed}`)
     if (result.rejected.length) {
-      console.log(`Odrzucono ${result.rejected.length} — materiał nieoznaczony, czyli skasowany poza procesem.`)
+      console.log(`Odrzucono ${result.rejected.length} - materiał nieoznaczony, czyli skasowany poza procesem.`)
     }
   },
 }
@@ -503,7 +503,7 @@ const confirmCommand: ModuleCli = {
  *
  * Platforma woła `seedDefaults` wyłącznie przy inicjalizacji tenanta, więc
  * moduł **doinstalowany później nigdy nie zarejestrowałby swojego zadania
- * cyklicznego** — i nikt by tego nie zauważył, bo brak zadania nie generuje
+ * cyklicznego** - i nikt by tego nie zauważył, bo brak zadania nie generuje
  * błędu, tylko ciszę. Ta komenda domyka tę lukę i jest idempotentna:
  * identyfikator harmonogramu jest stały, a `register` nadpisuje.
  */
@@ -535,7 +535,7 @@ const purgeCommand: ModuleCli = {
     console.log(`Oznaczono do usunięcia: ${result.purged.length}`)
     for (const clip of result.purged.slice(0, 20)) console.log(`  ${clip.uri}`)
     if (result.heldBack) console.log(`Wstrzymanych jako dowód w postępowaniu: ${result.heldBack}`)
-    console.log('\nPlików nie kasuje ta platforma — kasuje ten, kto je trzyma.')
+    console.log('\nPlików nie kasuje ta platforma - kasuje ten, kto je trzyma.')
     console.log('Wpis w bazie mówi „ten plik ma zniknąć", nie „ten plik zniknął".')
     console.log('Zgodność zamyka: mercato vision confirm --by <system> --clips <id,...>')
   },

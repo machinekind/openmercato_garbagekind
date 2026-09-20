@@ -4,7 +4,7 @@ import { Migration } from '@mikro-orm/migrations'
  * Rozdzielenie „oznaczone do usunięcia" od „potwierdzono usunięcie".
  *
  * Kolumna nazywała się `purged_at` i sugerowała, że plik zniknął. Platforma
- * nigdy go nie kasuje — bajty leżą w magazynie obiektów, do którego ERP nie
+ * nigdy go nie kasuje - bajty leżą w magazynie obiektów, do którego ERP nie
  * ma dostępu, i tak ma zostać. Dopóki jednak jedynym śladem było „purged",
  * zautomatyzowanie oznaczania dałoby **zautomatyzowaną księgowość zamiast
  * zgodności**, a nikt by tego nie zauważył.
@@ -20,7 +20,7 @@ export class Migration20260919230000_vision_deletion_proof extends Migration {
     this.addSql(`alter table "vision_clips" add column "deletion_confirmed_at" timestamptz null;`)
     this.addSql(`alter table "vision_clips" add column "deletion_confirmed_by" text null;`)
     // Potwierdzenie bez oznaczenia znaczy, że ktoś skasował materiał przed
-    // terminem i poza procesem — baza ma to odbić, a nie przyjąć.
+    // terminem i poza procesem - baza ma to odbić, a nie przyjąć.
     this.addSql(`alter table "vision_clips" add constraint "vision_clips_deletion_order_chk" check (
       "deletion_confirmed_at" is null or "marked_for_deletion_at" is not null);`)
     this.addSql(`drop index if exists "vision_clips_purge_idx";`)

@@ -2,7 +2,7 @@
 
 Do tej wersji wtyczka była systemem, który wszystko **zapisywał** i nic nie
 **ogłaszał**. Robot wjeżdżał do kwarantanny, kalibracja traciła ważność, partia
-rozjeżdżała się z wagą — i nie istniał sposób, żeby cokolwiek w systemie na to
+rozjeżdżała się z wagą - i nie istniał sposób, żeby cokolwiek w systemie na to
 zareagowało inaczej niż przez otwarcie właściwego ekranu przez właściwą osobę
 we właściwej chwili.
 
@@ -20,7 +20,7 @@ odpowiadającego jej wywołania `emit` w kodzie.
 
 Z tej samej zasady wynika, czego tu nie ma:
 
-- **`hmi`** nie ma `events.ts`. To biblioteka wzorników wizualnych — nie ma
+- **`hmi`** nie ma `events.ts`. To biblioteka wzorników wizualnych - nie ma
   stanu, nie ma komend, nie ma czego ogłaszać. Pusty plik byłby kultem cargo.
 - **`sortownia`** nie ma `events.ts`. Nie ma własnych komend; działa na
   komendach rdzenia (`wms.*`, `sales.*`), a te emitują własne zdarzenia.
@@ -34,7 +34,7 @@ Odpowiadają na inne pytanie: *co musi się teraz stać gdzie indziej*.
 Praktyczny skutek: nieudana próba nie emituje. Odmowa nadania węzłowi roli
 funkcji bezpieczeństwa, odmowa zatwierdzenia uzasadnienia deklarującego uczoną
 politykę jako funkcję bezpieczeństwa, odmowa domknięcia przebiegu treningowego
-bez wskazanej polityki — wszystkie wracają wyjątkiem do wołającego i lądują
+bez wskazanej polityki - wszystkie wracają wyjątkiem do wołającego i lądują
 w dzienniku audytu. Żadna z nich nie zmieniła stanu świata, więc nie ma czego
 ogłaszać.
 
@@ -42,7 +42,7 @@ ogłaszać.
 
 Wtyczka obsługuje ruch o częstotliwości maszynowej, więc dobór zdarzeń musi się
 z tym liczyć. Strumień, w którym tonie wszystko istotne, jest gorszy niż brak
-strumienia — bo wygląda jak działający monitoring.
+strumienia - bo wygląda jak działający monitoring.
 
 ### 1. Ruch nie jest faktem
 
@@ -50,10 +50,10 @@ strumienia — bo wygląda jak działający monitoring.
 
 | Co | Częstotliwość | Dlaczego nie |
 |---|---|---|
-| `edge` — uderzenie serca | ~1/s × flota | Faktem jest dopiero jego **brak** (`edge.agent.lost`) |
-| `deployment` — wydanie dzierżawy | ~1/30 s × flota | Odnowienie mandatu jest ruchem, nie zmianą |
-| `deployment` — raport stanu | ~1/30 s × flota | Faktem jest **zmiana werdyktu**, nie nadejście raportu |
-| `safety` — sprawdzenie dopuszczenia | przy każdym przypisaniu | To jest pytanie, nie fakt; odmowa jest jego normalną odpowiedzią |
+| `edge` - uderzenie serca | ~1/s × flota | Faktem jest dopiero jego **brak** (`edge.agent.lost`) |
+| `deployment` - wydanie dzierżawy | ~1/30 s × flota | Odnowienie mandatu jest ruchem, nie zmianą |
+| `deployment` - raport stanu | ~1/30 s × flota | Faktem jest **zmiana werdyktu**, nie nadejście raportu |
+| `safety` - sprawdzenie dopuszczenia | przy każdym przypisaniu | To jest pytanie, nie fakt; odmowa jest jego normalną odpowiedzią |
 
 ### 2. Wyzwalanie zboczem
 
@@ -62,7 +62,7 @@ werdykt bieżącego raportu z werdyktem **poprzedniego raportu tej samej
 maszyny**. Rozjazd trwa tyle, ile trwa jego przyczyna; ogłaszanie go przy
 każdym raporcie dałoby to samo zdarzenie co pół minuty przez cały czas awarii.
 
-`null` jako poprzedni werdykt (pierwszy raport maszyny) liczy się jako zmiana —
+`null` jako poprzedni werdykt (pierwszy raport maszyny) liczy się jako zmiana -
 bo nią jest.
 
 Test `deployment/__tests__/events.test.ts` pilnuje właśnie tego, bo ta reguła
@@ -74,7 +74,7 @@ zdarzenie w szum.
 `fleet.calibration.expired` jest ogłaszane **raz na kalibrację**, a odhaczenie
 siedzi w kolumnie `fleet_calibrations.expiry_notified_at`.
 
-Kolumna nie mówi „kalibracja wygasła" — ważność nadal wyprowadzamy przy odczycie
+Kolumna nie mówi „kalibracja wygasła" - ważność nadal wyprowadzamy przy odczycie
 z `valid_until`, bo stan wyliczony nie potrafi rozjechać się z faktem. Mówi
 „ten fakt został już raz ogłoszony". Bez tego detektor godzinny nadawałby to
 samo co przebieg.
@@ -90,7 +90,7 @@ zamieniłoby trwające naruszenie w jednorazową notkę.
 ## Zdarzenia wyróżnione obok ogólnych
 
 Kilka faktów ma dwa zdarzenia naraz: ogólne i wyróżnione. To nie jest
-duplikacja przez pomyłkę — to ten sam wzorzec, którego używa rdzeń (`wms`
+duplikacja przez pomyłkę - to ten sam wzorzec, którego używa rdzeń (`wms`
 emituje i `inventory_balance.updated`, i `inventory.low_stock`).
 
 Kryterium: **wyróżniamy wtedy, gdy odbiorca jest inny**. Subskrybent, który ma
@@ -113,18 +113,18 @@ Dwa dobory nazw warte odnotowania:
 
 - **`edge.agent.clone_suspected`**, nie `clone_detected`. Wyparcie żywej sesji
   robi tak samo zwykły restart maszyny, jak druga kopia agenta z tym samym
-  kluczem. Pojedyncze zdarzenie nie rozstrzyga niczego — rozstrzyga ciąg wyparć
+  kluczem. Pojedyncze zdarzenie nie rozstrzyga niczego - rozstrzyga ciąg wyparć
   w krótkim czasie, i dlatego ładunek niesie liczbę uderzeń serca wypartej sesji
   oraz jej ciszę w chwili wyparcia. Nazwa `detected` kazałaby odbiorcy uwierzyć
   w pewność, której nie mamy.
 - **`safety.run.failed` obejmuje `error`**, nie tylko `fail`. Zestaw, który się
-  wywrócił, nie wykazał zgodności — tak samo jak zestaw oblany. Rozdzielenie ich
+  wywrócił, nie wykazał zgodności - tak samo jak zestaw oblany. Rozdzielenie ich
   zachęcałoby do traktowania awarii potoku jako „jeszcze nie porażki", a to jest
   nawyk, który kończy się polityką dopuszczoną bez dowodu.
 
 ## Ładunki są typowane
 
-Każde zdarzenie niesie `payloadSchema` — płaską listę ścieżek i typów, z której
+Każde zdarzenie niesie `payloadSchema` - płaską listę ścieżek i typów, z której
 edytor workflow buduje wybór pól. Rdzeń generuje taki schemat automatycznie dla
 zdarzeń CRUD i pozostawia go pustym dla własnych; my deklarujemy go wszędzie,
 bo zdarzenie bez opisanego ładunku daje autorowi automatyzacji wybór „zrób coś,
@@ -132,7 +132,7 @@ gdy to padnie" i nic więcej.
 
 Kilka pól jest w ładunku z rozmysłem, a nie dla kompletności:
 
-- `work_orders.batch.closed` niesie werdykt **także gdy brzmi `ok`** —
+- `work_orders.batch.closed` niesie werdykt **także gdy brzmi `ok`** -
   statystyka dryfu potrzebuje mianownika, nie tylko licznika.
 - `work_orders.batch.drift_detected` jest wyzwalane **werdyktem**, nie flagą
   `requiresReview`. Flaga jest decyzją o skierowaniu maszyny do przeglądu i może
@@ -152,10 +152,10 @@ Kilka pól jest w ładunku z rozmysłem, a nie dla kompletności:
 Zdarzenia nie są furtką do obejścia decyzji projektowych.
 
 `edge` stwierdza ciszę i ogłasza `edge.agent.lost`. **Nie** wstawia robota do
-kwarantanny — wniosek „cisza znaczy: nie wolno pracować" należy do dziedziny
+kwarantanny - wniosek „cisza znaczy: nie wolno pracować" należy do dziedziny
 i zapada w `fleet`. Tak samo detektor wygasłych kalibracji ogłasza fakt i nie
 zatrzymuje maszyn: detektor, który sam zatrzymuje, po pierwszym fałszywym
-alarmie zostaje wyłączony — i wtedy nie ogłasza już niczego.
+alarmie zostaje wyłączony - i wtedy nie ogłasza już niczego.
 
 ## Katalog
 
@@ -181,7 +181,7 @@ Pełna lista z ładunkami jest dostępna w działającej aplikacji pod
 
 ## Detektor wygasłych kalibracji
 
-Przy okazji tej zmiany powstało zadanie cykliczne, którego wcześniej nie było —
+Przy okazji tej zmiany powstało zadanie cykliczne, którego wcześniej nie było -
 bo „wygasła kalibracja" była faktem, który system potrafił policzyć i nie
 potrafił nikomu powiedzieć.
 
@@ -211,7 +211,7 @@ przez ładowarkę szyny dawał `Duplicate command registration for id
 fleet.robots.register`.
 
 Nie wychodziło to nigdy, bo **żadna komenda wiersza poleceń modułu `fleet` nie
-sięgała wcześniej do szyny komend**. Pierwsza, która sięgnęła — `fleet expiry` —
+sięgała wcześniej do szyny komend**. Pierwsza, która sięgnęła - `fleet expiry` -
 wywróciła się natychmiast.
 
 Funkcja mieszka teraz w `fleet/lib/robotCalibration.ts`. Reguła ogólna:
@@ -219,7 +219,7 @@ cokolwiek ma być wołane spoza szyny, mieszka w `lib/`.
 
 ## Testy
 
-Każdy moduł ma `__tests__/events.test.ts` sprawdzający reguły nieoczywiste —
+Każdy moduł ma `__tests__/events.test.ts` sprawdzający reguły nieoczywiste -
 te, które psują się cicho i w dobrą stronę:
 
 - podwójna emisja przy kwarantannie i brak wyróżnionego zdarzenia przy
@@ -256,7 +256,7 @@ compute: 2 / 2
 
 Wszystkich zdarzeń w systemie po dołożeniu naszych: **547**.
 
-**Detektor wygasłych kalibracji na realnych danych** — dwa przebiegi pod rząd
+**Detektor wygasłych kalibracji na realnych danych** - dwa przebiegi pod rząd
 na tym samym stanie bazy:
 
 ```
@@ -267,7 +267,7 @@ Ogłoszono wygaśnięcie: 2
 
 $ mercato fleet expiry
 Brak nowo wygasłych kalibracji.
-Uwaga: to nie znaczy „wszystkie ważne" — znaczy „nic nowego do ogłoszenia".
+Uwaga: to nie znaczy „wszystkie ważne" - znaczy „nic nowego do ogłoszenia".
 ```
 
 Idempotencja potwierdzona na prawdziwych wierszach, nie tylko na atrapie
@@ -277,7 +277,7 @@ w testach.
 widziany" dwie godziny wstecz; harmonogram `edge-sessions-sweep` w działającym
 serwerze wykonał przebieg o `10:42:42`, zamknął sesję (otwartych: 1 → 0)
 i wyemitował `edge.agent.lost`. W dzienniku serwera **zero** ostrzeżeń
-`Event bus not available` — czyli emisja trafiła na uzbrojoną szynę, a nie
+`Event bus not available` - czyli emisja trafiła na uzbrojoną szynę, a nie
 w pustkę.
 
 Uczciwa granica tego dowodu: nie ma jeszcze żadnego subskrybenta, więc pełny

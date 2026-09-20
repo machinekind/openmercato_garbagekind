@@ -7,12 +7,12 @@ import { runAgentCommand, type AgentScope } from '../../edge/api/agentRoute'
  * `/api/deployment/lease` i `/api/deployment/report` budowały wejście komendy
  * z `organizationId: ''`, bo zakres wędrował wyłącznie w `ctx`. Schemat komendy
  * wymaga tam UUID, więc **każde** żądanie agenta kończyło się odmową 401
- * z komunikatem o niepoprawnym UUID — czyli endpoint nie działał ani razu.
+ * z komunikatem o niepoprawnym UUID - czyli endpoint nie działał ani razu.
  *
  * Dlaczego nie złapały tego istniejące testy: wszystkie wołają komendę wprost,
  * podstawiając poprawny zakres. Sprawdzały więc komendę, nigdy sklejenia
  * route ↔ komenda. Znalazł to dopiero niezależny agent uruchomiony przeciwko
- * żywej instancji — i to jest cała nauczka: zgodność z kontraktem sprawdza się
+ * żywej instancji - i to jest cała nauczka: zgodność z kontraktem sprawdza się
  * klientem, który nie zna naszych skrótów.
  */
 
@@ -52,7 +52,7 @@ const { createRequestContainer } = jest.requireMock('@open-mercato/shared/lib/di
   createRequestContainer: jest.Mock
 }
 
-describe('runAgentCommand — zakres serwera trafia do wejścia komendy', () => {
+describe('runAgentCommand - zakres serwera trafia do wejścia komendy', () => {
   it('przekazuje organizationId z wyszukania zakresu, a nie pustą wartość', async () => {
     const captured: { input?: Row } = {}
     createRequestContainer.mockResolvedValue(makeContainer(captured))
@@ -73,7 +73,7 @@ describe('runAgentCommand — zakres serwera trafia do wejścia komendy', () => 
     expect(captured.input?.organizationId).not.toBe('')
   })
 
-  it('odmawia 404, gdy sesji nie da się rozpoznać — bez wołania komendy', async () => {
+  it('odmawia 404, gdy sesji nie da się rozpoznać - bez wołania komendy', async () => {
     const captured: { input?: Row } = {}
     createRequestContainer.mockResolvedValue(makeContainer(captured))
 

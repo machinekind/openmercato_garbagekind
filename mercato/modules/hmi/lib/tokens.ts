@@ -6,7 +6,7 @@
  *
  * 1. **Stan normalny jest szary.** Kolor jest zarezerwowany dla odstępstwa.
  *    Ekran, na którym wszystko świeci na zielono, uczy operatora, że kolor
- *    nic nie znaczy — a wtedy czerwony musi się bić o uwagę z pięcioma
+ *    nic nie znaczy - a wtedy czerwony musi się bić o uwagę z pięcioma
  *    zielonymi zamiast po prostu wyskoczyć z tła.
  * 2. **Kolor nigdy sam.** Każdy stan odbiegający od normy ma dodatkowo
  *    **kształt** i **tekst**. Wymuszone testem, nie zaleceniem: deskryptor
@@ -23,7 +23,7 @@
 export type Severity = 'normal' | 'advisory' | 'alarm' | 'action' | 'suppressed' | 'unknown'
 
 /**
- * Waga ważności — im wyżej, tym bardziej wypycha inne stany z kafelka.
+ * Waga ważności - im wyżej, tym bardziej wypycha inne stany z kafelka.
  *
  * `unknown` stoi **wyżej niż `advisory`** i jest to decyzja, nie przeoczenie:
  * „nie wiem, co się dzieje z tą maszyną" jest gorszą wiadomością niż
@@ -40,11 +40,11 @@ export const SEVERITY_PRIORITY: Record<Severity, number> = {
 
 /**
  * Paleta. Wartości w HSL, żeby jedna definicja obsłużyła oba tryby: w trybie
- * ciemnym zmienia się jasność, nie odcień — barwa niesie znaczenie i musi
+ * ciemnym zmienia się jasność, nie odcień - barwa niesie znaczenie i musi
  * zostać ta sama.
  */
 export const SEVERITY_COLOR: Record<Severity, { light: string; dark: string }> = {
-  // Norma nie ma własnego koloru — bierze kolor tekstu z motywu, przygaszony.
+  // Norma nie ma własnego koloru - bierze kolor tekstu z motywu, przygaszony.
   normal: { light: 'hsl(215 16% 47%)', dark: 'hsl(215 14% 62%)' },
   suppressed: { light: 'hsl(188 70% 35%)', dark: 'hsl(188 60% 55%)' },
   advisory: { light: 'hsl(38 92% 40%)', dark: 'hsl(38 92% 58%)' },
@@ -53,7 +53,7 @@ export const SEVERITY_COLOR: Record<Severity, { light: string; dark: string }> =
   alarm: { light: 'hsl(0 72% 44%)', dark: 'hsl(0 80% 62%)' },
 }
 
-/** Nazwy zmiennych CSS — jedno źródło, żeby literówka nie tworzyła cichego czarnego. */
+/** Nazwy zmiennych CSS - jedno źródło, żeby literówka nie tworzyła cichego czarnego. */
 export const cssVar = (severity: Severity): string => `var(--hmi-${severity})`
 
 /**
@@ -85,7 +85,7 @@ export const STROKE = { hairline: 1, normal: 1.5, emphasis: 2.5 } as const
  *
  * `minWidth` bierze się z **czytelności opisu stanu**, nie z długości numeru
  * seryjnego. Numer mieści się w 76 px i przy takiej szerokości układ potrafi
- * upchnąć trzy kolumny — tyle że etykieta „Agent nigdy się nie odezwał"
+ * upchnąć trzy kolumny - tyle że etykieta „Agent nigdy się nie odezwał"
  * skraca się wtedy do „Agent nigdy s…". Kafelek zastąpił kropkę właśnie po to,
  * żeby stan dało się przeczytać, a nie odgadnąć z barwy.
  */
@@ -95,7 +95,7 @@ export const TILE = { height: 28, minWidth: 118, gap: 6 } as const
  * Deklaracja zmiennych CSS wstrzykiwana raz na stronę.
  *
  * Tryb ciemny przez `@media` **oraz** przez atrybut `data-theme`, bo panel
- * pozwala wymusić motyw niezależnie od ustawień systemu — obsłużenie tylko
+ * pozwala wymusić motyw niezależnie od ustawień systemu - obsłużenie tylko
  * jednego z tych kanałów daje ekran, który w połowie przypadków ma kolory
  * z drugiego motywu.
  */

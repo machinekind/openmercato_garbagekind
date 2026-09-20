@@ -10,7 +10,7 @@ import {
  * Planowanie obciążeń na węźle obliczeniowym.
  *
  * Testy pilnują jednej rzeczy przede wszystkim: że rachunek idzie za
- * **przepustowością pamięci**, a nie za nagłówkowym petaflopem — i że przy
+ * **przepustowością pamięci**, a nie za nagłówkowym petaflopem - i że przy
  * małych modelach wizyjnych wąskie gardło poprawnie się odwraca. Funkcja,
  * która zawsze odpowiada „ograniczeniem jest pamięć", myli się w połowie
  * przypadków i każe kupować nie to, co trzeba.
@@ -33,7 +33,7 @@ const SPARK: NodeCapability = {
  * ma chronić: modele wizyjne nie liczą w FP4, więc podstawianie liczby
  * marketingowej zmienia werdykt o wąskim gardle na przeciwny.
  *
- * Wartość niżej jest założeniem rzędu wielkości, nie danymi z pomiaru —
+ * Wartość niżej jest założeniem rzędu wielkości, nie danymi z pomiaru -
  * i tak ma być podpisana, dopóki nikt tego nie zmierzy na sprzęcie.
  */
 const SPARK_FP16: NodeCapability = {
@@ -109,9 +109,9 @@ describe('estimateVision', () => {
   const detektor = { weightsMb: 120, gflopsPerFrame: 60, streams: 4, targetFps: 30 }
 
   it('PODSTAWIENIE LICZBY Z INNEJ PRECYZJI ODWRACA WERDYKT', () => {
-    // Ten sam detektor, ta sama pamięć — różni się wyłącznie liczba TFLOPS.
+    // Ten sam detektor, ta sama pamięć - różni się wyłącznie liczba TFLOPS.
     // Przy nagłówkowym FP4 funkcja mówi „ograniczeniem jest pamięć",
-    // przy realistycznym FP16 — „ograniczeniem jest moc". Obie odpowiedzi
+    // przy realistycznym FP16 - „ograniczeniem jest moc". Obie odpowiedzi
     // są poprawne dla swoich wejść, więc wejście musi być poprawne.
     expect(estimateVision(SPARK, detektor).bound).toBe('memory_bandwidth')
     expect(estimateVision(SPARK_FP16, detektor).bound).toBe('compute')
@@ -128,7 +128,7 @@ describe('estimateVision', () => {
     expect(wynik.estimatedRate).toBeGreaterThanOrEqual(30)
   })
 
-  it('odmawia, gdy strumieni jest za dużo — i mówi, co zmniejszyć', () => {
+  it('odmawia, gdy strumieni jest za dużo - i mówi, co zmniejszyć', () => {
     const wynik = estimateVision(SPARK_FP16, { ...detektor, streams: 400 })
     expect(wynik.fits).toBe(false)
     expect(wynik.reason).toMatch(/zmniejsz liczbę strumieni/)
@@ -146,7 +146,7 @@ describe('role węzła', () => {
     expect(checkNodeRoles(['training', 'evaluation']).allowed).toBe(true)
   })
 
-  it('ODMAWIA roli funkcji bezpieczeństwa — na żadnym węźle obliczeniowym', () => {
+  it('ODMAWIA roli funkcji bezpieczeństwa - na żadnym węźle obliczeniowym', () => {
     // Kuszenie jest realne i przewidywalne: jak już stoi mocna maszyna,
     // wszystko chce na niej wylądować, łącznie z zatrzymaniem awaryjnym.
     for (const rola of FORBIDDEN_NODE_ROLES) {

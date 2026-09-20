@@ -2,7 +2,7 @@
  * Kalibracja jako warunek dopuszczenia, nie jako zadanie serwisowe.
  *
  * Reguła jest jedna i twarda: robot, któremu wygasł choć jeden wymagany
- * pomiar, nie jest dopuszczony — nawet gdy mechanicznie jest bez zarzutu
+ * pomiar, nie jest dopuszczony - nawet gdy mechanicznie jest bez zarzutu
  * i właśnie wyjechał z przeglądu. To rozróżnienie jest tym, co odróżnia
  * platformę operacyjną od systemu utrzymania ruchu.
  *
@@ -28,7 +28,7 @@ export type CalibrationVerdict = {
   /** Czy komplet wymaganych pomiarów jest ważny w podanej chwili. */
   complete: boolean
   statuses: CalibrationStatus[]
-  /** Rodzaje, które blokują dopuszczenie — puste, gdy `complete`. */
+  /** Rodzaje, które blokują dopuszczenie - puste, gdy `complete`. */
   blocking: string[]
   /** Czytelny powód odmowy, gotowy do wpisania w `state_reason`. */
   reason?: string
@@ -99,7 +99,7 @@ export function evaluateCalibration(
 }
 
 /**
- * Pomiary, które wygasną w zadanym oknie — podstawa wyprzedzającego alertu.
+ * Pomiary, które wygasną w zadanym oknie - podstawa wyprzedzającego alertu.
  *
  * Bez tego jedyną informacją o kalibracji jest moment, w którym robot już
  * stanął. Planista serwisu potrzebuje jej tydzień wcześniej.

@@ -4,7 +4,7 @@ Lista tego, co trzeba **wytrenować** i **udokumentować**, żeby wynik dał si�
 wpiąć w tę platformę bez przepisywania go po drodze.
 
 Nie jest to lista życzeń. Każda pozycja ma podane, co konkretnie odmówi
-działania, gdy jej zabraknie — bo część z nich to **twarde bramki w kodzie**,
+działania, gdy jej zabraknie - bo część z nich to **twarde bramki w kodzie**,
 które odrzucą wgranie, a nie ostrzegą.
 
 Czytać razem z:
@@ -19,12 +19,12 @@ Czytać razem z:
 | Znacznik | Znaczenie |
 | --- | --- |
 | 🔴 **BRAMKA** | bez tego komenda rzuca wyjątkiem; nic nie wejdzie do systemu |
-| 🟡 **OSTRZEŻENIE** | wejdzie, ale z zapisanym brakiem — i wyjdzie przy dopuszczeniu |
+| 🟡 **OSTRZEŻENIE** | wejdzie, ale z zapisanym brakiem - i wyjdzie przy dopuszczeniu |
 | ⚪ **JAKOŚĆ** | nic nie blokuje, ale bez tego dane są słabsze, niż wyglądają |
 
 ---
 
-## Blok A — kontrakt sprzętu
+## Blok A - kontrakt sprzętu
 
 Wszystko poniżej dotyczy **rewizji embodimentu**, a nie egzemplarza robota.
 Robot jest egzemplarzem; kontraktem jest rewizja. To rozróżnienie jest
@@ -40,7 +40,7 @@ Wzorzec: `mercato/embodiments/so101_follower.json`. Pola dziś nieznane
 z dokumentacji SO-101: `kinematics.payloadKg`, `kinematics.reachMm`.
 
 **Dlaczego:** `validateEmbodimentSpec` rozróżnia opis **poprawny** od
-**kompletnego**. Niekompletny wolno zaewidencjonować — nie wolno na nim
+**kompletnego**. Niekompletny wolno zaewidencjonować - nie wolno na nim
 dopuścić polityki do ruchu. `"unknown"` jest wartownikiem: istnieje właśnie
 po to, żeby brak pomiaru nie dał się pomylić z pomiarem. Wpisanie tam liczby
 „z katalogu producenta" jest gorsze niż zostawienie `unknown`, bo zamienia
@@ -52,21 +52,21 @@ mercato fleet embodiment --file <plik>.json
 ```
 kończy się bez sekcji „Opis NIEKOMPLETNY".
 
-**Uwaga o zakresie:** liczba i rozmieszczenie kamer **nie należą do ramienia** —
+**Uwaga o zakresie:** liczba i rozmieszczenie kamer **nie należą do ramienia** -
 to cecha stanowiska. Polityka trenowana z dwiema kamerami nie zadziała na
 stanowisku z jedną, ale ten fakt wchodzi do systemu przez konfigurację celi,
 nie przez ten plik.
 
 ### A2. 🔴 Kontrakt kalibracji: co, czym, jak długo ważne, z jaką niepewnością
 
-**Co dostarczyć:** dla każdej pozycji w `requiredCalibrations` — nazwa
+**Co dostarczyć:** dla każdej pozycji w `requiredCalibrations` - nazwa
 narzędzia, które pomiar produkuje, format wyniku, okres ważności w dniach,
 oraz **jak wyrazić niepewność**.
 
 **Dlaczego:** `Calibration.validUntil` jest polem obowiązkowym i nie ma
 wartości domyślnej. Kalibracja bez daty ważności to kalibracja, o której nikt
 nigdy nie przypomni. Od tej wersji istnieje detektor godzinny, który ogłasza
-`fleet.calibration.expired` — ale ogłosi tylko to, czemu ktoś wcześniej nadał
+`fleet.calibration.expired` - ale ogłosi tylko to, czemu ktoś wcześniej nadał
 termin.
 
 Pole `uncertainty` jest opcjonalne w schemacie i **nie powinno być puste**
@@ -94,20 +94,20 @@ obliczeniowym", które brzmi poważnie i **nie jest** warstwą bezpieczeństwa.
 
 Uczona polityka nie jest żadnym z tych mechanizmów i próba zadeklarowania jej
 jako funkcji bezpieczeństwa (`declaredAsSafetyFunction: true`) jest odrzucana
-przy zatwierdzeniu — wpycha maszynę w Annex I część A rozporządzenia
+przy zatwierdzeniu - wpycha maszynę w Annex I część A rozporządzenia
 2023/1230, czyli w ocenę przez jednostkę notyfikowaną, dla której nie istnieje
 ustalona metoda wykazania zgodności uczonego modelu.
 
 **Do przemyślenia po waszej stronie:** w SO-101 warstwą jest
-`max_relative_target` w sterowniku LeRobot — ograniczenie skoku zadanej
+`max_relative_target` w sterowniku LeRobot - ograniczenie skoku zadanej
 pozycji. Jest deterministyczne, ale **da się je wyłączyć ustawieniem na
 `null`** i nie ma kategorii bezpieczeństwa wg ISO 13849. Dla celi ogrodzonej
-to może wystarczyć; dla celi współdzielonej z ludźmi — nie. Rozstrzygnięcie
+to może wystarczyć; dla celi współdzielonej z ludźmi - nie. Rozstrzygnięcie
 należy do was i do oceny ryzyka stanowiska, nie do tej platformy.
 
 ---
 
-## Blok B — kontrakt polityki
+## Blok B - kontrakt polityki
 
 ### B1. ✅ Zadeklarować przestrzeń obserwacji i akcji
 
@@ -130,7 +130,7 @@ samo jak sterownik podający stopnie, a akcja `delta` nie wygląda jak
 
 ### B2. 🔴 Podać odcisk kontraktu **niezależnie**
 
-**Co dostarczyć:** `declaredSpecDigest` — skrót specyfikacji, pod którą
+**Co dostarczyć:** `declaredSpecDigest` - skrót specyfikacji, pod którą
 polityka była trenowana, podany przez wgrywającego.
 
 **Dlaczego:** to nie jest formalność. Odcisk przychodzi od wgrywającego
@@ -152,7 +152,7 @@ w chwili startu treningu, a nie odtwarzać przy wgrywaniu.
 
 **Dlaczego:** tożsamość wersji polityki niesie skrót treści, nie numer.
 Ponowne wgranie tej samej treści jest deduplikowane i **nie emituje
-zdarzenia** — czyli potok CI może wgrywać wielokrotnie bez podwajania
+zdarzenia** - czyli potok CI może wgrywać wielokrotnie bez podwajania
 automatyzacji. Numer wersji jest tylko etykietą.
 
 ### B4. ✅ Zachowanie przy wygaśnięciu dzierżawy
@@ -162,19 +162,19 @@ i nie da się go odnowić.
 
 **Dlaczego:** kanał stanu pożądanego działa na dzierżawie o ograniczonym
 czasie. Robot bez łącza **nie dowie się o odwołaniu przypisania** i będzie
-pracował do końca mandatu — to jest projekt, nie luka. Zatrzymanie
+pracował do końca mandatu - to jest projekt, nie luka. Zatrzymanie
 natychmiastowe należy do warstwy deterministycznej, która nie przechodzi przez
 tę platformę.
 
 Każda nowa wersja polityki musi wybrać `leaseExpiryBehavior`:
 `hold_position`, `complete_grasp_then_hold` albo `return_home`. Wartość jest
 kopiowana do przypisania i zwracana agentowi z każdym mandatem. Brak wartości
-w wersji historycznej blokuje nowe przypisanie — platforma nie zgaduje
+w wersji historycznej blokuje nowe przypisanie - platforma nie zgaduje
 zachowania maszyny.
 
 ---
 
-## Blok C — co wytrenować
+## Blok C - co wytrenować
 
 ### C1. 🔴 Polityka per (zadanie, rewizja embodimentu)
 
@@ -204,7 +204,7 @@ niezgłaszanie, pozbawia się jedynego źródła danych korekcyjnych.
 
 ### C3. 🔴 Detektor z zamkniętym słownikiem klas
 
-**Co dostarczyć:** `classVocabulary` — pełna lista klas, które model potrafi
+**Co dostarczyć:** `classVocabulary` - pełna lista klas, które model potrafi
 zwrócić, plus `weightsDigest` i `confidenceThreshold` **większy od zera**.
 
 **Dlaczego, twardo:** rejestracja detektora jest odrzucana, jeśli słownik
@@ -226,7 +226,7 @@ i `facial_emotion` odpadną tak samo jak `emotion`.
 
 Klasa `person` przechodzi, ale **wyłącznie jako obecność**. Liczba ludzi
 w celi jest informacją o bezpieczeństwie. Śledzenie osoby, przypisanie do
-pracownika albo zliczanie czasu pracy to inny system i inna podstawa prawna —
+pracownika albo zliczanie czasu pracy to inny system i inna podstawa prawna -
 ten moduł ich nie obsługuje.
 
 Próg ufności równy zeru jest odrzucany osobno: nie daje zliczeń obiektów,
@@ -244,14 +244,14 @@ pierwszy etap każdego wdrożenia jest od razu etapem produkcyjnym.
 
 ---
 
-## Blok D — dowody, czyli ewaluacja
+## Blok D - dowody, czyli ewaluacja
 
 To jest blok, który najczęściej bywa robiony na końcu i najczęściej decyduje,
 czy cokolwiek wolno uruchomić.
 
 ### D1. 🔴 Zestawy ewaluacyjne jako artefakt, nie jako notatka
 
-**Co dostarczyć:** dla każdego zestawu — klucz (`suiteKey`), nazwa, liczba
+**Co dostarczyć:** dla każdego zestawu - klucz (`suiteKey`), nazwa, liczba
 przypadków, i **dla których klas ryzyka jest obowiązkowy**
 (`fenced`, `shared`, `public`).
 
@@ -260,7 +260,7 @@ zdanych i wszystkich, adres dowodu (`evidenceUri`) i **odcisk specyfikacji
 sprzętu, na którym przebieg się odbył**.
 
 **Dlaczego `error` jest traktowany jak `fail`:** zestaw, który się wywrócił,
-nie wykazał zgodności — tak samo jak zestaw oblany. System emituje
+nie wykazał zgodności - tak samo jak zestaw oblany. System emituje
 `safety.run.failed` w obu wypadkach i robi to celowo. Rozdzielenie ich
 zachęca do traktowania awarii potoku jako „jeszcze nie porażki", a to jest
 nawyk, który kończy się polityką dopuszczoną bez dowodu.
@@ -271,7 +271,7 @@ Ewaluacja wykonana na innej rewizji embodimentu niż ta, na którą wgrywacie
 politykę, nie jest dowodem dla tej rewizji. System to sprawdza przy
 `safety.clearance.check`.
 
-### D3. ⚪ Uzgodnić progi bram — domyślne są nasze, nie wasze
+### D3. ⚪ Uzgodnić progi bram - domyślne są nasze, nie wasze
 
 Dziś obowiązują:
 
@@ -284,26 +284,26 @@ Dziś obowiązują:
 
 **To są wartości przyjęte przy budowie modułu, nie wyprowadzone z waszego
 zadania.** Dla sortowania odpadów 80% sukcesu może być absurdalnie nisko albo
-absurdalnie wysoko — nie wiem, i nikt tego jeszcze nie ustalił. Zadanie:
+absurdalnie wysoko - nie wiem, i nikt tego jeszcze nie ustalił. Zadanie:
 podać wartości uzasadnione charakterem zadania, razem z uzasadnieniem.
 
-Zwróćcie uwagę, że `hold` **nie jest porażką** — znaczy „za mało dowodów,
+Zwróćcie uwagę, że `hold` **nie jest porażką** - znaczy „za mało dowodów,
 żeby zdecydować". Mylenie tego z porażką popycha ludzi do przepychania
 wdrożeń przez bramę, która nic jeszcze nie powiedziała.
 
 ---
 
-## Blok E — telemetria z hali
+## Blok E - telemetria z hali
 
 ### E1. 🔴 Epizody ze stabilnym identyfikatorem zewnętrznym
 
-**Co dostarczyć:** dla każdego wykonania zadania — `externalRef` **stabilny
+**Co dostarczyć:** dla każdego wykonania zadania - `externalRef` **stabilny
 i powtarzalny**, `taskKey`, `startedAt`, `endedAt`, `outcome` ze słownika
 `success | failure | aborted | timeout`.
 
 **Dlaczego `externalRef` musi być stabilny:** jest kluczem idempotencji.
 Dosłanie tego samego epizodu po zerwaniu łącza zwraca istniejący rekord
-z flagą `duplicate` i **nie emituje zdarzenia** — nie podwaja statystyk i nie
+z flagą `duplicate` i **nie emituje zdarzenia** - nie podwaja statystyk i nie
 odpala automatyzacji drugi raz. Identyfikator generowany losowo przy każdej
 próbie wysyłki niszczy tę własność.
 
@@ -311,11 +311,11 @@ próbie wysyłki niszczy tę własność.
 
 **Co dostarczyć:** `kind` ze słownika
 `adjust | manual_reset | teleop_takeover | abort | estop`,
-`reasonCategory` (wspólna lista po waszej stronie — patrz F1),
+`reasonCategory` (wspólna lista po waszej stronie - patrz F1),
 `reason` (tekst), `occurredAt`, opcjonalnie `recoverySeconds`.
 
-**Dlaczego rodzaj jest zamknięty:** trzy z nich — `estop`, `abort`,
-`teleop_takeover` — emitują osobne zdarzenie `episodes.intervention.emergency`,
+**Dlaczego rodzaj jest zamknięty:** trzy z nich - `estop`, `abort`,
+`teleop_takeover` - emitują osobne zdarzenie `episodes.intervention.emergency`,
 bo odebranie maszynie sprawczości to inna klasa faktu niż korekta chwytu.
 Kanał alarmowy nie może tego rozróżniać dopasowaniem stringa.
 
@@ -330,9 +330,9 @@ miara kosztu interwencji wyrażona w czyimś czasie.
   opuszcza robota,
 - podpisy z prefiksami wiążącymi kontekst: `edge.enroll:`, `edge.connect:`,
   `edge.heartbeat:`, `edge.rotate:`, `edge.telemetry:`, `deployment.lease:`,
-  `deployment.report:` — podpis zebrany pod jednym prefiksem nie przechodzi
+  `deployment.report:` - podpis zebrany pod jednym prefiksem nie przechodzi
   pod innym,
-- **licznik sekwencji rosnący w obrębie sesji** — nie globalny; restart agenta
+- **licznik sekwencji rosnący w obrębie sesji** - nie globalny; restart agenta
   zeruje licznik i otwiera nową sesję,
 - obsługa okna rotacji klucza: przez pewien czas ważne są dwa klucze naraz,
 - parametry żywotności deklarowane przy wpisaniu:
@@ -340,7 +340,7 @@ miara kosztu interwencji wyrażona w czyimś czasie.
   `lostAfterSeconds` (300), przy czym musi zachodzić
   `lostAfterSeconds > heartbeatIntervalSeconds + livenessGraceSeconds`.
 
-**Punkty wejścia** (jedyne bez uwierzytelnienia sesyjnego — autoryzacja jest
+**Punkty wejścia** (jedyne bez uwierzytelnienia sesyjnego - autoryzacja jest
 kryptograficzna):
 
 ```
@@ -352,7 +352,7 @@ POST /api/deployment/report
 ```
 
 Uderzenie serca **nie generuje zdarzenia** i nie ma generować. Faktem jest
-dopiero jego brak — po przekroczeniu progu ciszy zamiatanie ogłasza
+dopiero jego brak - po przekroczeniu progu ciszy zamiatanie ogłasza
 `edge.agent.lost`. Robot dostaje w odpowiedzi na każde uderzenie własny termin
 odcięcia (`nextDeadline`), więc może sam zwolnić, gdy centrala zamilknie.
 
@@ -368,27 +368,27 @@ jedna „ścieżka" i trzydzieści „detekcji". Bez deklaracji liczba jest
 nieinterpretowalna.
 
 Zliczenia klas spoza `classVocabulary` zarejestrowanego detektora są
-odrzucane — oznaczają, że na brzegu działa inny model, niż zapisano
+odrzucane - oznaczają, że na brzegu działa inny model, niż zapisano
 w rejestrze.
 
 ---
 
-## Blok F — dokumentacja, której nie ma czym zastąpić
+## Blok F - dokumentacja, której nie ma czym zastąpić
 
 ### F1. ✅ Lista kategorii przyczyn interwencji
 
 Zamknięty słownik jest opisany w `physical-ai/INTERVENTION-REASONS.md` i
 egzekwowany przez komendę oraz podpisany endpoint edge. `kind` opisuje, co
-zrobił operator, a `reasonCategory` — dlaczego; szczegół nadal trafia do
+zrobił operator, a `reasonCategory` - dlaczego; szczegół nadal trafia do
 wolnego pola `reason`.
 
 ### F2. 🔴 Masa nominalna sztuki
 
-**Co dostarczyć:** dla każdego SKU / frakcji — `nominalPieceGrams`.
+**Co dostarczyć:** dla każdego SKU / frakcji - `nominalPieceGrams`.
 
 **Dlaczego:** most hala ↔ ERP uzgadnia masę zważoną z masą wynikającą ze
 zgłoszeń robota. Bez masy nominalnej werdykt brzmi `no_reference` i uzgodnienie
-nie ma do czego się odnieść — rozjazd nie zostanie wykryty, a partia będzie
+nie ma do czego się odnieść - rozjazd nie zostanie wykryty, a partia będzie
 wyglądała na zgodną.
 
 Zastrzeżenie, które warto rozumieć: **rozjazd nie wstrzymuje materiału.** Na
@@ -423,7 +423,7 @@ Warto powiedzieć wprost, żeby nie robić roboty, której nikt nie odbierze:
 
 - **Nie musicie wyliczać odcisku specyfikacji ręcznie.** Robi to
   `mercato fleet embodiment`. Pole `provenance` i `name` są z odcisku
-  wyłączone celowo — poprawka literówki w nazwie nie ma unieważniać kontraktu.
+  wyłączone celowo - poprawka literówki w nazwie nie ma unieważniać kontraktu.
 - **Nie musicie budować własnego rejestru wersji polityk.** Numerowanie,
   deduplikacja po treści i historia statusów są po naszej stronie.
 - **Nie musicie liczyć wskaźników bramy.** Brama liczy je sama z księgi
@@ -433,11 +433,11 @@ Warto powiedzieć wprost, żeby nie robić roboty, której nikt nie odbierze:
   i do modułu floty.
 - **Nie róbcie własnego kasowania nagrań.** Platforma **oznacza** materiał po
   terminie ustawowym i czeka na potwierdzenie usunięcia od tego, kto trzyma
-  bajty. Jeśli to wy trzymacie magazyn obiektów — patrz zadanie G2 niżej.
+  bajty. Jeśli to wy trzymacie magazyn obiektów - patrz zadanie G2 niżej.
 
 ---
 
-## Czego nasz system jeszcze **nie przyjmie** — dług po naszej stronie
+## Czego nasz system jeszcze **nie przyjmie** - dług po naszej stronie
 
 Uczciwie, żeby nie odkryli tego w trakcie integracji:
 
@@ -446,7 +446,7 @@ Uczciwie, żeby nie odkryli tego w trakcie integracji:
 `POST /api/edge/telemetry` przyjmuje epizod, interwencję albo zagregowane
 okno detekcji. Cała koperta jest podpisana Ed25519, rodzaj i treść są związane
 z podpisem, a wspólny z heartbeatami numer kolejny odrzuca powtórki. Zakres
-organizacji, tenant i robot są wyprowadzane z sesji — nie są przyjmowane od
+organizacji, tenant i robot są wyprowadzane z sesji - nie są przyjmowane od
 agenta. Surowe wideo i tensory pozostają w hubie edge/DGX. Format podpisu i
 zasady ponowień opisuje `physical-ai/EDGE-TELEMETRY.md`.
 
@@ -466,7 +466,7 @@ Patrz F1 oraz `physical-ai/INTERVENTION-REASONS.md`.
 
 Patrz B1. Nowe wersje polityk wymagają uporządkowanych specyfikacji wektorów,
 jednostek, układów odniesienia, semantyki oraz częstotliwości sterowania.
-Wersje historyczne zachowują puste pola — system nie dopisuje im zmyślonych
+Wersje historyczne zachowują puste pola - system nie dopisuje im zmyślonych
 kontraktów.
 
 ---
@@ -500,8 +500,8 @@ mercato edge status         # kto się odzywa, a kto milczy
 
 Największe ryzyko w tej integracji **nie leży** w żadnej pozycji powyżej.
 Leży w B1: w tym, że przestrzeń obserwacji i akcji jest dziś kontraktem
-słownym. Wszystkie twarde bramki, które zbudowaliśmy — odcisk specyfikacji,
-zgodność DOF, kalibracja, uzasadnienie bezpieczeństwa — przepuszczą politykę,
+słownym. Wszystkie twarde bramki, które zbudowaliśmy - odcisk specyfikacji,
+zgodność DOF, kalibracja, uzasadnienie bezpieczeństwa - przepuszczą politykę,
 która liczy w złych jednostkach.
 
 Jeżeli macie pomysł, jak to zamknąć maszynowo, jest to ważniejsze niż

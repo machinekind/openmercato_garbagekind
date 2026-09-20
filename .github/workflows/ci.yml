@@ -1,6 +1,6 @@
 name: CI
 
-# Co ten przebieg sprawdza, a czego nie — powiedziane wprost, żeby zielona
+# Co ten przebieg sprawdza, a czego nie - powiedziane wprost, żeby zielona
 # odznaka nie znaczyła więcej, niż znaczy.
 #
 # SPRAWDZA: zestaw testów pythonowych (generator legacy, most, narzędzie
@@ -9,7 +9,7 @@ name: CI
 #
 # NIE SPRAWDZA: modułów TypeScript. Wymagają one klonu platformy Open Mercato,
 # której to repozytorium nie zawiera. Za `yarn typecheck` i `yarn test` odpowiada
-# autor zmiany — procedura jest w CONTRIBUTING.md.
+# autor zmiany - procedura jest w CONTRIBUTING.md.
 
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
           python -m unittest tests.test_edge_agent_conformance -v 2>&1 | tee wynik.txt
           grep -q "Ran 1 test" wynik.txt
           if grep -qi "skipped" wynik.txt; then
-            echo "::error::Test zgodności został pominięty — brak Node z --experimental-strip-types."
+            echo "::error::Test zgodności został pominięty - brak Node z --experimental-strip-types."
             exit 1
           fi
 

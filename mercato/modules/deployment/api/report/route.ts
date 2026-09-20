@@ -8,7 +8,7 @@ import { runAgentCommand } from '../../../edge/api/agentRoute'
  * Powód jest dziedzinowy, nie techniczny: żądanie dzierżawy jest pytaniem
  * („co mam robić"), a zgłoszenie stanu twierdzeniem („co robię"). Sklejenie
  * ich w jedno wywołanie uzależniłoby uzgodnienie stanu od tego, czy robot
- * akurat potrzebuje odnowienia mandatu — a rozjazd najczęściej wychodzi
+ * akurat potrzebuje odnowienia mandatu - a rozjazd najczęściej wychodzi
  * właśnie wtedy, gdy nic się nie odnawia.
  */
 export const metadata = {

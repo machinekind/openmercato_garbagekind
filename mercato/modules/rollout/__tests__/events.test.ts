@@ -4,10 +4,10 @@ import { evaluateGateCommand } from '../commands/rollouts'
 /**
  * Testy emisji zdarzeń bramy wdrożenia.
  *
- * Werdykt bramy ma trzy zdarzenia zamiast jednego z polem `decision` — i to
+ * Werdykt bramy ma trzy zdarzenia zamiast jednego z polem `decision` - i to
  * jest tu sprawdzane. Powód jest praktyczny: odbiorcą „wycofano wdrożenie"
  * bywa kanał alarmowy, a odbiorcą „etap przeszedł dalej" tablica postępu.
- * Jedno zdarzenie ze stringiem kazałoby kanałowi alarmowemu filtrować —
+ * Jedno zdarzenie ze stringiem kazałoby kanałowi alarmowemu filtrować -
  * i budziłoby dyżurnego przy każdym pomyślnym przejściu, dopóki ktoś tego
  * filtru nie napisze poprawnie.
  *
@@ -70,7 +70,7 @@ function makeCtx(stats: Row) {
         if (query.includes('with populacja')) return [stats]
         if (query.includes('rollout_stage_members')) return []
         if (query.includes('deployment_assignments')) return []
-        // Po przepuszczeniu etapu komenda pyta, ile etapów zostało — brak tej
+        // Po przepuszczeniu etapu komenda pyta, ile etapów zostało - brak tej
         // odpowiedzi wywracał test na ścieżce `advance`, a nie na samej emisji.
         if (query.includes('count(*) as n from rollout_stages')) return [{ n: '1' }]
         return []

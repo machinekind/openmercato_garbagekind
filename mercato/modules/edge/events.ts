@@ -8,11 +8,11 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * zdarzenia na uderzenie serca: przy flocie kilkudziesięciu maszyn nadających
  * co sekundę byłby to strumień, który zatapia szynę i w którym nikt nigdy nie
  * zobaczy zdarzenia naprawdę istotnego. Uderzenie serca jest ruchem, nie
- * faktem — faktem jest dopiero jego **brak**.
+ * faktem - faktem jest dopiero jego **brak**.
  *
  * Granica modułu zostaje nienaruszona: `edge` stwierdza ciszę i ogłasza ją.
  * Wniosek, że cisza znaczy „nie wolno pracować", należy do dziedziny i zapada
- * w `fleet` — tutaj nie ma i nie będzie zmiany stanu robota.
+ * w `fleet` - tutaj nie ma i nie będzie zmiany stanu robota.
  */
 
 const events = [
@@ -36,7 +36,7 @@ const events = [
   {
     id: 'edge.agent.enrolled',
     label: 'Agent przyłączony',
-    description: 'Maszyna przyłączyła własną tożsamość — klucz publiczny jest odtąd znany centrali.',
+    description: 'Maszyna przyłączyła własną tożsamość - klucz publiczny jest odtąd znany centrali.',
     entity: 'agent',
     category: 'lifecycle',
     payloadSchema: {
@@ -74,14 +74,14 @@ const events = [
      * Nazwa mówi „podejrzenie", nie „wykrycie", i to nie jest ostrożność
      * językowa. Wyparcie otwartej sesji robi tak samo zwykły restart maszyny,
      * jak i druga kopia agenta z tym samym kluczem. Pojedyncze zdarzenie nie
-     * rozstrzyga niczego — rozstrzyga dopiero ciąg wyparć w krótkim czasie,
+     * rozstrzyga niczego - rozstrzyga dopiero ciąg wyparć w krótkim czasie,
      * i dlatego ładunek niesie czas życia wypartej sesji oraz liczbę jej
      * uderzeń serca. Zdarzenie o nazwie `clone_detected` kazałoby odbiorcy
      * uwierzyć w pewność, której nie mamy.
      */
     id: 'edge.agent.clone_suspected',
     label: 'Podejrzenie klonu agenta',
-    description: 'Nowa sesja wyparła sesję wciąż żywą. Tak wygląda restart — i tak samo wygląda druga kopia agenta z tym samym kluczem.',
+    description: 'Nowa sesja wyparła sesję wciąż żywą. Tak wygląda restart - i tak samo wygląda druga kopia agenta z tym samym kluczem.',
     entity: 'agent',
     category: 'lifecycle',
     payloadSchema: {
@@ -101,7 +101,7 @@ const events = [
     /**
      * Najważniejsze zdarzenie tego modułu: maszyna przestała się odzywać.
      * Nie ma go skąd wziąć inaczej niż z zamiatania, bo brak zdarzenia z
-     * definicji nie generuje zdarzenia — musi go ogłosić ktoś, kto patrzy
+     * definicji nie generuje zdarzenia - musi go ogłosić ktoś, kto patrzy
      * na zegar.
      */
     id: 'edge.agent.lost',

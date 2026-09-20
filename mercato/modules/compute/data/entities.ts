@@ -8,7 +8,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  * uruchomić** i **czego na niej uruchomić nie wolno nigdy**.
  *
  * Druga jest ważniejsza. Kuszenie jest przewidywalne: jak już stoi maszyna
- * licząca petaflop, wszystko chce na niej wylądować — łącznie z warstwą,
+ * licząca petaflop, wszystko chce na niej wylądować - łącznie z warstwą,
  * która ma zatrzymać robota, gdy polityka zawiedzie. Ta warstwa musi być
  * deterministyczna i **niezależna od polityki**, a współdzielony system
  * ogólnego przeznaczenia z akceleratorem nie daje ani jednego, ani drugiego.
@@ -111,7 +111,7 @@ export class ComputeNode {
  * Wpis jest przedziałem czasu, nie stanem bieżącym: pytanie „na czym trenowano
  * wersję, która zaczęła gubić sztuki" pada po fakcie i wymaga historii.
  * To domyka lukę w `datasets_training_runs`, gdzie przebieg treningowy nie
- * zapisywał, **na czym** się odbył — a bez tego regres po zmianie sterownika
+ * zapisywał, **na czym** się odbył - a bez tego regres po zmianie sterownika
  * albo biblioteki jest nie do zdiagnozowania.
  */
 @Entity({ tableName: 'compute_placements' })

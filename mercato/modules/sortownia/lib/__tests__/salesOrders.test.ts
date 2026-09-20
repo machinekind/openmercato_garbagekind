@@ -62,7 +62,7 @@ function makeCtx(options: { existing?: Array<{ id: string; externalReference: st
 }
 
 describe('orderNumberFor', () => {
-  it('numer dokumentu odtwarza się z numeru legacy — na tym stoi idempotencja', () => {
+  it('numer dokumentu odtwarza się z numeru legacy - na tym stoi idempotencja', () => {
     expect(orderNumberFor(5001)).toBe('WZ/5001')
   })
 })
@@ -86,7 +86,7 @@ describe('applySalesOrders', () => {
     await applySalesOrders(ctx, [order()])
     const line = (calls[0].input.lines as Array<Record<string, unknown>>)[0]
     // 4548 kg × 0,432 zł/kg = 1964,74 zł netto. Gdyby cena była za całość,
-    // faktura opiewałaby na 4548 × 1964,74 — pomyłka o trzy rzędy wielkości.
+    // faktura opiewałaby na 4548 × 1964,74 - pomyłka o trzy rzędy wielkości.
     expect(line.unitPriceNet).toBe(0.432)
     expect(line.priceMode).toBe('net')
   })
@@ -116,7 +116,7 @@ describe('applySalesOrders', () => {
     const result = await applySalesOrders(ctx, [order()])
     expect(calls.map((call) => call.id)).toEqual(['sales.orders.create', 'sales.invoices.create'])
     expect(calls[1].input.orderId).toBe('ord-1')
-    // Numerowanie dokumentów to zadanie platformy — własny licznik rozjechałby
+    // Numerowanie dokumentów to zadanie platformy - własny licznik rozjechałby
     // się z numeracją reszty sprzedaży przy pierwszej fakturze spoza importu.
     expect(calls[1].input).not.toHaveProperty('invoiceNumber')
     // Kwoty faktury pochodzą z zamówienia policzonego przez silnik platformy,

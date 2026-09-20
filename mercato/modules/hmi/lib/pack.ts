@@ -18,7 +18,7 @@ export type PackResult = {
   /**
    * Cela jest węższa niż czytelny kafelek.
    *
-   * Nie ściskamy kafelka poniżej obrysu celi — wystawałby poza celę, do której
+   * Nie ściskamy kafelka poniżej obrysu celi - wystawałby poza celę, do której
    * należy, i rzut zacząłby kłamać o przynależności. Nie rozciągamy też celi.
    * Zamiast tego mówimy wprost, że przy tym obmiarze opis stanu będzie ucięty,
    * i niech to będzie widać, zamiast tłumaczyć potem, czemu etykiety się urywają.
@@ -39,7 +39,7 @@ export function packTiles(options: {
   /*
    * Liczba kolumn brana z szerokości, ale ograniczona do trzech: cztery
    * kolumny przy tej szerokości dałyby kafelki węższe niż numer seryjny,
-   * czyli wróciłyby do skracania identyfikatora — a to jedyna rzecz,
+   * czyli wróciłyby do skracania identyfikatora - a to jedyna rzecz,
    * dla której kafelek zastąpił kropkę.
    */
   const maxColumns = Math.max(1, Math.floor((innerWidth + TILE.gap) / (TILE.minWidth + TILE.gap)))

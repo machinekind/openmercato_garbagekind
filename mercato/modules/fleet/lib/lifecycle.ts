@@ -5,7 +5,7 @@ import type { RobotState } from '../data/entities'
  *
  * Wydzielone z komend celowo: to jest jedyne miejsce, które rozstrzyga, czy
  * maszyna w hali może się ruszyć. Taka reguła ma być testowalna bez bazy,
- * bez kontenera i bez szyny komend — inaczej nikt jej nie przetestuje
+ * bez kontenera i bez szyny komend - inaczej nikt jej nie przetestuje
  * w każdym wariancie, a warianty są tu wszystkim.
  */
 
@@ -18,7 +18,7 @@ const ALLOWED: Record<RobotState, RobotState[]> = {
   maintenance: ['ready', 'quarantined', 'decommissioning'],
   quarantined: ['maintenance', 'ready', 'decommissioning'],
   decommissioning: ['decommissioned'],
-  // Stan końcowy. Robot wycofany nie wraca — wraca co najwyżej nowy rekord
+  // Stan końcowy. Robot wycofany nie wraca - wraca co najwyżej nowy rekord
   // z tym samym numerem seryjnym, i to jest świadoma decyzja człowieka.
   decommissioned: [],
 }
@@ -28,12 +28,12 @@ const ALLOWED: Record<RobotState, RobotState[]> = {
  *
  * Reguła doboru: bramkujemy każde przejście, które **dopuszcza** maszynę do
  * pracy albo kończy jej istnienie. Nie bramkujemy przejść, które ją
- * zatrzymują — zatrzymanie ma być tanie, bo inaczej ludzie przestają go używać.
+ * zatrzymują - zatrzymanie ma być tanie, bo inaczej ludzie przestają go używać.
  */
 const REQUIRES_APPROVAL = new Set<string>([
   // Dopuszczenie po uruchomieniu: wymaga kompletnej kalibracji i testów odbioru.
   'commissioning->ready',
-  // Wyjście z kwarantanny — ZAWSZE. Automatyczne wyjście po ustąpieniu objawu
+  // Wyjście z kwarantanny - ZAWSZE. Automatyczne wyjście po ustąpieniu objawu
   // maskuje przyczynę, a przyczyna jest tu jedyną rzeczą, która ma znaczenie.
   'quarantined->ready',
   'quarantined->maintenance',
@@ -52,7 +52,7 @@ const REQUIRES_APPROVAL = new Set<string>([
  * Przejścia, które system wykonuje sam, bez pytania.
  *
  * Wszystkie prowadzą do kwarantanny. To jest asymetria wpisana w projekt:
- * zatrzymać wolno automatowi, dopuścić — tylko człowiekowi.
+ * zatrzymać wolno automatowi, dopuścić - tylko człowiekowi.
  */
 const SYSTEM_MAY_TRIGGER = new Set<string>([
   'ready->quarantined',
@@ -102,7 +102,7 @@ export function checkTransition(
     return { allowed: false, requiresApproval: false, reason: `nieznany stan wyjściowy: ${from}` }
   }
   if (!targets.includes(to)) {
-    const lista = targets.length ? targets.join(', ') : 'żaden — to stan końcowy'
+    const lista = targets.length ? targets.join(', ') : 'żaden - to stan końcowy'
     return {
       allowed: false,
       requiresApproval: false,
@@ -118,7 +118,7 @@ export function checkTransition(
       requiresApproval: false,
       // Ten komunikat jest treścią projektu, nie uprzejmością: automat, który
       // sam dopuszcza robota do pracy, jest dokładnie tym, czego nie chcemy.
-      reason: `przejście ${key} wymaga decyzji człowieka — system może wyłącznie kwarantannować`,
+      reason: `przejście ${key} wymaga decyzji człowieka - system może wyłącznie kwarantannować`,
     }
   }
 
@@ -129,7 +129,7 @@ export function checkTransition(
  * Czy robot w tym stanie może dostać przypisanie polityki.
  *
  * Używane przez moduł wdrożeń jako bramka wstępna. Trzymane tutaj, bo to
- * własność cyklu życia, a nie wdrożenia — inaczej dwa moduły miałyby dwie
+ * własność cyklu życia, a nie wdrożenia - inaczej dwa moduły miałyby dwie
  * wersje tej samej prawdy i w końcu by się rozjechały.
  */
 export function mayRunPolicy(state: RobotState): boolean {

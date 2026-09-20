@@ -8,13 +8,13 @@ import { createHash } from 'node:crypto'
  * polityką i wszystkie statystyki liczone per wersja muszą się na nim zgadzać.
  *
  * Czysta funkcja bez bazy, bo to ona rozstrzyga o powstaniu albo niepowstaniu
- * rekordu — a takie reguły mają być testowalne w każdym wariancie bez kontenera.
+ * rekordu - a takie reguły mają być testowalne w każdym wariancie bez kontenera.
  */
 
 export type ArtifactInput = {
   role: string
   digest: string
-  /** Rozmiar i adres nie wchodzą do skrótu — patrz komentarz przy `canonicalArtifactForm`. */
+  /** Rozmiar i adres nie wchodzą do skrótu - patrz komentarz przy `canonicalArtifactForm`. */
   sizeBytes?: number | null
   uri?: string
   mediaType?: string | null
@@ -33,7 +33,7 @@ const DIGEST_PATTERN = /^[0-9a-f]{64}$/
  * Do skrótu **nie** wchodzą `uri` ani `sizeBytes`. To jest decyzja, nie
  * przeoczenie: ten sam plik przeniesiony z jednego magazynu do drugiego jest
  * wciąż tym samym plikiem, a polityka nie zmienia zachowania od zmiany adresu.
- * Alternatywa — skrót po adresie — odrzucona, bo migracja magazynu obiektów
+ * Alternatywa - skrót po adresie - odrzucona, bo migracja magazynu obiektów
  * rozmnożyłaby całą historię wersji bez zmiany choćby jednego bitu wag.
  */
 export function canonicalArtifactForm(artifacts: ArtifactInput[]): string {
@@ -45,7 +45,7 @@ export function canonicalArtifactForm(artifacts: ArtifactInput[]): string {
     if (seen.has(role)) {
       // Dwa pliki w tej samej roli uzależniłyby skrót od kolejności wgrywania,
       // czyli od rzeczy, która nie jest własnością polityki.
-      throw new Error(`Rola artefaktu ${role} powtarza się w komplecie — komplet ma jedną rolę raz.`)
+      throw new Error(`Rola artefaktu ${role} powtarza się w komplecie - komplet ma jedną rolę raz.`)
     }
     seen.add(role)
     parts.push(`${role}:${artifact.digest.trim().toLowerCase()}`)

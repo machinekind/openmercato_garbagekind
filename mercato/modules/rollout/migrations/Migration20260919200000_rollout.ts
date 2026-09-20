@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Wdrożenia etapowe — schemat początkowy.
+ * Wdrożenia etapowe - schemat początkowy.
  *
  * Progi są kolumnami **etapu**, nie wdrożenia. Pierwszy etap na trzech
  * robotach i ostatni na całej flocie nie mają tego samego progu i nie powinny

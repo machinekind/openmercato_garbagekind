@@ -77,7 +77,7 @@ class RandomTargetTest(unittest.TestCase):
 
     def test_position_outside_window_is_pulled_back_before_planning(self):
         windows = self.windows()
-        # Ramię zastane oparte o limit — pozycja poza zawężonym okienkiem.
+        # Ramię zastane oparte o limit - pozycja poza zawężonym okienkiem.
         current = {name: 0 for name in windows}
         targets = arm.plan_random_targets(current, windows, random.Random(1))
 

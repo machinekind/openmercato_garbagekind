@@ -7,7 +7,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * i dlatego ma trzy zdarzenia zamiast jednego z polem `decision`. Powód jest
  * praktyczny: odbiorca „wycofano wdrożenie" to zwykle dyżurny albo kanał
  * alarmowy, a odbiorca „etap przeszedł dalej" to tablica postępu. Zlanie ich
- * w jedno zdarzenie kazałoby kanałowi alarmowemu filtrować po stringu —
+ * w jedno zdarzenie kazałoby kanałowi alarmowemu filtrować po stringu -
  * i odpalać się przy każdym pomyślnym przejściu, dopóki ktoś tego filtru nie
  * napisze poprawnie.
  *
@@ -45,7 +45,7 @@ const events = [
   {
     id: 'rollout.stage.started',
     label: 'Etap wdrożenia ruszył',
-    description: 'Ładunek niesie także liczbę maszyn pominiętych — etap, w którym pominięto połowę floty, wygląda w statusie tak samo jak udany.',
+    description: 'Ładunek niesie także liczbę maszyn pominiętych - etap, w którym pominięto połowę floty, wygląda w statusie tak samo jak udany.',
     entity: 'stage',
     category: 'lifecycle',
     payloadSchema: {

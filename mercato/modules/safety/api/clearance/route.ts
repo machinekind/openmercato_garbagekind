@@ -8,7 +8,7 @@ import { evaluateClearance, type RiskClass, type SafetyCaseStatus } from '../../
  * Macierz dopuszczeń: wersja polityki × klasa celi.
  *
  * Ekran ma odpowiedzieć regulatorowi i operatorowi na to samo pytanie zadane
- * z dwóch stron: **co wolno uruchomić i gdzie**, a tam gdzie nie wolno —
+ * z dwóch stron: **co wolno uruchomić i gdzie**, a tam gdzie nie wolno -
  * dlaczego dokładnie. Lista uzasadnień bez kolumny „czego brakuje" jest
  * rejestrem dokumentów, a nie narzędziem.
  *
@@ -162,7 +162,7 @@ export async function GET(req: Request): Promise<Response> {
         cleared: matrix.filter((m) => m.cleared).length,
         blocked: matrix.filter((m) => !m.cleared).length,
         // Uzasadnienia deklarujące politykę jako funkcję bezpieczeństwa.
-        // W zdrowym systemie zero — i to jest najważniejsza liczba na ekranie.
+        // W zdrowym systemie zero - i to jest najważniejsza liczba na ekranie.
         // Liczone są wyłącznie te NIE wycofane: wycofana deklaracja nie blokuje
         // już dopuszczenia, więc alarm świecący po niej świeciłby na zawsze,
         // a alarm, który świeci zawsze, przestaje być alarmem.

@@ -4,16 +4,16 @@ import { runAgentCommand } from '../agentRoute'
 /**
  * Endpoint uderzeń serca.
  *
- * Wpuszcza wywołującego bez sesji użytkownika — świadome odstępstwo, które
+ * Wpuszcza wywołującego bez sesji użytkownika - świadome odstępstwo, które
  * trzeba nazwać: agent na robocie nie jest człowiekiem i nie ma się jak
  * zalogować. Zamiast tego **każde** wywołanie niesie podpis kluczem, którego
  * centrala nie posiada. Odstępstwo dotyczy więc mechanizmu, nie rygoru.
  *
  * Czego ten endpoint **nie** robi i robić nie będzie: nie zwraca robotowi
- * żadnej treści pracy. Odpowiedź zawiera stan łączności i następny termin —
+ * żadnej treści pracy. Odpowiedź zawiera stan łączności i następny termin -
  * i tyle. Stan pożądany oprogramowania jest osobnym kanałem, z osobną
  * dzierżawą; sklejenie tych dwóch rzeczy tutaj zrobiłoby z żywotności
- * warunku wdrożenia, a z wdrożenia — warunku żywotności.
+ * warunku wdrożenia, a z wdrożenia - warunku żywotności.
  */
 export const metadata = {
   requireAuth: false,

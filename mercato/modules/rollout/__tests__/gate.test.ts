@@ -10,7 +10,7 @@ import {
  * Testy bramy.
  *
  * Brama musi umieć **obie** odpowiedzi. Test sprawdzający tylko wycofanie
- * przeszedłby również dla funkcji zwracającej zawsze `rollback` — a taka
+ * przeszedłby również dla funkcji zwracającej zawsze `rollback` - a taka
  * funkcja jest gorsza od braku bramy, bo nikt jej nie włączy.
  */
 
@@ -20,7 +20,7 @@ function stats(over: Partial<StageStats> = {}): StageStats {
   return { episodes: 100, intervenedEpisodes: 2, severeInterventions: 0, successes: 95, ...over }
 }
 
-describe('evaluateGate — przepuszczenie', () => {
+describe('evaluateGate - przepuszczenie', () => {
   it('przepuszcza etap w granicach wszystkich progów', () => {
     const verdict = evaluateGate(stats())
     expect(verdict.decision).toBe('advance')
@@ -48,7 +48,7 @@ describe('evaluateGate — przepuszczenie', () => {
   })
 })
 
-describe('evaluateGate — za mało danych', () => {
+describe('evaluateGate - za mało danych', () => {
   it('etap bez wymaganej liczby epizodów jest wstrzymany, nie przepuszczony', () => {
     // Zero interwencji na trzech epizodach nie jest lepszym wynikiem
     // niż dwie interwencje na dwustu.
@@ -69,7 +69,7 @@ describe('evaluateGate — za mało danych', () => {
   })
 })
 
-describe('evaluateGate — wycofanie', () => {
+describe('evaluateGate - wycofanie', () => {
   it('wycofuje po przekroczeniu progu interwencji', () => {
     const verdict = evaluateGate(stats({ episodes: 100, intervenedEpisodes: 25, successes: 90 }))
     expect(verdict.decision).toBe('rollback')
@@ -81,7 +81,7 @@ describe('evaluateGate — wycofanie', () => {
 
   it('wycofuje po spadku skuteczności mimo braku interwencji', () => {
     // Polityka, która nie robi nic złego i nie robi nic dobrego, też ma
-    // zostać wycofana — brak interwencji nie jest wynikiem sam w sobie.
+    // zostać wycofana - brak interwencji nie jest wynikiem sam w sobie.
     const verdict = evaluateGate(stats({ episodes: 100, intervenedEpisodes: 0, successes: 50 }))
     expect(verdict.decision).toBe('rollback')
     expect(verdict.breached).toEqual(['minSuccessRate'])
@@ -103,7 +103,7 @@ describe('evaluateGate — wycofanie', () => {
   })
 })
 
-describe('evaluateGate — interwencja ciężka przed kompletem danych', () => {
+describe('evaluateGate - interwencja ciężka przed kompletem danych', () => {
   it('jedno zatrzymanie awaryjne wycofuje etap bez czekania na próg liczebności', () => {
     // `estop` nie jest wskaźnikiem jakości, tylko zdarzeniem. Czekanie na
     // pięćdziesiąty epizod po pierwszym zatrzymaniu awaryjnym byłoby
@@ -123,7 +123,7 @@ describe('evaluateGate — interwencja ciężka przed kompletem danych', () => {
   })
 })
 
-describe('shadowProves — ograniczenie trybu cieniowego', () => {
+describe('shadowProves - ograniczenie trybu cieniowego', () => {
   it('cień nie dowodzi bezpieczeństwa polityki zmieniającej stan świata', () => {
     const verdict = shadowProves('shadow', true)
     expect(verdict.proves).toBe(false)

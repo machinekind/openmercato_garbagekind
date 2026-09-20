@@ -6,11 +6,11 @@
  * 1. **Brama odwołuje się do liczb z księgi epizodów, nie do opinii.**
  *    Nie ma tu pola „zatwierdził kierownik". Jest liczba epizodów, liczba
  *    interwencji i próg. Człowiek może zatrzymać wdrożenie w każdej chwili,
- *    ale nie może go przepchnąć obok liczb — bo to jedyne, co odróżnia
+ *    ale nie może go przepchnąć obok liczb - bo to jedyne, co odróżnia
  *    wdrożenie etapowe od wdrożenia na raz z dodatkowym spotkaniem.
  *
  * 2. **Wycofanie jest tańsze niż diagnoza, więc jest domyślne.** Przy
- *    przekroczeniu progu nie wstrzymujemy do wyjaśnienia — wycofujemy
+ *    przekroczeniu progu nie wstrzymujemy do wyjaśnienia - wycofujemy
  *    i wyjaśniamy potem. Odwrotna kolejność oznacza maszyny pracujące
  *    na podejrzanej polityce przez czas trwania dochodzenia.
  *
@@ -36,7 +36,7 @@ export type GateThresholds = {
    * dojrzałość z zagrożeniem.
    */
   maxSevereRate: number
-  /** Minimalny udział epizodów udanych. Osobno od interwencji — patrz niżej. */
+  /** Minimalny udział epizodów udanych. Osobno od interwencji - patrz niżej. */
   minSuccessRate: number
 }
 
@@ -58,7 +58,7 @@ export type GateVerdict = {
   decision: GateDecision
   /** Powód gotowy do wpisania do dziennika wdrożenia, nie kod błędu. */
   reason: string
-  /** Wszystkie policzone wskaźniki — żeby dziennik nie wymagał przeliczania. */
+  /** Wszystkie policzone wskaźniki - żeby dziennik nie wymagał przeliczania. */
   measured: {
     episodes: number
     interventionRate: number
@@ -87,14 +87,14 @@ export function evaluateGate(stats: StageStats, thresholds: GateThresholds = DEF
    * Zatrzymanie awaryjne wycofuje etap natychmiast, przed kontrolą liczebności.
    *
    * To jedyny wyjątek od zasady „najpierw dane". Powód: `estop` nie jest
-   * wskaźnikiem jakości, tylko zdarzeniem — jedno wystarczy. Czekanie na
+   * wskaźnikiem jakości, tylko zdarzeniem - jedno wystarczy. Czekanie na
    * pięćdziesiąty epizod po pierwszym zatrzymaniu awaryjnym byłoby statystyką
    * zamiast decyzji.
    */
   if (stats.severeInterventions > 0 && episodes < thresholds.minEpisodes) {
     return {
       decision: 'rollback',
-      reason: `interwencja ciężka na etapie o ${episodes} epizodach — wycofanie bez czekania na komplet danych`,
+      reason: `interwencja ciężka na etapie o ${episodes} epizodach - wycofanie bez czekania na komplet danych`,
       measured,
       breached: ['severeInterventions'],
     }
@@ -131,7 +131,7 @@ export function evaluateGate(stats: StageStats, thresholds: GateThresholds = DEF
 
     return {
       decision: 'rollback',
-      reason: `próg przekroczony — ${opis}`,
+      reason: `próg przekroczony - ${opis}`,
       measured,
       breached,
     }
@@ -139,7 +139,7 @@ export function evaluateGate(stats: StageStats, thresholds: GateThresholds = DEF
 
   return {
     decision: 'advance',
-    reason: `${episodes} epizodów, interwencje ${(interventionRate * 100).toFixed(1)}%, skuteczność ${(successRate * 100).toFixed(1)}% — w granicach`,
+    reason: `${episodes} epizodów, interwencje ${(interventionRate * 100).toFixed(1)}%, skuteczność ${(successRate * 100).toFixed(1)}% - w granicach`,
     measured,
     breached: [],
   }
@@ -157,14 +157,14 @@ export type RolloutMode = 'shadow' | 'active'
  * Dowodzi wyłącznie zgodności predykcji z polityką odniesienia. Polityka
  * sterująca manipulatorem zmienia stan świata z definicji, więc etap cieniowy
  * zakończony sukcesem jest przesłanką do uruchomienia etapu czynnego na małej
- * populacji — a nie do pominięcia go.
+ * populacji - a nie do pominięcia go.
  *
  * Funkcja istnieje po to, żeby ktoś, kto zechce przejść z cienia prosto na
  * flotę, musiał ten warunek jawnie obejść i zostawić po tym ślad.
  */
 export function shadowProves(mode: RolloutMode, policyChangesWorldState: boolean): { proves: boolean; reason: string } {
   if (mode !== 'shadow') {
-    return { proves: true, reason: 'etap czynny — polityka faktycznie sterowała maszyną' }
+    return { proves: true, reason: 'etap czynny - polityka faktycznie sterowała maszyną' }
   }
   if (policyChangesWorldState) {
     return {
@@ -173,7 +173,7 @@ export function shadowProves(mode: RolloutMode, policyChangesWorldState: boolean
         'tryb cieniowy dowodzi wyłącznie zgodności predykcji; dla polityki zmieniającej stan świata nie jest dowodem bezpieczeństwa i nie zastępuje etapu czynnego',
     }
   }
-  return { proves: true, reason: 'polityka nie zmienia stanu świata — cień wystarcza' }
+  return { proves: true, reason: 'polityka nie zmienia stanu świata - cień wystarcza' }
 }
 
 /**

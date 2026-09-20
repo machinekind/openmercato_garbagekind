@@ -3,7 +3,7 @@
 
 Model jest odwrotny niż kolejka zadań: centrala publikuje stan pożądany, robot
 go pobiera (`lease`) i mówi, co faktycznie robi (`report`). ERP niczego nie
-zatrzymuje — endpoint, który „przerywa" zadanie, zapisuje fakt, a nie hamuje
+zatrzymuje - endpoint, który „przerywa" zadanie, zapisuje fakt, a nie hamuje
 maszynę.
 """
 
@@ -79,7 +79,7 @@ class EdgeAgentClient:
     ) -> dict[str, Any]:
         """Pierwszy kontakt: bilet wpisowy podpisany **nowym** kluczem.
 
-        Podpis wiąże posiadanie biletu z posiadaniem klucza prywatnego — bez
+        Podpis wiąże posiadanie biletu z posiadaniem klucza prywatnego - bez
         tego przechwycony bilet pozwoliłby wpisać dowolny własny klucz.
         """
         public_pem = self.identity.public_key_pem
@@ -108,7 +108,7 @@ class EdgeAgentClient:
     def connect(self, agent_version: str | None = None) -> dict[str, Any]:
         """Otwiera nową sesję po restarcie agenta i zeruje liczniki kolejności."""
         if not self.identity.agent_id:
-            raise EdgeAgentError(400, "Agent nie jest wpisany — najpierw enroll.")
+            raise EdgeAgentError(400, "Agent nie jest wpisany - najpierw enroll.")
         timestamp = iso_timestamp()
         result = self._post(
             "/api/edge/connect",
@@ -124,7 +124,7 @@ class EdgeAgentClient:
 
     def _session(self) -> str:
         if not self.identity.session_id:
-            raise EdgeAgentError(400, "Brak otwartej sesji — wywołaj connect.")
+            raise EdgeAgentError(400, "Brak otwartej sesji - wywołaj connect.")
         return self.identity.session_id
 
     def heartbeat(self) -> dict[str, Any]:
@@ -143,7 +143,7 @@ class EdgeAgentClient:
         )
 
     def send_telemetry(self, kind: str, payload: dict[str, Any]) -> dict[str, Any]:
-        """Telemetria dzieli licznik z uderzeniami serca — centrala ma jeden na sesję."""
+        """Telemetria dzieli licznik z uderzeniami serca - centrala ma jeden na sesję."""
         session_id = self._session()
         sequence = self.identity.next_sequence()
         timestamp = iso_timestamp()

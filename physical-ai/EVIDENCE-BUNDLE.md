@@ -52,7 +52,7 @@ Wszystkie pozostałe dokumenty i rekordy logów muszą wskazywać ten sam
 
 `devices` jest niepustą listą urządzeń o unikalnych rolach. Każde urządzenie
 podaje `role`, `model`, `firmware`, `connection` oraz `serialHash`. Numeru
-seryjnego nie zapisujemy jawnie — `serialHash` jest jego SHA-256.
+seryjnego nie zapisujemy jawnie - `serialHash` jest jego SHA-256.
 
 ## `calibration.json`
 

@@ -36,7 +36,7 @@ describe('bilet wpisowy', () => {
 describe('klucze', () => {
   it('odcisk jest stabilny mimo różnic w zapisie PEM', () => {
     const { publicKeyPem } = keypair()
-    // Inne końce wierszy, ten sam klucz — operator porównujący odcisk z ekranu
+    // Inne końce wierszy, ten sam klucz - operator porównujący odcisk z ekranu
     // robota nie może zobaczyć rozbieżności tam, gdzie jej nie ma.
     const crlf = publicKeyPem.replace(/\n/g, '\r\n')
     expect(fingerprintPublicKey(crlf)).toBe(fingerprintPublicKey(publicKeyPem))

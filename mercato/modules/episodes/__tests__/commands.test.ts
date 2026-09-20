@@ -181,7 +181,7 @@ describe('episodes.interventions.record', () => {
     ).rejects.toThrow()
   })
 
-  it('przyjmuje interwencję bez epizodu — przerwanie między epizodami', async () => {
+  it('przyjmuje interwencję bez epizodu - przerwanie między epizodami', async () => {
     // Człowiek, który zatrzymał stanowisko, gdy robot nie wykonywał zadania,
     // też interweniował. Wykluczenie takich przypadków zaniżałoby licznik
     // dokładnie tam, gdzie robot stoi najczęściej.
@@ -203,7 +203,7 @@ describe('episodes.interventions.record', () => {
 
   it('pusty sprawca oznacza warstwę bezpieczeństwa, a nie brak danych', async () => {
     // Zatrzymanie awaryjne wywołane przez kurtynę świetlną nie ma sprawcy
-    // będącego człowiekiem — i `null` jest tu informacją, nie luką.
+    // będącego człowiekiem - i `null` jest tu informacją, nie luką.
     const { ctx, persisted } = makeCtx({ episode: { ...episode } })
     const anonymous = {
       container: (ctx as unknown as { container: unknown }).container,

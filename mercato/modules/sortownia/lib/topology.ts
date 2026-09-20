@@ -13,7 +13,7 @@ import type { LegacyLocation } from './legacyRpc'
  *
  * System legacy zna jedną płaską listę kodów (`PRZYJ`, `BOKS1`, `MAGRDF`).
  * WMS rozróżnia magazyn, strefę i lokalizację, a lokalizacja ma typ i pojemność
- * — dlatego boks wreszcie wie, ile się w nim mieści, czego stary system nie
+ * - dlatego boks wreszcie wie, ile się w nim mieści, czego stary system nie
  * potrafił wyrazić w żadnym polu.
  */
 
@@ -32,7 +32,7 @@ const ZONES: ZoneSpec[] = [
 export type LocationPlan = {
   zoneCode: string
   type: WarehouseLocationType
-  /** Pojemność w kilogramach — wiedza operacyjna, której legacy nie trzymał. */
+  /** Pojemność w kilogramach - wiedza operacyjna, której legacy nie trzymał. */
   capacityKg: number | null
 }
 

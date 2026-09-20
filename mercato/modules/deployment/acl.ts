@@ -3,7 +3,7 @@
  *
  * `assign` jest tu najcięższym uprawnieniem w całym systemie: to ono sprawia,
  * że wyuczony sterownik zaczyna ruszać ramieniem. Odwołanie (`revoke`) jest
- * celowo lżejsze i nadane szerzej — zatrzymanie ma być tanie, bo inaczej
+ * celowo lżejsze i nadane szerzej - zatrzymanie ma być tanie, bo inaczej
  * ludzie przestają go używać.
  */
 export const features = [

@@ -1,7 +1,7 @@
 import { ensureTopology, loadLocationIndex, planFor, WAREHOUSE_CODE } from '../topology'
 
 /**
- * Topologia decyduje, czym w WMS jest plac przyjęć, a czym boks — i ile się
+ * Topologia decyduje, czym w WMS jest plac przyjęć, a czym boks - i ile się
  * w nich mieści. Legacy zna tylko płaską listę kodów, więc jeśli ten plan się
  * rozjedzie, pulpit pokaże zapełnienie liczone względem złej pojemności.
  */
@@ -46,7 +46,7 @@ describe('planFor', () => {
     expect(planFor('MAGRDF')).toMatchObject({ type: 'bin', zoneCode: 'PALIWO' })
   })
 
-  it('każda znana lokalizacja ma pojemność — to informacja, której legacy nie ma', () => {
+  it('każda znana lokalizacja ma pojemność - to informacja, której legacy nie ma', () => {
     for (const code of ['PRZYJ', 'BOKS1', 'BOKS2', 'BOKS3', 'BOKS4', 'MAGRDF']) {
       expect(planFor(code).capacityKg).toBeGreaterThan(0)
     }
@@ -56,7 +56,7 @@ describe('planFor', () => {
     expect(planFor('NOWY-BOKS')).toEqual({ zoneCode: 'BOKSY', type: 'bin', capacityKg: null })
   })
 
-  it('nie rozróżnia wielkości liter — legacy bywa niekonsekwentny', () => {
+  it('nie rozróżnia wielkości liter - legacy bywa niekonsekwentny', () => {
     expect(planFor('boks1')).toEqual(planFor('BOKS1'))
   })
 })
@@ -124,7 +124,7 @@ describe('ensureTopology', () => {
 })
 
 describe('loadLocationIndex', () => {
-  it('oddaje pusty indeks, gdy magazynu jeszcze nie ma — import ruchów ma się zatrzymać, nie zgadywać', async () => {
+  it('oddaje pusty indeks, gdy magazynu jeszcze nie ma - import ruchów ma się zatrzymać, nie zgadywać', async () => {
     const { em } = fakeEm()
     const result = await loadLocationIndex(em as never, scope)
     expect(result.warehouse).toBeNull()

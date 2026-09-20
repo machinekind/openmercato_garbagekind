@@ -11,7 +11,7 @@ import { SUPPLIER_STAGE } from './crm'
  * W starym systemie `debtorsmaster` to jedna płaska tabela: dostawca odpadu
  * i odbiorca frakcji różnią się wyłącznie literami w kolumnie `debtortype`.
  * Po stronie Mercato zostają firmami w CRM, więc dostają to, czego stary
- * system nie miał gdzie trzymać — historię kontaktów, właściciela opiekuna,
+ * system nie miał gdzie trzymać - historię kontaktów, właściciela opiekuna,
  * etykiety i powiązanie z dokumentami sprzedaży.
  *
  * Tworzymy je komendą `customers.companies.create`, a nie zapisem do encji,
@@ -35,7 +35,7 @@ export type CustomerOutcome = {
   error?: string
 }
 
-/** Rola kontrahenta czytelna dla człowieka — w legacy to trzy litery. */
+/** Rola kontrahenta czytelna dla człowieka - w legacy to trzy litery. */
 export function describeRole(typ: string): string {
   if (typ === 'DOS') return 'Dostawca odpadu'
   if (typ === 'ODB') return 'Odbiorca frakcji'
@@ -43,7 +43,7 @@ export function describeRole(typ: string): string {
 }
 
 /**
- * Rola legacy → etap cyklu życia w CRM. Odbiorca frakcji to klient — kupuje od
+ * Rola legacy → etap cyklu życia w CRM. Odbiorca frakcji to klient - kupuje od
  * nas i ma zamówienia. Dostawca odpadu nie kupuje nic, więc nie należy do
  * lejka sprzedaży; dostaje własny etap zamiast pustego pola.
  */
@@ -60,7 +60,7 @@ export function lifecycleStageForRole(typ: string): string | null {
  * dokładanie go własną migracją byłoby rozpychaniem cudzego schematu pod jeden
  * import. `source` znaczy dokładnie „skąd ten rekord pochodzi", więc
  * `sortownia-legacy:D005` jest użyciem zgodnym ze znaczeniem pola, a nie
- * obejściem — i przy okazji daje nam klucz idempotencji.
+ * obejściem - i przy okazji daje nam klucz idempotencji.
  */
 export const LEGACY_SOURCE_PREFIX = 'sortownia-legacy'
 
@@ -113,7 +113,7 @@ export async function ensureCustomers(
 
     const known = existing.get(debtorno)
     if (known) {
-      // Firma sprzed tej zmiany ma puste pole etapu — uzupełniamy, nie zakładamy drugiej.
+      // Firma sprzed tej zmiany ma puste pole etapu - uzupełniamy, nie zakładamy drugiej.
       if (!known.lifecycleStage && lifecycleStage) {
         try {
           await ctx.commandBus.execute('customers.companies.update', {
@@ -146,7 +146,7 @@ export async function ensureCustomers(
             legalName: row.nazwa,
             // NIP nie ma własnej kolumny w kontrakcie firmy, a wymyślanie jej
             // przez pole niestandardowe kosztowałoby migrację. Numer jest
-            // potrzebny na fakturze, więc jedzie w opisie razem z rolą — tak,
+            // potrzebny na fakturze, więc jedzie w opisie razem z rolą - tak,
             // jak księgowa trzyma go dziś w nazwie folderu.
             description: [
               describeRole(row.typ),
@@ -164,7 +164,7 @@ export async function ensureCustomers(
           ctx: ctx.commandContext,
         },
         // `commandBus.execute` zwraca kopertę `{ result, logEntry }`, a nie
-        // samą wartość handlera — właściwy identyfikator siedzi o poziom głębiej.
+        // samą wartość handlera - właściwy identyfikator siedzi o poziom głębiej.
       )) as { result?: { entityId?: string } } | undefined
 
       const entityId = result?.result?.entityId

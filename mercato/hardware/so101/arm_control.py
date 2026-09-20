@@ -6,7 +6,7 @@ moment**, więc każda operacja jest jawnie potwierdzana przez wołającego.
 
 Granice, które ten moduł respektuje i których nie wolno z niego usunąć:
 
-- `release()` zwalnia moment. **To nie jest E-stop** — idzie tą samą magistralą
+- `release()` zwalnia moment. **To nie jest E-stop** - idzie tą samą magistralą
   i tym samym procesem, który może zawisnąć. Deterministyczną warstwę
   zatrzymania stanowi wyłącznie zewnętrzny przerywacz zasilania napędów.
 - Załączenie momentu odbywa się przy `p_des = q` utrzymywanym przez
@@ -106,7 +106,7 @@ def plan_random_targets(
 ) -> dict[str, int]:
     """Losuje cel w przecięciu okna stawu z przyrostem dozwolonym na jeden ruch.
 
-    `delta_ticks` może zawęzić przyrost, nigdy go nie rozszerza — górną granicą
+    `delta_ticks` może zawęzić przyrost, nigdy go nie rozszerza - górną granicą
     pozostaje `JointWindow.max_delta`.
     """
     selected = list(joints) if joints is not None else [name for name, _ in JOINTS]

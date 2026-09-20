@@ -42,11 +42,11 @@ export async function ensureClipsPurgeSchedule(container: import('awilix').Awili
   }
   if (!schedulerService) {
     /*
-     * Brak modułu harmonogramu nie może wywrócić instalacji modułu wizji —
+     * Brak modułu harmonogramu nie może wywrócić instalacji modułu wizji -
      * ale musi być głośny, bo bez niego termin ustawowy znów zależy od tego,
      * czy ktoś pamięta wpisać komendę.
      */
-    logger.warn('Moduł harmonogramu niedostępny — oznaczanie materiału po terminie NIE jest zautomatyzowane')
+    logger.warn('Moduł harmonogramu niedostępny - oznaczanie materiału po terminie NIE jest zautomatyzowane')
     return
   }
 
@@ -55,7 +55,7 @@ export async function ensureClipsPurgeSchedule(container: import('awilix').Awili
       id: CLIPS_PURGE_SCHEDULE_ID,
       name: 'Materiał wideo po terminie ustawowym',
       description:
-        'Oznacza klipy, których termin z art. 22² § 3 Kodeksu pracy upłynął. Nie kasuje plików — ' +
+        'Oznacza klipy, których termin z art. 22² § 3 Kodeksu pracy upłynął. Nie kasuje plików - ' +
         'zgodność zamyka potwierdzenie usunięcia przez magazyn obiektów.',
       scopeType: 'system',
       scheduleType: 'interval',
@@ -75,7 +75,7 @@ export async function ensureClipsPurgeSchedule(container: import('awilix').Awili
 
 /**
  * Pracownik widzi zliczenia, bo to informacja o produkcji. **Nie** dostaje
- * dostępu do nagrań — te są danymi osobowymi jego i jego kolegów.
+ * dostępu do nagrań - te są danymi osobowymi jego i jego kolegów.
  */
 export const setup: ModuleSetupConfig = {
   defaultRoleFeatures: {

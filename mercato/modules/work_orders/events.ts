@@ -10,7 +10,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * **maszyny**, nie towaru. Zdarzenie służy do skierowania kogoś do robota,
  * a nie do zatrzymania partii.
  *
- * `batch.closed` niesie werdykt zawsze, także `ok` — bo odbiorca budujący
+ * `batch.closed` niesie werdykt zawsze, także `ok` - bo odbiorca budujący
  * statystykę dryfu potrzebuje mianownika, nie tylko licznika.
  */
 
@@ -69,7 +69,7 @@ const events = [
   {
     id: 'work_orders.batch.closed',
     label: 'Zamknięto i zważono partię',
-    description: 'Werdykt uzgodnienia jedzie w ładunku zawsze, także gdy brzmi `ok` — statystyka dryfu potrzebuje mianownika.',
+    description: 'Werdykt uzgodnienia jedzie w ładunku zawsze, także gdy brzmi `ok` - statystyka dryfu potrzebuje mianownika.',
     entity: 'work_batch',
     category: 'lifecycle',
     payloadSchema: {
@@ -78,7 +78,7 @@ const events = [
         { path: 'organizationId', type: 'text', optional: true },
         { path: 'tenantId', type: 'text', optional: true },
         { path: 'workOrderId', type: 'text' },
-        { path: 'weighedGrams', type: 'number', label: 'Masa z wagi — ta idzie na stan' },
+        { path: 'weighedGrams', type: 'number', label: 'Masa z wagi - ta idzie na stan' },
         { path: 'claimedPieces', type: 'number', label: 'Sztuki zgłoszone przez robota' },
         { path: 'expectedGrams', type: 'number' },
         { path: 'driftGrams', type: 'number' },
@@ -90,7 +90,7 @@ const events = [
   {
     id: 'work_orders.batch.drift_detected',
     label: 'Rozjazd masy zgłoszonej i zważonej',
-    description: 'Ocena maszyny, nie towaru. Materiał idzie na stan wg wagi — to zdarzenie kieruje człowieka do robota.',
+    description: 'Ocena maszyny, nie towaru. Materiał idzie na stan wg wagi - to zdarzenie kieruje człowieka do robota.',
     entity: 'reconciliation',
     category: 'lifecycle',
     payloadSchema: {

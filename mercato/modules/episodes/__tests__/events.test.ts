@@ -6,7 +6,7 @@ import { recordEpisodeCommand, recordInterventionCommand } from '../commands/epi
  *
  * Dwie reguły: dosłany epizod nie emituje (inaczej powtórka po zerwaniu łącza
  * podwajałaby statystyki i odpalała automatyzacje drugi raz), a interwencja
- * awaryjna dostaje własne zdarzenie obok ogólnego — bo odebranie maszynie
+ * awaryjna dostaje własne zdarzenie obok ogólnego - bo odebranie maszynie
  * sprawczości to nie ta sama klasa faktu co korekta chwytu.
  */
 

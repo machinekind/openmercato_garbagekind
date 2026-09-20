@@ -31,7 +31,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  * okazała się źle zaprojektowana w konkretny sposób: **kolorowała stan
  * normalny**. Pięć pracujących maszyn dawało ścianę zieleni, w której
  * czerwony sygnał musiał się bić o uwagę zamiast po prostu wyskoczyć z tła.
- * Doktryna wysokowydajnego HMI mówi odwrotnie — norma jest szara, kolor
+ * Doktryna wysokowydajnego HMI mówi odwrotnie - norma jest szara, kolor
  * należy wyłącznie do odstępstwa.
  *
  * Druga zmiana: kropka niosła jeden bit. Maszyna ma cztery wymiary
@@ -83,7 +83,7 @@ type VisionBatch = { cellId: string | null; suspect: string }
 /**
  * Klasa ryzyka na obrysie celi.
  *
- * Jedyne miejsce poza stanem maszyn, gdzie wolno użyć koloru — i użyty jest
+ * Jedyne miejsce poza stanem maszyn, gdzie wolno użyć koloru - i użyty jest
  * oszczędnie: ogrodzona rysuje się neutralnie, a wyróżnione są te klasy,
  * w których obok maszyny **chodzą ludzie**. To informacja o zagrożeniu,
  * nie o kategorii.
@@ -131,7 +131,7 @@ export default function PlantLayout() {
       setLoading(false)
     }
 
-    // Warstwy opcjonalne — brak którejkolwiek odejmuje informację,
+    // Warstwy opcjonalne - brak którejkolwiek odejmuje informację,
     // a nie wywraca rysunku.
     try {
       const r = await apiFetch('/api/edge/agents')
@@ -174,7 +174,7 @@ export default function PlantLayout() {
   const viewport = React.useMemo(() => viewportFor(bounds), [bounds])
   const transform: Transform = React.useMemo(() => fitTransform(bounds, viewport), [bounds, viewport])
 
-  /** Stan łączności maszyny — z rozróżnieniem braku warstwy od braku agenta. */
+  /** Stan łączności maszyny - z rozróżnieniem braku warstwy od braku agenta. */
   const linkFor = React.useCallback(
     (robotId: string): StatusDescriptor => {
       if (agents === undefined) return linkStatus('layer_unavailable')
@@ -217,7 +217,7 @@ export default function PlantLayout() {
     return map
   }, [orders, batches])
 
-  /** Maszyny wymagające uwagi — pas nad rysunkiem, zanim ktokolwiek spojrzy na plan. */
+  /** Maszyny wymagające uwagi - pas nad rysunkiem, zanim ktokolwiek spojrzy na plan. */
   const attention = React.useMemo(
     () =>
       robots
@@ -257,7 +257,7 @@ export default function PlantLayout() {
       {/*
         Pas uwagi nad rysunkiem. Na hali z pięcioma maszynami plan wystarcza;
         przy pięćdziesięciu operator nie skanuje rzutu wzrokiem, tylko czyta
-        listę tego, co odbiega od normy — a rzut służy do odpowiedzi „gdzie".
+        listę tego, co odbiega od normy - a rzut służy do odpowiedzi „gdzie".
       */}
       {attention.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2">
@@ -360,7 +360,7 @@ export default function PlantLayout() {
 
                 {/*
                   Ile kafelków mieści się nad paskiem wyniku. Maszyny, które
-                  się nie mieszczą, NIE znikają — dostają kafelek zbiorczy.
+                  się nie mieszczą, NIE znikają - dostają kafelek zbiorczy.
                   Pierwsza wersja gubiła je bez śladu, przez co rzut wyglądał
                   na kompletny i nie był. Kolejność jest wg ważności, więc
                   ucięte są zawsze te w normie, nigdy alarmy.
@@ -413,7 +413,7 @@ export default function PlantLayout() {
                   )
                 })()}
 
-                {/* Wynik przy dolnej krawędzi: liczba, pasek i cel — nie zlepek tekstu. */}
+                {/* Wynik przy dolnej krawędzi: liczba, pasek i cel - nie zlepek tekstu. */}
                 {output ? (
                   <g transform={`translate(${origin.x + SPACE.md}, ${origin.y + h - 18})`}>
                     <text fontSize={TYPE.metric.size} fontWeight={TYPE.metric.weight} fill="currentColor">
@@ -478,15 +478,15 @@ export default function PlantLayout() {
               return (
                 <div key={robot.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-xs">
                   <span className="w-28 font-mono">{robot.serialNumber}</span>
-                  <span className="w-36 text-muted-foreground">{robot.embodiment ?? '—'}</span>
-                  {/* Wszystkie trzy wymiary wypisane osobno — kafelek pokazuje
+                  <span className="w-36 text-muted-foreground">{robot.embodiment ?? '-'}</span>
+                  {/* Wszystkie trzy wymiary wypisane osobno - kafelek pokazuje
                       dominujący, szczegóły pokazują komplet. */}
                   {all.map((d) => (
                     <span key={d.code} className="flex items-center gap-1" style={{ color: isNotable(d) ? cssVar(d.severity) : undefined }}>
                       <StatusGlyph descriptor={d} size={8} />
                       <span className={isNotable(d) ? '' : 'text-muted-foreground'}>
                         {d.label}
-                        {d.detail ? ` — ${d.detail}` : ''}
+                        {d.detail ? ` - ${d.detail}` : ''}
                       </span>
                     </span>
                   ))}
@@ -511,16 +511,16 @@ export default function PlantLayout() {
           </div>
           {layout?.unplacedCells?.map((cell) => (
             <div key={cell.id} className="text-muted-foreground">
-              {cell.code} — {cell.name}: brak obmiaru ({cell.robotCount} maszyn)
+              {cell.code} - {cell.name}: brak obmiaru ({cell.robotCount} maszyn)
             </div>
           ))}
           {layout?.unassignedRobots ? (
             <div className="text-muted-foreground">
-              {layout.unassignedRobots} maszyn bez przypisanej celi — stoją na hali, rejestr nie wie gdzie.
+              {layout.unassignedRobots} maszyn bez przypisanej celi - stoją na hali, rejestr nie wie gdzie.
             </div>
           ) : null}
           <div className="mt-1 text-muted-foreground">
-            {t('fleet.ui.coordsBySurvey', 'Współrzędne nadaje się obmiarem, nie domysłem — dlatego te pozycje nie są zgadywane.')}
+            {t('fleet.ui.coordsBySurvey', 'Współrzędne nadaje się obmiarem, nie domysłem - dlatego te pozycje nie są zgadywane.')}
           </div>
         </div>
       ) : null}

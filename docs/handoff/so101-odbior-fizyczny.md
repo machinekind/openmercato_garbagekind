@@ -1,4 +1,4 @@
-# Odbiór fizyczny SO-101 — warunki uznania wtyczki za zwalidowaną
+# Odbiór fizyczny SO-101 - warunki uznania wtyczki za zwalidowaną
 
 Dokument dla zespołu physical AI. Opisuje **dokładnie**, co musi zostać wykonane
 na podłączonym SO-101, jakie dane wrócić do ERP i co musi przejść, żebyśmy
@@ -6,7 +6,7 @@ mogli uczciwie powiedzieć: *wtyczka Physical AI działa end-to-end i jest
 zwalidowana fizycznie*.
 
 Nic tutaj nie jest oceną dotychczasowej pracy. Materiał z hackathonu
-(`mercatoXD`) powstał w większości przed naszą specyfikacją i dotyczył A1X —
+(`mercatoXD`) powstał w większości przed naszą specyfikacją i dotyczył A1X -
 inwentaryzacja jest w
 [`physical-ai/MATERIAL-MERCATOXD.md`](physical-ai/MATERIAL-MERCATOXD.md).
 Ten dokument dotyczy **SO-101**, do którego mamy teraz dostęp.
@@ -29,7 +29,7 @@ osiem** warunków jest spełnionych jednocześnie, każdy z dowodem w bazie:
 | Z7 | ≥ 50 epizodów i komplet interwencji dotarł podpisanym kanałem `/api/edge/telemetry`; liczby w ERP zgadzają się z licznikiem lokalnym agenta | `episodes_episodes`, `episodes_interventions` |
 | Z8 | Rollout przeszedł etap `shadow`, a brama `rollout.gates.evaluate` orzekła `advance` na liczbach, nie ręcznie | `rollout_stages`, `rollout_gate_evaluations` |
 
-**Warunek wstępny dla całości — i jedyna rzecz, która może to zablokować na
+**Warunek wstępny dla całości - i jedyna rzecz, która może to zablokować na
 starcie:** SO-101 w obecnej postaci **nie ma deterministycznej warstwy
 zatrzymania**. Jedyne, co opisuje jego kontrakt, to `max_relative_target`
 w sterowniku LeRobot: `disableable: true`, realizowane poza platformą, więc
@@ -43,7 +43,7 @@ safety_rated_speed_limit, light_curtain, fence_interlock, dual_channel_relay
 
 Konsekwencja praktyczna: **bez podłączonego sprzętowego E-stopu (albo
 przekaźnika dwukanałowego) nie da się prawdziwie wypełnić uzasadnienia, a Z5
-nie przejdzie.** Nie ma tu obejścia i nie szukajcie go — pole `safetyLayer`
+nie przejdzie.** Nie ma tu obejścia i nie szukajcie go - pole `safetyLayer`
 jako wolny tekst istnieje, ale samo nie wystarcza. Minimum, które akceptujemy:
 przerywacz zasilania napędów w torze dwukanałowym, z pomiarem czasu
 zatrzymania. Cela musi być zgłoszona jako `fenced`; `shared` (praca obok
@@ -74,24 +74,24 @@ Narzędzie odbioru sprzętowego: `mercato/hardware/so101/validate.py`
 
 ---
 
-## 2. Etap A — odbiór sprzętowy SO-101
+## 2. Etap A - odbiór sprzętowy SO-101
 
 Wykonać dokładnie procedurę z `mercato/hardware/so101/README.md`. Poniżej to,
 co musi z niej wyjść, z kryteriami zaliczenia.
 
 ### A1. Magistrala (`scan`, `inspect`)
-- **Zwrócić:** port, sześć serw STS3215 o ID 1–6, model i wersja firmware każdego.
+- **Zwrócić:** port, sześć serw STS3215 o ID 1-6, model i wersja firmware każdego.
 - **Zalicza:** dokładnie sześć serw, żadnego duplikatu ID.
-- **Uwaga:** `inspect` nie zmienia `Torque_Enable`. Jeśli zmienia — zgłoście, to błąd narzędzia.
+- **Uwaga:** `inspect` nie zmienia `Torque_Enable`. Jeśli zmienia - zgłoście, to błąd narzędzia.
 
 ### A2. Kalibracja (`calibrate`)
 - **Zwrócić:** per staw `id`, `drive_mode`, `homing_offset`, `range_min`, `range_max`; SHA-256 pliku kalibracji LeRobot; `--valid-days`; **`--uncertainty-deg` zmierzone lub uzasadnione, nie zgadnięte**.
 - **Zalicza:** odczyt z EEPROM, nie z pliku; niepewność podana jawnie.
-- **Uwaga:** ważność jest też zdarzeniowa — wymiana serwa, ponowny montaż orczyka, kolizja lub zmiana `drive_mode` unieważnia dowód przed datą. Wtedy natychmiast powtórka i nowy rekord w ERP.
+- **Uwaga:** ważność jest też zdarzeniowa - wymiana serwa, ponowny montaż orczyka, kolizja lub zmiana `drive_mode` unieważnia dowód przed datą. Wtedy natychmiast powtórka i nowy rekord w ERP.
 
 ### A3. Zasięg i udźwig (`measure`)
 - **Zwrócić:** `reachMm`, `payloadKg`, obie niepewności, numery seryjne przyrządów, operator, opis metody (poza, kryterium utrzymania 30 s).
-- **Zalicza:** wartość zmierzona. **Wartość katalogowa jest odrzucana** — w kontrakcie embodimentu te pola stoją dziś jako `"unknown"` i mają zostać zastąpione pomiarem.
+- **Zalicza:** wartość zmierzona. **Wartość katalogowa jest odrzucana** - w kontrakcie embodimentu te pola stoją dziś jako `"unknown"` i mają zostać zastąpione pomiarem.
 
 ### A4. Zasilanie (`power`)
 - **Zwrócić:** zakres oczekiwany z **realnego zasilacza tego zestawu**, napięcie na biegu jałowym i pod obciążeniem, przyrząd, metoda, URI dowodu.
@@ -101,36 +101,36 @@ co musi z niej wyjść, z kryteriami zaliczenia.
 - **Zwrócić:** `Torque_Enable == 0` na wszystkich sześciu serwach.
 - **Zalicza:** wszystkie sześć. **To nie jest E-stop** i nie zalicza A6.
 
-### A6. E-stop i limity lokalne (`safety`) — **krok krytyczny**
+### A6. E-stop i limity lokalne (`safety`) - **krok krytyczny**
 - **Zwrócić:** `--mechanism` z zamkniętego słownika, `--bypassable` opisujące **rzeczywiste okablowanie**, zmierzony `--stop-time-ms`, scenariusze `idle,motion,grasp`, testy limitów `position,speed,command_timeout`, nazwa sterownika bezpieczeństwa, procedura resetu, URI dowodu (wideo).
 - **Zalicza:** każdy z trzech scenariuszy i każdy z trzech limitów zaliczony osobno; czas zatrzymania > 0 i zmierzony, nie założony.
-- **Uwaga:** jeśli `bypassable = true`, zapisujemy to i to nie dyskwalifikuje dowodu — ale ląduje w uzasadnieniu i ogranicza klasę celi.
+- **Uwaga:** jeśli `bypassable = true`, zapisujemy to i to nie dyskwalifikuje dowodu - ale ląduje w uzasadnieniu i ogranicza klasę celi.
 
 ### A7. Zapieczętowanie i rewizja (`seal`, `finalize`)
 - **Zwrócić:** `evidence.sealed.json`, jego SHA-256 policzony przez narzędzie, `runRef`, oraz `so101_follower.r2.json`.
-- **Zalicza:** `finalize` przechodzi. Odmówi, jeśli którykolwiek z dowodów A1–A6 nie ma statusu `passed`; to jest celowe.
+- **Zalicza:** `finalize` przechodzi. Odmówi, jeśli którykolwiek z dowodów A1-A6 nie ma statusu `passed`; to jest celowe.
 
 ---
 
-## 3. Etap B — wejście do ERP
+## 3. Etap B - wejście do ERP
 
 ### B1. Rewizja embodimentu
 Wgrać `so101_follower.r2.json` jako nową rewizję. Ma zawierać zmierzone
 `reachMm` i `payloadKg`, `verifiedAgainstHardware: true`, skrót zapieczętowanego
 raportu i `runRef`.
-**Zapamiętać `specDigest` tej rewizji — będzie potrzebny w B4 jako
+**Zapamiętać `specDigest` tej rewizji - będzie potrzebny w B4 jako
 `declaredSpecDigest`.**
 
-### B2. Rejestracja robota — `fleet.robots.register`
+### B2. Rejestracja robota - `fleet.robots.register`
 ```json
 { "serialNumber": "...", "name": "...", "embodimentRevisionId": "<uuid r2>",
   "ownerOrganizationId": "<uuid>", "operatorOrganizationId": "<uuid>",
   "cellId": "<uuid>" }
 ```
-Właściciel i operator są **osobno i oba wymagane** — brak wartości domyślnej
+Właściciel i operator są **osobno i oba wymagane** - brak wartości domyślnej
 jest zamierzony.
 
-### B3. Kalibracja — `POST /api/fleet/calibrations`
+### B3. Kalibracja - `POST /api/fleet/calibrations`
 ```json
 { "robotId": "<uuid>", "kind": "joint_offsets",
   "measuredAt": "<ISO>", "validUntil": "<ISO>",
@@ -142,7 +142,7 @@ Bez ważnej kalibracji `joint_offsets` przejście robota do `ready` /
 brakujący rodzaj. To jest zaprojektowane zachowanie i jeden z testów odbioru
 (patrz §7, T3).
 
-### B4. Wersja polityki — `policy_registry.versions.register`
+### B4. Wersja polityki - `policy_registry.versions.register`
 To jest miejsce, w którym najłatwiej o rozjazd, więc opisuję pełnym polem:
 
 ```json
@@ -178,7 +178,7 @@ Reguły, które wymusza kod:
 - `role` artefaktu tylko: `weights`, `config`, `preprocessor`, `normalizer`, `metadata`; `digest` to dokładnie 64 znaki hex (SHA-256), pole nazywa się `digest`, nie `sha256`;
 - `declaredSpecDigest` **musi pochodzić z metadanych treningu**, nie być wyliczony ponownie przy wgrywaniu. Jeśli polityka była uczona pod inną rewizję embodimentu, chcemy to zobaczyć jako rozjazd, a nie zamaskować.
 
-**Jeśli kamera wchodzi do obserwacji** — dodajcie ją jawnie jako pole
+**Jeśli kamera wchodzi do obserwacji** - dodajcie ją jawnie jako pole
 z `unit: "pixel"` i `frame` nazywającym umocowanie. Liczba i rozmieszczenie
 kamer nie należą do ramienia, tylko do stanowiska: polityka uczona z dwiema
 kamerami nie zadziała na stanowisku z jedną, a kontrakt ma to wyłapać przed
@@ -186,11 +186,11 @@ uruchomieniem, nie po.
 
 ---
 
-## 4. Etap C — agent edge (Ed25519)
+## 4. Etap C - agent edge (Ed25519)
 
 Klucz prywatny **nigdy nie opuszcza robota**. Centrala zna tylko publiczny.
 
-### C1. Wpis — `POST /api/edge/enroll`
+### C1. Wpis - `POST /api/edge/enroll`
 ```
 podpisywany tekst: edge.enroll:<token>:<fingerprint>
 ```
@@ -201,21 +201,21 @@ podpisywany tekst: edge.enroll:<token>:<fingerprint>
   "heartbeatIntervalSeconds": 30, "livenessGraceSeconds": 30, "lostAfterSeconds": 300 }
 ```
 Zwraca: `agentId`, `robotId`, `sessionId`, `fingerprint`.
-**Odcisk trzeba porównać na ekranie robota** — dlatego liczymy go z DER.
+**Odcisk trzeba porównać na ekranie robota** - dlatego liczymy go z DER.
 
-### C2. Połączenie — `POST /api/edge/connect`
+### C2. Połączenie - `POST /api/edge/connect`
 ```
 podpisywany tekst: edge.connect:<agentId>:<timestampISO>
 ```
 Znacznik czasu poza dopuszczalnym rozjazdem zegarów → odmowa. Zsynchronizujcie NTP.
 
-### C3. Uderzenie serca — `POST /api/edge/heartbeat`
+### C3. Uderzenie serca - `POST /api/edge/heartbeat`
 ```
 podpisywany tekst: edge.heartbeat:<sessionId>:<sequence>:<timestampISO>
 ```
 `sequence` **rosnąca, bez luk**. Powtórzona sekwencja jest odtworzeniem i zostanie odrzucona.
 
-### C4. Rotacja klucza — podpisywana **nowym** kluczem
+### C4. Rotacja klucza - podpisywana **nowym** kluczem
 ```
 podpisywany tekst: edge.rotate:<agentId>:<fingerprint nowego klucza>
 ```
@@ -223,12 +223,12 @@ Dowodem jest posiadanie następcy, nie poprzednika. Okno zakładkowe jest
 obsłużone: stary klucz weryfikuje do `activeUntil`.
 
 **Do zwrócenia nam:** `agentId`, `sessionId`, odcisk klucza, dowód ≥ 100
-kolejnych heartbeatów bez luki, oraz wynik celowej próby odtworzenia (replay)
-— musi zostać odrzucona.
+kolejnych heartbeatów bez luki, oraz wynik celowej próby odtworzenia (replay) -
+musi zostać odrzucona.
 
 ---
 
-## 5. Etap D — dzierżawa i stan pożądany
+## 5. Etap D - dzierżawa i stan pożądany
 
 Model jest **odwrotny** niż kolejka zadań: ERP publikuje stan pożądany, robot
 go pobiera i raportuje, co faktycznie robi.
@@ -257,7 +257,7 @@ podpisywany tekst: deployment.report:<sessionId>:<reportedState>:<timestampISO>
   "timestamp": "<ISO>", "signature": "<base64>" }
 ```
 > **Zmiana z 2026-09-20.** Do wczoraj ten endpoint sprawdzał wyłącznie, czy
-> sesja istnieje — czyli znajomość `sessionId` wystarczała, żeby wmówić
+> sesja istnieje - czyli znajomość `sessionId` wystarczała, żeby wmówić
 > centrali dowolny stan maszyny. Poprawione: zgłoszenie jest teraz podpisywane
 > tak samo jak dzierżawa, z własnym przedrostkiem (podpis dzierżawy tu nie
 > przejdzie i odwrotnie). Jeśli pisaliście agenta wcześniej niż dziś,
@@ -266,7 +266,7 @@ podpisywany tekst: deployment.report:<sessionId>:<reportedState>:<timestampISO>
 **Przedrostki są różne celowo.** Podpis zebrany przy uderzeniu serca nie może
 być przedstawiony jako żądanie dzierżawy ani jako zgłoszenie stanu.
 
-### D3. Zachowanie po wygaśnięciu dzierżawy — **do przetestowania fizycznie**
+### D3. Zachowanie po wygaśnięciu dzierżawy - **do przetestowania fizycznie**
 Agent ma zrealizować `leaseExpiryBehavior` z wersji polityki. Test: odciąć
 sieć w trakcie ruchu i sprawdzić, czy ramię robi dokładnie to, co
 zadeklarowano (`hold_position` / `complete_grasp_then_hold` / `return_home`).
@@ -274,11 +274,11 @@ zadeklarowano (`hold_position` / `complete_grasp_then_hold` / `return_home`).
 zadeklarowanego zachowania.
 
 **Rozjazd między stanem pożądanym a raportowanym** jest wykrywany zboczem
-(zmiana werdyktu), nie co raport — więc nie zalejecie nas zdarzeniami.
+(zmiana werdyktu), nie co raport - więc nie zalejecie nas zdarzeniami.
 
 ---
 
-## 6. Etap E — telemetria
+## 6. Etap E - telemetria
 
 Jeden endpoint, pięć rodzajów: `POST /api/edge/telemetry`.
 
@@ -295,14 +295,14 @@ Koperta wspólna: `{ sessionId, sequence, timestamp, signature, kind, payload }`
 
 ### E1. `kind: "episode"`
 ```json
-{ "externalRef": "<idempotencja — wasz identyfikator epizodu>",
+{ "externalRef": "<idempotencja - wasz identyfikator epizodu>",
   "taskKey": "sort-plastic", "startedAt": "<ISO>", "endedAt": "<ISO>",
   "outcome": "success" | "failure" | "aborted" | "timeout",
   "outcomeDetail": "...", "policyVersionId": "<uuid>",
   "cellId": "<uuid>", "assignmentId": "<uuid>",
   "metrics": { "cycleTimeS": 12.4, "graspAttempts": 2 } }
 ```
-`externalRef` jest kluczem idempotencji — powtórzone wysłanie tego samego
+`externalRef` jest kluczem idempotencji - powtórzone wysłanie tego samego
 epizodu nie utworzy duplikatu.
 
 ### E2. `kind: "intervention"`
@@ -313,14 +313,14 @@ epizodu nie utworzy duplikatu.
   "reason": "opis po ludzku", "occurredAt": "<ISO>",
   "recoverySeconds": 42, "notes": "..." }
 ```
-`reasonCategory` — **słownik zamknięty**, wybierzcie z listy:
+`reasonCategory` - **słownik zamknięty**, wybierzcie z listy:
 ```
 grasp_failure, object_not_detected, workspace_obstruction,
 person_in_safety_zone, policy_stall, unsafe_motion, joint_limit,
 camera_fault, tracking_loss, material_jam, power_fault, hardware_fault,
 communications_loss, calibration_error, operator_request, other
 ```
-**Jeśli czegoś brakuje — powiedzcie, dopiszemy.** Lepiej rozszerzyć słownik
+**Jeśli czegoś brakuje - powiedzcie, dopiszemy.** Lepiej rozszerzyć słownik
 niż zalać go wartością `other`; `other` z kilkuset wystąpieniami znaczy, że
 lista jest zła, a nie że przypadki są nietypowe.
 
@@ -336,25 +336,25 @@ lista jest zła, a nie że przypadki są nietypowe.
 liczby i mylenie ich psuje bilans masy.
 
 ### E4. `kind: "clip"` i `kind: "clip_deletion_confirmation"`
-ERP przechowuje **URI, metadane i skróty nagrań — nigdy bajtów wideo**.
+ERP przechowuje **URI, metadane i skróty nagrań - nigdy bajtów wideo**.
 Nagranie z osobą w kadrze ma trzymiesięczny limit retencji (art. 22² Kodeksu
 pracy); po usunięciu pliku wyślijcie potwierdzenie `clip_deletion_confirmation`
 z listą `clipIds`. Brak potwierdzenia w terminie generuje u nas alarm i on
-**nie ucichnie sam** — to jedyne zdarzenie, które celowo powtarzamy przy
+**nie ucichnie sam** - to jedyne zdarzenie, które celowo powtarzamy przy
 każdym przebiegu.
 
 ---
 
-## 7. Etap F — co musi zostać przetestowane i zwalidowane
+## 7. Etap F - co musi zostać przetestowane i zwalidowane
 
 Poniższe testy wykonujemy **wspólnie, na podłączonym robocie**, i każdy ma
 dać zapis w bazie. To jest właściwa treść „walidacji fizycznej".
 
 | Nr | Test | Kryterium zaliczenia | Dowód |
 | --- | --- | --- | --- |
-| T1 | Odbiór A1–A7 | `finalize` tworzy r2 z `verifiedAgainstHardware: true` | `evidence.sealed.json` + SHA-256 |
+| T1 | Odbiór A1-A7 | `finalize` tworzy r2 z `verifiedAgainstHardware: true` | `evidence.sealed.json` + SHA-256 |
 | T2 | Rejestracja i kalibracja | robot widoczny w `/api/fleet/robots`, `calibrationState: "valid"` | zrzut odpowiedzi API |
-| T3 | **Odmowa dopuszczenia** — próba przejścia do `operational` przy wygaszonej kalibracji | HTTP **422**, komunikat nazywa brakujący rodzaj, **stan robota bez zmian** | log + rekord w `fleet_robot_transitions` (ma go NIE być) |
+| T3 | **Odmowa dopuszczenia** - próba przejścia do `operational` przy wygaszonej kalibracji | HTTP **422**, komunikat nazywa brakujący rodzaj, **stan robota bez zmian** | log + rekord w `fleet_robot_transitions` (ma go NIE być) |
 | T4 | Bramka podpisu | przejście wymagające zatwierdzenia bez `approvedBy` → odmowa; z `approvedBy` → wpis z aktorem w dzienniku | dziennik audytu |
 | T5 | Wpis agenta i odcisk | odcisk z ekranu robota == odcisk w ERP | zdjęcie ekranu + rekord |
 | T6 | **Odtworzenie (replay)** | powtórzona sekwencja heartbeatu odrzucona | log odpowiedzi |
@@ -381,7 +381,7 @@ Progi domyślne bramy (można nadpisać per etap, ale domyślne są sensowne):
 (`estop` + `abort`), `minSuccessRate: 0.80`.
 
 **Za mało danych to nie jest zgoda.** Etap poniżej `minEpisodes` dostaje
-`hold`, nie `advance` — zero interwencji na trzech epizodach nie jest dowodem
+`hold`, nie `advance` - zero interwencji na trzech epizodach nie jest dowodem
 niczego.
 
 ---
@@ -401,18 +401,18 @@ Lista zamknięta. To jest „done" dla tego handoffu:
 8. `declaredSpecDigest` **z metadanych rozpoczętego treningu**.
 9. Wersja datasetu, `trainingRunRef`, framework i wersja, hiperparametry.
 10. Zestaw ewaluacyjny: klucz suite'u, liczba przypadków, wynik, `evidenceUri`.
-11. Eksport epizodów i interwencji z licznika lokalnego agenta — do porównania z ERP (T16).
+11. Eksport epizodów i interwencji z licznika lokalnego agenta - do porównania z ERP (T16).
 12. Lista brakujących kategorii `reasonCategory`, jeśli takie wyszły w praniu.
 
 ---
 
-## 9. Granice — czego platforma nie robi i nie będzie robić
+## 9. Granice - czego platforma nie robi i nie będzie robić
 
 Żeby nie było nieporozumienia przy projektowaniu agenta:
 
 - **ERP nie zatrzymuje ramienia.** Natychmiastowe zatrzymanie należy do
   lokalnej warstwy deterministycznej. Endpoint, który „przerywa" zadanie,
-  oznacza rekord — nie hamuje maszyny. Jeśli wasz agent zakłada, że centrala
+  oznacza rekord - nie hamuje maszyny. Jeśli wasz agent zakłada, że centrala
   zatrzyma robota, to założenie jest błędne i trzeba je usunąć z projektu.
 - **ERP nie steruje i nie uczy.** Nie przechodzą przez nas trajektorie,
   tensory ani obraz. Przechodzą fakty: epizody, interwencje, liczniki.
@@ -434,7 +434,7 @@ Dotyczą A1X, ale kosztowały czas i mogą się powtórzyć:
   bieżącej w chwili włączenia momentu) ma być w agencie od pierwszej wersji,
   a nie dopisana po incydencie.
 - `kp = 0` potrafi spowodować odrzucenie całej ramki i wymagać restartu zasilania.
-- Kod funkcyjny wyłączający moment potrafi **zamrozić telemetrię** — martwy
+- Kod funkcyjny wyłączający moment potrafi **zamrozić telemetrię** - martwy
   odczyt nie znaczy martwej maszyny.
 - Testy na atrapach nie są dowodem zachowania sprzętu. 56/56 zielonych
   i nieudany autonomiczny chwyt współistniały bez sprzeczności.
@@ -463,5 +463,5 @@ Blokery, które zatrzymują wszystko poniżej siebie:
 3. `declaredSpecDigest` wyliczony po fakcie zamiast wzięty z treningu → T13
    przechodzi fałszywie i cała reszta jest niewiele warta.
 
-Pytania i braki w słownikach — do nas, od razu. Rozszerzenie zamkniętej listy
+Pytania i braki w słownikach - do nas, od razu. Rozszerzenie zamkniętej listy
 jest tanie; wartość `other` w produkcji jest droga.

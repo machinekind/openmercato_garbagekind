@@ -11,7 +11,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  * Kolumna, wokół której zbudowany jest ekran, to **czas do wygaśnięcia
  * dzierżawy**, a nie nazwa stanu. „Pracuje" bez tej liczby nie mówi, czy
  * maszyna pracuje dlatego, że wszystko gra, czy dlatego, że mandat jeszcze nie
- * zdążył wygasnąć — a to są dwa różne wdrożenia.
+ * zdążył wygasnąć - a to są dwa różne wdrożenia.
  *
  * Ekran odświeża się co 10 s, bo w celi publicznej cały mandat trwa 120 s.
  * Odświeżanie co 30 s, jak w rejestrze floty, pokazywałoby robota jako
@@ -68,7 +68,7 @@ const RECONCILIATION_LABEL: Record<string, [string, string]> = {
 type Tf = (key: string, fallback?: string | Record<string, string | number>, params?: Record<string, string | number>) => string
 
 function formatDuration(t: Tf, seconds: number | null): string {
-  if (seconds === null) return '—'
+  if (seconds === null) return '-'
   const abs = Math.abs(seconds)
   const text =
     abs >= 86400
@@ -137,7 +137,7 @@ export default function DeploymentBoard() {
           value={totals?.haltedByLease ?? null}
           loading={loading}
           footer={
-            <span className="text-xs text-muted-foreground">{t('deployment.ui.nothingRecorded', "centrala nic nie zapisała — mandat po prostu upłynął")}</span>
+            <span className="text-xs text-muted-foreground">{t('deployment.ui.nothingRecorded', "centrala nic nie zapisała - mandat po prostu upłynął")}</span>
           }
         />
         <KpiCard
@@ -146,7 +146,7 @@ export default function DeploymentBoard() {
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              {totals ? t('deployment.ui.nRobotsSilent', '{n} robotów nic nie zgłosiło', { n: String(totals.unknown) }) : '—'}
+              {totals ? t('deployment.ui.nRobotsSilent', '{n} robotów nic nie zgłosiło', { n: String(totals.unknown) }) : '-'}
             </span>
           }
         />
@@ -180,7 +180,7 @@ export default function DeploymentBoard() {
                   </td>
                   <td className="px-4 py-2">{row.policy}</td>
                   <td className={`px-4 py-2 ${RISK_TONE[row.riskClass] ?? ''}`}>
-                    {row.cell ?? '—'}
+                    {row.cell ?? '-'}
                     <span className="text-xs"> · {RISK_LABEL[row.riskClass] ? t(...RISK_LABEL[row.riskClass]) : row.riskClass}</span>
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">

@@ -256,7 +256,7 @@ describe('rollout.gates.evaluate', () => {
 
   it('wycofanie idzie komendą stanu pożądanego, a nie zapisem do tabeli wdrożeń', async () => {
     // Zapis do własnej tabeli rozjechałby stan pożądany w hali ze stanem
-    // wdrożenia w panelu — dokładnie tam, gdzie takiego rozjazdu być nie może.
+    // wdrożenia w panelu - dokładnie tam, gdzie takiego rozjazdu być nie może.
     const { ctx, commands } = makeCtx({
       stats: { episodes: '100', intervened: '30', severe: '0', successes: '70' },
       members: [{ id: 'm1', robot_id: ROBOT_A, previous_policy_version_id: PREVIOUS_VERSION_ID }],

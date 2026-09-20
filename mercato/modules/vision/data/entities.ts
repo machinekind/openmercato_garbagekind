@@ -28,7 +28,7 @@ export type CameraPurpose = 'safety' | 'property' | 'production_control' | 'trad
 /**
  * Kamera obserwująca celę.
  *
- * Kamera jest cechą **celi**, nie robota — to domyka lukę wskazaną przy
+ * Kamera jest cechą **celi**, nie robota - to domyka lukę wskazaną przy
  * SO-101: polityka wytrenowana z dwiema kamerami nie ruszy na stanowisku
  * z jedną, a liczba i rozmieszczenie kamer nie należą do ramienia.
  */
@@ -64,7 +64,7 @@ export class Camera {
    *
    * Pole obowiązkowe i bez wartości domyślnej. Kamera bez zadeklarowanego celu
    * jest kamerą, której podstawy prawnej nikt nie potrafi wskazać w dniu
-   * kontroli — a katalog jest zamknięty, więc „inne" nie istnieje.
+   * kontroli - a katalog jest zamknięty, więc „inne" nie istnieje.
    */
   @Property({ type: 'text' })
   purpose!: CameraPurpose
@@ -75,7 +75,7 @@ export class Camera {
    * Górna granica to 90 dni (art. 22² § 3 KP: zniszczenie po 3 miesiącach,
    * chyba że nagranie stanowi dowód w postępowaniu). Wartość jest polem,
    * a nie stałą, bo dla kamery patrzącej wyłącznie na taśmę bez ludzi
-   * uzasadniony bywa okres krótszy — a krótszy zawsze wolno.
+   * uzasadniony bywa okres krótszy - a krótszy zawsze wolno.
    */
   @Property({ name: 'retention_days', type: 'int' })
   retentionDays!: number
@@ -84,17 +84,17 @@ export class Camera {
    * Czy w polu widzenia bywają ludzie.
    *
    * Rozstrzyga o tym, czy w ogóle wolno zapisać materiał dowodowy i jak długo.
-   * Deklaracja, nie wykrycie — bo „nigdy nie ma tam ludzi" jest twierdzeniem
+   * Deklaracja, nie wykrycie - bo „nigdy nie ma tam ludzi" jest twierdzeniem
    * organizacyjnym, za które odpowiada pracodawca, a nie detektorem.
    */
   @Property({ name: 'people_in_view', type: 'boolean', default: true })
   peopleInView: boolean = true
 
-  /** Data poinformowania załogi — art. 22² § 7 KP, dwa tygodnie przed uruchomieniem. */
+  /** Data poinformowania załogi - art. 22² § 7 KP, dwa tygodnie przed uruchomieniem. */
   @Property({ name: 'workforce_notified_at', type: Date, nullable: true })
   workforceNotifiedAt?: Date | null
 
-  /** Data oznaczenia obszaru — art. 22² § 9 KP, najpóźniej dzień przed. */
+  /** Data oznaczenia obszaru - art. 22² § 9 KP, najpóźniej dzień przed. */
   @Property({ name: 'area_marked_at', type: Date, nullable: true })
   areaMarkedAt?: Date | null
 
@@ -147,7 +147,7 @@ export class DetectorVersion {
   @Property({ type: 'text' })
   name!: string
 
-  /** Skrót wag — tożsamość wersji, liczona z pliku, nie deklarowana. */
+  /** Skrót wag - tożsamość wersji, liczona z pliku, nie deklarowana. */
   @Property({ name: 'weights_digest', type: 'text' })
   weightsDigest!: string
 
@@ -156,7 +156,7 @@ export class DetectorVersion {
    *
    * Sprawdzany przy rejestracji przeciw zakazom art. 5 aktu o sztucznej
    * inteligencji. Detektor deklarujący klasy emocjonalne albo kategoryzację
-   * biometryczną nie da się zarejestrować — i to jest odmowa, nie ostrzeżenie.
+   * biometryczną nie da się zarejestrować - i to jest odmowa, nie ostrzeżenie.
    */
   @Property({ name: 'class_vocabulary', type: 'json' })
   classVocabulary!: string[]
@@ -185,7 +185,7 @@ export class DetectorVersion {
 }
 
 /**
- * Okno zliczeń — policzony wynik z przedziału czasu, nie pojedyncza detekcja.
+ * Okno zliczeń - policzony wynik z przedziału czasu, nie pojedyncza detekcja.
  *
  * Kamera 30 fps przez ośmiogodzinną zmianę daje 864 tysiące klatek. Wiersz na
  * detekcję byłby tabelą, której nikt nigdy nie odpyta. Brzeg agreguje do okien
@@ -239,7 +239,7 @@ export class DetectionWindow {
   @Property({ name: 'counting_mode', type: 'text' })
   countingMode!: CountingMode
 
-  /** `{ "pet": 1000, "pvc": 41, "person": 2 }` — klasa → liczba. */
+  /** `{ "pet": 1000, "pvc": 41, "person": 2 }` - klasa → liczba. */
   @Property({ type: 'json' })
   counts!: Record<string, number>
 
@@ -252,7 +252,7 @@ export class DetectionWindow {
 }
 
 /**
- * Materiał dowodowy — **wyłącznie przez odniesienie**.
+ * Materiał dowodowy - **wyłącznie przez odniesienie**.
  *
  * W bazie leży adres i termin usunięcia, nigdy bajty. Termin jest polem
  * obowiązkowym i liczonym przy zapisie, bo art. 22² § 3 Kodeksu pracy nakazuje
@@ -292,18 +292,18 @@ export class Clip {
   @Property({ name: 'duration_seconds', type: 'int' })
   durationSeconds!: number
 
-  /** Termin usunięcia — liczony z `retention_days` kamery, nie przyjmowany od wołającego. */
+  /** Termin usunięcia - liczony z `retention_days` kamery, nie przyjmowany od wołającego. */
   @Property({ name: 'delete_after', type: Date })
   deleteAfter!: Date
 
   /**
-   * Moment oznaczenia do usunięcia — **nie** moment usunięcia.
+   * Moment oznaczenia do usunięcia - **nie** moment usunięcia.
    *
    * Rozdział wprowadzony, gdy zadanie cykliczne zaczęło oznaczać klipy
    * automatycznie. Poprzednia nazwa (`purgedAt`) sugerowała, że plik zniknął,
    * a platforma nigdy go nie kasuje: bajty leżą w magazynie obiektów, do
    * którego ERP nie ma dostępu. Zautomatyzowanie samego oznaczania dałoby
-   * **zautomatyzowaną księgowość zamiast zgodności** — i nikt by tego nie
+   * **zautomatyzowaną księgowość zamiast zgodności** - i nikt by tego nie
    * zauważył, bo kolumna nazywałaby się „purged".
    */
   @Property({ name: 'marked_for_deletion_at', type: Date, nullable: true })
@@ -314,7 +314,7 @@ export class Clip {
    *
    * Dopóki to pole jest puste przy wypełnionym `markedForDeletionAt`, materiał
    * **nadal istnieje po ustawowym terminie**. To jest właściwa liczba
-   * zgodności — i to ona ma być widoczna, a nie liczba oznaczeń.
+   * zgodności - i to ona ma być widoczna, a nie liczba oznaczeń.
    */
   @Property({ name: 'deletion_confirmed_at', type: Date, nullable: true })
   deletionConfirmedAt?: Date | null
@@ -325,7 +325,7 @@ export class Clip {
   /**
    * Wstrzymanie usunięcia, gdy nagranie jest dowodem w postępowaniu.
    *
-   * Jedyny przewidziany w ustawie wyjątek od terminu — i dlatego wymaga
+   * Jedyny przewidziany w ustawie wyjątek od terminu - i dlatego wymaga
    * podania sygnatury, a nie samego zaznaczenia pola.
    */
   @Property({ name: 'legal_hold_reference', type: 'text', nullable: true })

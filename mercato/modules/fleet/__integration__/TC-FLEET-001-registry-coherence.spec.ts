@@ -9,7 +9,7 @@ export const integrationMeta = {
  * Spójność rejestru floty i rejestru zdarzeń.
  *
  * Testy jednostkowe sprawdzają reguły na atrapie bazy; ten test sprawdza to,
- * czego atrapa nie widzi — czy w działającej aplikacji liczby na ekranie
+ * czego atrapa nie widzi - czy w działającej aplikacji liczby na ekranie
  * zgadzają się z danymi, z których powstały, i czy zdarzenia zadeklarowane
  * w modułach faktycznie docierają do rejestru, z którego korzysta edytor
  * workflow.
@@ -73,11 +73,11 @@ test.describe('TC-FLEET-001 spójność rejestru', () => {
   test('katalog widgetów odpowiada i nie jest pusty', async ({ request }) => {
     /*
      * Świadomie NIE sprawdzamy tu, czy nasze trzy widgety są w katalogu.
-     * Katalog jest filtrowany przez `dashboard_role_widgets` — jawną listę
+     * Katalog jest filtrowany przez `dashboard_role_widgets` - jawną listę
      * dozwolonych widgetów zapisywaną przy inicjalizacji tenanta. Moduł
      * doinstalowany później nie trafia na nią sam; robi to dopiero
      * `mercato <moduł> install-widgets`. Test twierdzący inaczej mówiłby
-     * o stanie konfiguracji tej konkretnej bazy, a nie o naszym kodzie —
+     * o stanie konfiguracji tej konkretnej bazy, a nie o naszym kodzie -
      * i przechodziłby albo nie zależnie od tego, czy ktoś uruchomił komendę.
      *
      * Sprawdzamy więc to, co jest nasze do sprawdzenia: że trasa żyje

@@ -19,7 +19,7 @@ import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorato
  * 3. **Dziennik bramy jest dopisywany, nigdy nadpisywany.** Brama oceniana
  *    trzy razy zostawia trzy wpisy. Nadpisywanie ostatniego kasowałoby
  *    odpowiedź na pytanie, ile razy wdrożenie ocierało się o próg, zanim go
- *    przekroczyło — a to jest jedyna rzecz, którą widać zawczasu.
+ *    przekroczyło - a to jest jedyna rzecz, którą widać zawczasu.
  */
 
 export type RolloutStatus = 'planned' | 'running' | 'halted' | 'completed' | 'rolled_back'
@@ -102,7 +102,7 @@ export class RolloutStage {
   @Property({ type: 'text', default: 'pending' })
   status: StageStatus = 'pending'
 
-  /** Progi bramy zamrożone przy zakładaniu etapu — patrz komentarz przy klasie. */
+  /** Progi bramy zamrożone przy zakładaniu etapu - patrz komentarz przy klasie. */
   @Property({ name: 'min_episodes', type: 'int' })
   minEpisodes!: number
 
@@ -169,10 +169,10 @@ export class StageMember {
 }
 
 /**
- * Wpis dziennika bramy — dopisywany, nigdy nadpisywany.
+ * Wpis dziennika bramy - dopisywany, nigdy nadpisywany.
  *
  * Trzyma zmierzone wartości, nie tylko werdykt. Dziennik z samym „rollback"
- * wymaga przeliczenia księgi wstecz, żeby powiedzieć dlaczego — a księga
+ * wymaga przeliczenia księgi wstecz, żeby powiedzieć dlaczego - a księga
  * w międzyczasie urosła.
  */
 @Entity({ tableName: 'rollout_gate_evaluations' })
@@ -219,7 +219,7 @@ export class GateEvaluation {
    * Kto ocenił bramę. `null` znaczy: automat.
    *
    * W poprawnie działającym wdrożeniu ta kolumna jest pusta przy każdym
-   * wpisie. Podpis człowieka przy wycofaniu oznacza, że automat nie zdążył —
+   * wpisie. Podpis człowieka przy wycofaniu oznacza, że automat nie zdążył -
    * i to też jest informacja.
    */
   @Property({ name: 'actor_user_id', type: 'uuid', nullable: true })

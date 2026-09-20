@@ -18,7 +18,7 @@ const logger = createLogger('fleet:calibration-expiry')
 export const metadata: WorkerMeta = {
   queue: FLEET_CALIBRATION_EXPIRY_QUEUE,
   id: 'fleet:calibration-expiry',
-  // Jeden na raz — zadanie obchodzi wszystkie organizacje i nie ma powodu,
+  // Jeden na raz - zadanie obchodzi wszystkie organizacje i nie ma powodu,
   // żeby dwa przebiegi konkurowały o te same wiersze.
   concurrency: 1,
 }

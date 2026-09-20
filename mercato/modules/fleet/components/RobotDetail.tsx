@@ -9,13 +9,13 @@ import { apiCall } from '@open-mercato/ui/backend/utils/apiCall'
 import { RobotActions } from './RobotActions'
 
 /**
- * Szczegóły robota — ścieżka odczytu, której do tej wersji nie było.
+ * Szczegóły robota - ścieżka odczytu, której do tej wersji nie było.
  *
  * Rejestr floty był listą, w którą nie dało się kliknąć: operator widział,
  * że maszyna stoi w kwarantannie, i nie miał jak sprawdzić dlaczego.
  *
  * Ekran jest zbudowany wokół **księgi przejść**, a nie wokół pól rekordu.
- * Pola rekordu mówią, jak jest; księga mówi, jak do tego doszło — i przy
+ * Pola rekordu mówią, jak jest; księga mówi, jak do tego doszło - i przy
  * kwarantannie tylko to drugie pozwala odróżnić maszynę, która raz na kwartał
  * łapie kolizję, od maszyny, która wraca do serwisu trzeci raz w tygodniu.
  */
@@ -95,7 +95,7 @@ export default function RobotDetail({ robotId }: { robotId: string }) {
 
   React.useEffect(() => { void wczytaj() }, [wczytaj])
 
-  // Brak rekordu jest osobnym stanem strony, nie odmianą błędu — inaczej
+  // Brak rekordu jest osobnym stanem strony, nie odmianą błędu - inaczej
   // operator dostaje „coś poszło nie tak" tam, gdzie odpowiedź brzmi
   // „tego robota nie ma w rejestrze".
   if (brak) {
@@ -131,7 +131,7 @@ export default function RobotDetail({ robotId }: { robotId: string }) {
           </div>
           <div className={`mt-2 text-sm ${TON[r.state] ?? ''}`}>
             {r.state}
-            {r.stateReason ? <span className="text-muted-foreground"> — {r.stateReason}</span> : null}
+            {r.stateReason ? <span className="text-muted-foreground"> - {r.stateReason}</span> : null}
           </div>
           {r.externallyOperated ? (
             <div className="mt-1 text-xs text-amber-600">
@@ -162,7 +162,7 @@ export default function RobotDetail({ robotId }: { robotId: string }) {
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-xs text-muted-foreground">{czas(p.at)}</span>
                     <span className={TON[p.toState] ?? ''}>
-                      {p.fromState ?? '—'} → {p.toState}
+                      {p.fromState ?? '-'} → {p.toState}
                     </span>
                     {/* Brak identyfikatora znaczy, że przejście wykonał system.
                         To jest informacja, nie luka w danych. */}
@@ -233,7 +233,7 @@ export default function RobotDetail({ robotId }: { robotId: string }) {
                 </div>
               ) : (
                 /* Brak agenta to normalny stan maszyny bez kanału brzegowego,
-                   a nie awaria — i musi wyglądać inaczej niż utrata łączności. */
+                   a nie awaria - i musi wyglądać inaczej niż utrata łączności. */
                 <span className="text-xs text-muted-foreground">
                   {t('fleet.detail.noAgent', 'Ta maszyna nie ma wpisanego agenta.')}
                 </span>

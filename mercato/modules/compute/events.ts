@@ -5,7 +5,7 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  *
  * Dwa zdarzenia, nie więcej, i to jest adekwatne do tego, czym ten moduł jest:
  * ewidencją sprzętu i tym, co na nim stoi. Nie ma tu zdarzenia na odmowę
- * przypisania roli bezpieczeństwa, choć kusi — odmowa jest wyjątkiem komendy
+ * przypisania roli bezpieczeństwa, choć kusi - odmowa jest wyjątkiem komendy
  * i wraca do wołającego natychmiast, a próba, która się nie powiodła, nie
  * zmieniła stanu świata. Dziennik audytu szyny komend zapisuje ją razem
  * z aktorem i tam jest jej miejsce.
@@ -26,7 +26,7 @@ const events = [
         { path: 'kind', type: 'text' },
         { path: 'cellId', type: 'text', optional: true },
         { path: 'memoryGb', type: 'number' },
-        { path: 'memoryBandwidthGbs', type: 'number', label: 'Przepustowość pamięci — liczba rozstrzygająca o przepustowości dekodowania' },
+        { path: 'memoryBandwidthGbs', type: 'number', label: 'Przepustowość pamięci - liczba rozstrzygająca o przepustowości dekodowania' },
         { path: 'roles', type: 'object' },
         { path: 'realtimeCapable', type: 'boolean' },
       ],

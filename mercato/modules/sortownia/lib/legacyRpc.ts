@@ -1,7 +1,7 @@
 /**
  * Minimalny klient XML-RPC dla systemu legacy sortowni.
  *
- * Open Mercato rozmawia tu protokołem z 1998 roku bezpośrednio — bez pośrednika,
+ * Open Mercato rozmawia tu protokołem z 1998 roku bezpośrednio - bez pośrednika,
  * bez pliku pośredniego, bez zależności. Powierzchnia jest dokładnie taka, jaką
  * wystawia prawdziwy webERP, więc podmiana adresu w konfiguracji integracji
  * przestawia moduł na produkcyjną instancję.

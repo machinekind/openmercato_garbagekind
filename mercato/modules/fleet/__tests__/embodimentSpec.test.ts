@@ -13,7 +13,7 @@ import {
  *
  * SO-101 jest tu wzorcem, bo jest dobrze udokumentowany. Wartość tych testów
  * polega jednak na czymś innym: sprawdzają zachowanie formatu wobec ramion
- * **gorzej** udokumentowanych — takich, gdzie połowy liczb nikt nie zna.
+ * **gorzej** udokumentowanych - takich, gdzie połowy liczb nikt nie zna.
  */
 
 const so101 = JSON.parse(
@@ -30,7 +30,7 @@ describe('SO-101 jako wzorzec', () => {
     expect(so101.kinematics.dofCount).toBe(6)
   })
 
-  it('NIE jest kompletny — dokumentacja nie podaje udźwigu ani zasięgu', () => {
+  it('NIE jest kompletny - dokumentacja nie podaje udźwigu ani zasięgu', () => {
     // To jest właściwy wynik, nie usterka. Dokumentacja LeRobot opisuje montaż
     // i kalibrację, ale nie podaje udźwigu ani zasięgu. Opis ma to przyznać,
     // zamiast wpisać liczbę, której nikt nie zmierzył.
@@ -98,7 +98,7 @@ describe('ramiona gorzej udokumentowane', () => {
   it('wolno je zaewidencjonować mimo luk', () => {
     // Inwentaryzacja ramienia, którego nikt do końca nie zna, jest tym,
     // od czego zaczyna się każde wdrożenie. Odmowa zapisu wypchnęłaby
-    // te maszyny poza system — czyli tam, gdzie już są.
+    // te maszyny poza system - czyli tam, gdzie już są.
     expect(validateEmbodimentSpec(kiepskoOpisane).valid).toBe(true)
   })
 

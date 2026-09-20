@@ -15,7 +15,7 @@ const SESSIONS_SWEEP_SCHEDULE_ID = stableScheduleUuid('edge:sessions-sweep')
 /**
  * Co pięć minut.
  *
- * Nie krócej, bo zamiatanie nie jest tym, co utrzymuje pulpit w prawdzie —
+ * Nie krócej, bo zamiatanie nie jest tym, co utrzymuje pulpit w prawdzie -
  * żywotność liczy się z `last_seen_at` przy odczycie. Nie dłużej, bo przy
  * progach utraty rzędu minut księga sesji rozjeżdżałaby się z rzeczywistością
  * na tyle, że liczba sesji na dobę przestałaby mierzyć migotanie łącza.
@@ -31,7 +31,7 @@ export async function ensureSessionsSweepSchedule(container: import('awilix').Aw
     schedulerService = undefined
   }
   if (!schedulerService) {
-    logger.warn('Moduł harmonogramu niedostępny — zamiatanie sesji NIE jest zautomatyzowane')
+    logger.warn('Moduł harmonogramu niedostępny - zamiatanie sesji NIE jest zautomatyzowane')
     return
   }
   try {
@@ -39,7 +39,7 @@ export async function ensureSessionsSweepSchedule(container: import('awilix').Aw
       id: SESSIONS_SWEEP_SCHEDULE_ID,
       name: 'Zamiatanie sesji agentów po ciszy',
       description:
-        'Zamyka sesje agentów, którzy przekroczyli próg utraty. Nie zmienia stanu robota — ' +
+        'Zamyka sesje agentów, którzy przekroczyli próg utraty. Nie zmienia stanu robota - ' +
         'wniosek o kwarantannie należy do modułu floty.',
       scopeType: 'system',
       scheduleType: 'interval',
@@ -58,7 +58,7 @@ export async function ensureSessionsSweepSchedule(container: import('awilix').Aw
 }
 
 /**
- * Podgląd łączności dostaje każdy pracownik — bo pytanie „czy ten robot
+ * Podgląd łączności dostaje każdy pracownik - bo pytanie „czy ten robot
  * w ogóle się odzywa" pada przy każdej awarii i blokowanie go tylko wydłuża
  * drogę do odpowiedzi.
  *

@@ -77,7 +77,7 @@ describe('fleet.robots.register', () => {
       ctx,
     )
     expect(result.robotId).toBeTruthy()
-    // Robot plus wpis do księgi — rejestracja bez śladu w księdze byłaby
+    // Robot plus wpis do księgi - rejestracja bez śladu w księdze byłaby
     // rekordem, którego pochodzenia nikt później nie odtworzy.
     expect(persisted).toHaveLength(2)
     expect(persisted[1]).toMatchObject({ toState: 'registered', fromState: null })
@@ -119,7 +119,7 @@ describe('fleet.robots.register', () => {
     ).rejects.toThrow(/Rewizja embodimentu/)
   })
 
-  it('numer seryjny jest tożsamością — drugi import tej samej floty odbija się', async () => {
+  it('numer seryjny jest tożsamością - drugi import tej samej floty odbija się', async () => {
     const { ctx } = makeCtx({ existingSerial: { id: 'istnieje' } })
     await expect(
       registerRobotCommand.execute(
@@ -164,7 +164,7 @@ describe('fleet.robots.transition', () => {
     ).rejects.toThrow(/nie da się przejść/)
   })
 
-  it('bramka wymaga podpisu — bez niego przejście nie przechodzi', async () => {
+  it('bramka wymaga podpisu - bez niego przejście nie przechodzi', async () => {
     const { ctx } = makeCtx({
       robot: { id: ROBOT_ID, state: 'quarantined', embodimentRevisionId: REVISION_ID },
       calibrations: [wazna],
@@ -199,7 +199,7 @@ describe('fleet.robots.transition', () => {
 
   it('BRAMKA KALIBRACYJNA: nie da się dopuścić robota bez ważnego pomiaru', async () => {
     // To jest sedno fazy 0. Robot z przeterminowaną kalibracją wygląda
-    // w każdym zestawieniu identycznie jak sprawny — i to jest moment,
+    // w każdym zestawieniu identycznie jak sprawny - i to jest moment,
     // w którym ta różnica musi wyjść.
     const { ctx } = makeCtx({
       robot: { id: ROBOT_ID, state: 'commissioning', embodimentRevisionId: REVISION_ID },
@@ -239,7 +239,7 @@ describe('fleet.robots.transition', () => {
     expect(result.toState).toBe('ready')
   })
 
-  it('kwarantanna przez system zapisuje się bez aktora — i to jest informacja', async () => {
+  it('kwarantanna przez system zapisuje się bez aktora - i to jest informacja', async () => {
     const { ctx, persisted } = makeCtx({ robot: { id: ROBOT_ID, state: 'operational', embodimentRevisionId: REVISION_ID } })
     await transitionRobotCommand.execute(
       { ...scope, robotId: ROBOT_ID, toState: 'quarantined', reason: 'Wygaśnięcie kalibracji', actor: 'system' },

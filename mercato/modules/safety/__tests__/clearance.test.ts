@@ -60,7 +60,7 @@ function check(over: Partial<Parameters<typeof evaluateClearance>[0]> = {}) {
   })
 }
 
-describe('evaluateClearance — dopuszczenie', () => {
+describe('evaluateClearance - dopuszczenie', () => {
   it('dopuszcza przy zatwierdzonym uzasadnieniu i komplecie zestawów', () => {
     const verdict = check()
     expect(verdict.cleared).toBe(true)
@@ -91,14 +91,14 @@ describe('evaluateClearance — dopuszczenie', () => {
   })
 })
 
-describe('evaluateClearance — uzasadnienie', () => {
+describe('evaluateClearance - uzasadnienie', () => {
   it('odmawia przy braku uzasadnienia dla tej klasy celi', () => {
     const verdict = check({ safetyCases: [] })
     expect(verdict.cleared).toBe(false)
     expect(verdict.reasons[0]).toContain('brak zatwierdzonego uzasadnienia')
   })
 
-  it('odmawia, gdy uzasadnienie jest tylko robocze — i mówi to wprost', () => {
+  it('odmawia, gdy uzasadnienie jest tylko robocze - i mówi to wprost', () => {
     // Najgroźniejszy przypadek: komplet zaliczonych zestawów sprawia wrażenie,
     // że wszystko jest gotowe.
     const verdict = check({ safetyCases: [approvedCase({ status: 'draft' })] })
@@ -131,7 +131,7 @@ describe('evaluateClearance — uzasadnienie', () => {
   })
 })
 
-describe('evaluateClearance — polityka jako funkcja bezpieczeństwa', () => {
+describe('evaluateClearance - polityka jako funkcja bezpieczeństwa', () => {
   it('odmawia bezwarunkowo i nie patrzy na ewaluacje', () => {
     const verdict = check({
       safetyCases: [approvedCase({ declaredAsSafetyFunction: true })],
@@ -140,14 +140,14 @@ describe('evaluateClearance — polityka jako funkcja bezpieczeństwa', () => {
     expect(verdict.cleared).toBe(false)
     expect(verdict.reasons).toHaveLength(1)
     expect(verdict.reasons[0]).toContain('Annex I część A')
-    // Komplet testów nie tylko nie pomaga, ale jest mylący — więc nie jest liczony.
+    // Komplet testów nie tylko nie pomaga, ale jest mylący - więc nie jest liczony.
     expect(verdict.missingSuites).toEqual([])
     expect(verdict.failedSuites).toEqual([])
   })
 
   it('deklaracja WYCOFANA przestaje blokować', () => {
     // Inaczej jedna pomyłka w polu wyboru unieruchamiałaby wersję na zawsze,
-    // bez legalnej drogi wyjścia — a reguła bez drogi odwrotu uczy obchodzenia
+    // bez legalnej drogi wyjścia - a reguła bez drogi odwrotu uczy obchodzenia
     // systemu i przestaje chronić cokolwiek.
     const verdict = check({
       safetyCases: [
@@ -167,7 +167,7 @@ describe('evaluateClearance — polityka jako funkcja bezpieczeństwa', () => {
   })
 })
 
-describe('evaluateClearance — przebiegi ewaluacyjne', () => {
+describe('evaluateClearance - przebiegi ewaluacyjne', () => {
   it('bierze NAJNOWSZY przebieg, a nie jakikolwiek zaliczony', () => {
     // Zestaw przebiegnięty ponownie po zmianie w celi i zakończony
     // niepowodzeniem unieważnia poprzedni sukces.
@@ -248,7 +248,7 @@ describe('classifyIncident', () => {
     expect(verdict.haltDeployment).toBe(false)
   })
 
-  it('warstwa zadziałała przeciwko polityce — wdrożenie wstrzymane', () => {
+  it('warstwa zadziałała przeciwko polityce - wdrożenie wstrzymane', () => {
     const verdict = classifyIncident({ harm: 'none', safetyLayerEngaged: true, policyImplicated: true })
     expect(verdict.haltDeployment).toBe(true)
   })

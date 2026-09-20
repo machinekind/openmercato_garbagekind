@@ -173,7 +173,7 @@ export async function GET(req: Request): Promise<Response> {
     to_code: string | null
   }>>(
     // Jeden wiersz legacy może być kilkoma ruchami WMS (po jednym na partię);
-    // operator ma widzieć kwit, nie rozkład na partie — zwijamy po `reference_id`.
+    // operator ma widzieć kwit, nie rozkład na partie - zwijamy po `reference_id`.
     `select min(m.id::text) as id,
             m.type,
             m.performed_at,
@@ -262,7 +262,7 @@ export async function GET(req: Request): Promise<Response> {
   )
 
   // Sprzedaż frakcji: to, czego stary system nie umiał powiedzieć w ogóle.
-  // Liczymy z dokumentów sprzedaży, a nie z ruchów magazynowych — pieniądze
+  // Liczymy z dokumentów sprzedaży, a nie z ruchów magazynowych - pieniądze
   // i kilogramy mają osobne źródła prawdy i tak ma zostać.
   const [sales] = await em.getConnection().execute<Array<{
     orders: string
@@ -290,7 +290,7 @@ export async function GET(req: Request): Promise<Response> {
   // Kwoty agregujemy SQL-em, ale nazwy kontrahentów MUSZĄ przyjść przez ORM.
   // `customer_entities.display_name` jest szyfrowane w spoczynku, więc surowy
   // odczyt oddaje kryptogram w rodzaju `BZhh3D8l...:v1` i ląduje on wprost na
-  // ekranie operatora. Sprawdzone na żywej bazie — dlatego agregat idzie po
+  // ekranie operatora. Sprawdzone na żywej bazie - dlatego agregat idzie po
   // identyfikatorze, a nazwy dociągamy `findWithDecryption`.
   const buyerTotals = await em.getConnection().execute<Array<{
     customer_entity_id: string
@@ -313,7 +313,7 @@ export async function GET(req: Request): Promise<Response> {
   )
 
   // Należności: ile wystawiono, ile wpłynęło, ile wisi i od jak dawna.
-  // Wpłaty liczymy z alokacji, a nie z samych płatności — płatność bez
+  // Wpłaty liczymy z alokacji, a nie z samych płatności - płatność bez
   // alokacji nie zmniejsza salda żadnego dokumentu.
   const [receivables] = await em.getConnection().execute<Array<{
     billed: string
@@ -411,7 +411,7 @@ export async function GET(req: Request): Promise<Response> {
   )
 
   // Rezerwacje: ile masy jest obiecane odbiorcom i nie wolno jej sprzedać
-  // drugi raz. Stary system znał tylko jedną liczbę — ile leży.
+  // drugi raz. Stary system znał tylko jedną liczbę - ile leży.
   const [reservations] = await em.getConnection().execute<Array<{
     total: string
     masa: string
@@ -426,7 +426,7 @@ export async function GET(req: Request): Promise<Response> {
     [scope.organizationId, scope.tenantId],
   )
 
-  // Bilans masy i sprawność sortowania — liczby, którymi zakład rozlicza się
+  // Bilans masy i sprawność sortowania - liczby, którymi zakład rozlicza się
   // ze sprawozdawczości i po których poznaje, czy sortownia w ogóle sortuje.
   const [balance] = await em.getConnection().execute<Array<{
     przyjete: string

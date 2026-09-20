@@ -2,18 +2,18 @@ import type { EntityManager } from '@mikro-orm/postgresql'
 import { runAgentCommand } from '../../../edge/api/agentRoute'
 
 /**
- * Endpoint dzierżawy — wołany przez agenta na robocie, nie przez człowieka.
+ * Endpoint dzierżawy - wołany przez agenta na robocie, nie przez człowieka.
  *
  * Bez sesji użytkownika, jak trzy endpointy kanału brzegowego, i z tego samego
  * powodu: agent nie jest człowiekiem i nie ma się jak zalogować. Uwierzytelnia
  * się podpisem kluczem, którego centrala nie posiada, a zakres organizacji
- * ustala serwer z rekordu sesji — nie z treści żądania, bo wtedy byłby
+ * ustala serwer z rekordu sesji - nie z treści żądania, bo wtedy byłby
  * parametrem, którym da się sięgnąć poza własnego tenanta.
  *
  * Kanał jest **osobny od heartbeatu** i tak ma zostać. Doklejenie stanu
  * pożądanego do odpowiedzi uderzenia serca zrobiłoby z żywotności warunek
  * wdrożenia: agent, który przestałby bić serce, traciłby mandat natychmiast,
- * niezależnie od klasy ryzyka celi — czyli dokładnie to, czemu dzierżawa
+ * niezależnie od klasy ryzyka celi - czyli dokładnie to, czemu dzierżawa
  * w celi ogrodzonej ma zapobiegać.
  */
 export const metadata = {

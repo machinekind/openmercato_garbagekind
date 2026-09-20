@@ -4,13 +4,13 @@ import { createModuleEvents } from '@open-mercato/shared/modules/events'
  * Zdarzenia rejestru floty.
  *
  * Zasada doboru: deklarujemy wyłącznie te fakty, na które inny podsystem ma
- * prawo zareagować — i wyłącznie te, które faktycznie emitujemy. Zdarzenie
+ * prawo zareagować - i wyłącznie te, które faktycznie emitujemy. Zdarzenie
  * zadeklarowane, a nigdy nieemitowane, jest gorsze niż jego brak: pojawia się
  * na liście wyzwalaczy workflow i ktoś zbuduje na nim automatyzację, która
  * nigdy nie zadziała, a zawiedzie dopiero w dniu, w którym miała zadziałać.
  *
  * Dlatego nie ma tu lustrzanego odbicia CRUD dla każdej encji. Dziennik audytu
- * szyny komend już zapisuje każdy zapis z aktorem i snapshotem — zdarzenia
+ * szyny komend już zapisuje każdy zapis z aktorem i snapshotem - zdarzenia
  * odpowiadają na inne pytanie: „co musi się teraz stać gdzie indziej".
  */
 
@@ -58,7 +58,7 @@ const events = [
   },
   {
     /**
-     * Osobne zdarzenie obok `transitioned` — nie jest to duplikat przez pomyłkę.
+     * Osobne zdarzenie obok `transitioned` - nie jest to duplikat przez pomyłkę.
      * Subskrybent, który ma wstrzymać przydział pracy maszynie, nie powinien
      * dopasowywać stringa w polu `toState`. Ten sam wzorzec ma rdzeń: `wms`
      * emituje i `inventory_balance.updated`, i `inventory.low_stock`.
@@ -80,7 +80,7 @@ const events = [
   {
     id: 'fleet.robot.cleared',
     label: 'Robot dopuszczony do pracy',
-    description: 'Maszyna weszła w stan `ready`. Zawsze z podpisem człowieka — automat nie dopuszcza.',
+    description: 'Maszyna weszła w stan `ready`. Zawsze z podpisem człowieka - automat nie dopuszcza.',
     entity: 'robot',
     category: 'lifecycle',
     payloadSchema: {
@@ -122,7 +122,7 @@ const events = [
   {
     /**
      * Wygaśnięcie kalibracji jest faktem wyprowadzanym przy odczycie (patrz
-     * `lib/calibration.ts`) i tak zostaje — ale wyprowadzenie przy odczycie
+     * `lib/calibration.ts`) i tak zostaje - ale wyprowadzenie przy odczycie
      * nikogo nie budzi. To zdarzenie emituje detektor cykliczny, raz na
      * kalibrację, z odhaczeniem w kolumnie `expiry_notified_at`. Bez tego
      * odhaczenia ten sam fakt wracałby co przebieg i przestałby cokolwiek
@@ -130,7 +130,7 @@ const events = [
      */
     id: 'fleet.calibration.expired',
     label: 'Kalibracja wygasła',
-    description: 'Pomiar stracił ważność. Robot wygląda w każdym zestawieniu tak samo jak sprawny — dopóki ktoś nie zareaguje.',
+    description: 'Pomiar stracił ważność. Robot wygląda w każdym zestawieniu tak samo jak sprawny - dopóki ktoś nie zareaguje.',
     entity: 'calibration',
     category: 'lifecycle',
     payloadSchema: {

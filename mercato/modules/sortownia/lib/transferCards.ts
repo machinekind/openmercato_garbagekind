@@ -16,7 +16,7 @@ import type { LegacyOrderRow } from './legacyFiles'
  * W Open Mercato dokumentem fizycznego wydania jest wysyłka (`sales.shipments`)
  * i to ona dostaje tę rolę. Nie zakładamy własnej tabeli: `weightValue`
  * z `weightUnit` niosą masę, `shipmentNumber` numer karty, a `trackingNumbers`
- * — numery rejestrowe BDO przekazującego i przejmującego.
+ * - numery rejestrowe BDO przekazującego i przejmującego.
  *
  * ZASTRZEŻENIE, którego nie wolno pominąć na scenie: to jest *odpowiednik*
  * karty przekazania odpadu, a nie karta z systemu BDO. Realna KPO powstaje
@@ -35,7 +35,7 @@ export type TransferCardContext = {
    *
    * Karta przekazania dokumentuje przekazanie, które się odbyło. Wystawienie
    * jej dla zamówienia z odbiorem za tydzień byłoby poświadczeniem zdarzenia,
-   * do którego jeszcze nie doszło — i w ewidencji odpadów jest to poważny błąd,
+   * do którego jeszcze nie doszło - i w ewidencji odpadów jest to poważny błąd,
    * a nie drobna niedokładność.
    */
   fulfilled: Set<number>
@@ -53,7 +53,7 @@ export type TransferCardOutcome = {
   error?: string
 }
 
-/** Numer karty odtwarzalny z numeru wydania — stąd idempotencja. */
+/** Numer karty odtwarzalny z numeru wydania - stąd idempotencja. */
 export function cardNumberFor(orderno: number): string {
   return `KPO/${orderno}`
 }
@@ -134,7 +134,7 @@ export async function applyTransferCards(
           tenantId: ctx.scope.tenantId,
           orderId,
           shipmentNumber: cardNumber,
-          // Masa jest sednem karty przekazania — nie sztuki, nie palety.
+          // Masa jest sednem karty przekazania - nie sztuki, nie palety.
           weightValue: row.iloscKg,
           weightUnit: 'kg',
           shippedAt: toDate(row.dataWydania),
@@ -158,7 +158,7 @@ export async function applyTransferCards(
           // remaining quantity"). Połowa kart odbijała się właśnie o to.
           //
           // Ilość pozycji jest tu wyłącznie powiązaniem z linią zamówienia.
-          // Masą wiążącą — tą, która trafia na kartę przekazania — jest
+          // Masą wiążącą - tą, która trafia na kartę przekazania - jest
           // `weightValue` powyżej i ona niesie pełną dokładność.
           items: lineByOrder.has(orderId)
             ? [

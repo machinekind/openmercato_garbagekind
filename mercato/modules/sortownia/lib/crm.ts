@@ -19,10 +19,10 @@ import { findWithDecryption } from '@open-mercato/shared/lib/encryption/find'
  * Kierunek firma → szansa: każda firma z etapem ma mieć szansę o pasującym
  * statusie; dostawca nie może mieć żadnej. Kierunek szansa → firma: firma bez
  * etapu, ale ze szansą, dostaje etap z jej statusu; a wygrana szansa robi z
- * potencjalnego klienta — bo wygrana to fakt, nie opinia.
+ * potencjalnego klienta - bo wygrana to fakt, nie opinia.
  */
 
-/** Etap „dostawca" nie istnieje w słowniku Open Mercato — zakładamy go sami. */
+/** Etap „dostawca" nie istnieje w słowniku Open Mercato - zakładamy go sami. */
 export const SUPPLIER_STAGE = 'supplier'
 
 /** Znacznik szans zakładanych przez synchronizację, żeby odróżnić je od ręcznych. */
@@ -72,7 +72,7 @@ export function stageForDealStatuses(statuses: string[]): 'customer' | 'prospect
 }
 
 export function dealTitleFor(company: CrmCompany): string {
-  return `${company.displayName} — sprzedaż frakcji`
+  return `${company.displayName} - sprzedaż frakcji`
 }
 
 /**
@@ -200,7 +200,7 @@ async function loadDeals(em: EntityManager, scope: TenantScope): Promise<CrmDeal
   }))
 }
 
-/** Suma brutto zamówień odbiorcy — wartość szansy, kiedy już coś sprzedaliśmy. */
+/** Suma brutto zamówień odbiorcy - wartość szansy, kiedy już coś sprzedaliśmy. */
 async function loadOrderTotals(em: EntityManager, scope: TenantScope): Promise<Map<string, number>> {
   const rows = await em.getConnection().execute<Array<{ customer_entity_id: string; total: string }>>(
     `select customer_entity_id, sum(grand_total_gross_amount) as total

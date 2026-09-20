@@ -26,7 +26,7 @@ import {
  *
  * 1. Wersja nie powstaje dla embodimentu o innym odcisku kontraktu, a odmowa
  *    ma **nazwany powód**, nie „walidacja nie przeszła".
- * 2. Powtórne wgranie tych samych wag nie tworzy drugiej wersji — zwraca
+ * 2. Powtórne wgranie tych samych wag nie tworzy drugiej wersji - zwraca
  *    pierwszą i mówi wprost, że to powtórka.
  */
 
@@ -71,7 +71,7 @@ const artifactSchema = z.object({
 export const versionRegisterSchema = scoped.extend({
   policyId: z.string().uuid(),
   embodimentRevisionId: z.string().uuid(),
-  /** Odcisk kontraktu, pod który polityka była uczona — deklarowany, nie odczytywany. */
+  /** Odcisk kontraktu, pod który polityka była uczona - deklarowany, nie odczytywany. */
   declaredSpecDigest: z.string().trim().min(1).max(255),
   artifacts: z.array(artifactSchema).min(1),
   observationDim: z.number().int().positive(),
@@ -125,7 +125,7 @@ function resolveEm(ctx: { container: { resolve: (key: string) => unknown } }): E
  * MikroORM (jedna klasa zarejestrowana dwa razy pod dwiema ścieżkami to
  * gwarantowane „Metadata for entity X not found" po stronie, która zgubi
  * kolejność ładowania). Odrzucona alternatywa: wołanie komendy `fleet.*` po
- * odczyt — odrzucona, bo szyna komend jest kanałem zapisu, a odczyt przez nią
+ * odczyt - odrzucona, bo szyna komend jest kanałem zapisu, a odczyt przez nią
  * dokłada warstwę bez żadnej gwarancji w zamian.
  */
 async function loadEmbodimentContract(
@@ -221,12 +221,12 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
 
     // 1. Kontrola kompletu artefaktów PRZED sięgnięciem do embodimentu.
     //    Kolejność jest celowa: komplet bez wag jest błędem wgrywającego,
-    //    a rozjazd embodimentu — błędem wdrożeniowym. Pierwszy komunikat
+    //    a rozjazd embodimentu - błędem wdrożeniowym. Pierwszy komunikat
     //    powinien być tym bliższym przyczynie.
     const verdict = validateArtifactSet(input.artifacts as ArtifactInput[])
     if (!verdict.ok) throw new Error(`Komplet artefaktów odrzucony: ${verdict.reason}.`)
 
-    // 2. Zgodność ze sprzętem — nazwany powód odmowy.
+    // 2. Zgodność ze sprzętem - nazwany powód odmowy.
     const contract = await loadEmbodimentContract(em, input.embodimentRevisionId, input.tenantId)
     const compatibility = checkEmbodimentCompatibility(contract, {
       policyEmbodimentKey: policy.embodimentKey,
@@ -274,7 +274,7 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
         )
       }
       /**
-       * Powtórka nie jest błędem — jest odpowiedzią.
+       * Powtórka nie jest błędem - jest odpowiedzią.
        *
        * Rzucenie wyjątku zmusiłoby każdy potok CI do odróżniania „wgrałem to
        * już wcześniej" od realnej awarii, a w praktyce skończyłoby się
@@ -320,7 +320,7 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
 
     // Dwa zrzuty: `id` nadaje Postgres przy `flush()`, a artefakty i wpis do
     // dziennika muszą mieć na co wskazać. Generowanie UUID po stronie aplikacji
-    // odrzucone — baza zostaje jedynym źródłem tożsamości.
+    // odrzucone - baza zostaje jedynym źródłem tożsamości.
     em.persist(version)
     await em.flush()
 
@@ -380,7 +380,7 @@ const registerVersionCommand: CommandHandler<VersionRegisterInput, VersionRegist
  *
  * Graf jest celowo ubogi: `registered → released → deprecated` i powrót
  * `released → registered` nie istnieje. Wersja raz wypuszczona na flotę
- * zostaje wypuszczona — cofnięcie robi się przez `deprecated`, żeby
+ * zostaje wypuszczona - cofnięcie robi się przez `deprecated`, żeby
  * w dzienniku został ślad, że coś tam działało.
  */
 const ALLOWED_STATUS: Record<PolicyVersionStatus, PolicyVersionStatus[]> = {
@@ -415,7 +415,7 @@ const transitionVersionCommand: CommandHandler<
     }
     const targets = ALLOWED_STATUS[from] ?? []
     if (!targets.includes(input.toStatus)) {
-      const lista = targets.length ? targets.join(', ') : 'żaden — to status końcowy'
+      const lista = targets.length ? targets.join(', ') : 'żaden - to status końcowy'
       throw new Error(`Z ${from} nie da się przejść do ${input.toStatus}; dozwolone: ${lista}.`)
     }
 

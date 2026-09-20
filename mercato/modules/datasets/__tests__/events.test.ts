@@ -7,7 +7,7 @@ import { completeRunCommand } from '../commands/datasets'
  * Domknięcie przebiegu jest jedynym miejscem, w którym powstaje wiązanie
  * wersja zbioru ↔ wersja polityki, więc ładunek musi nieść oba identyfikatory.
  * Bez nich zdarzenie mówiłoby „coś się skończyło" i nie dałoby się z niego
- * odtworzyć, co z czego powstało — a to jest cały sens tego modułu.
+ * odtworzyć, co z czego powstało - a to jest cały sens tego modułu.
  */
 
 type Row = Record<string, unknown>
@@ -68,7 +68,7 @@ describe('emisja zdarzeń pętli uczenia', () => {
     })
   })
 
-  it('przebieg nieudany też jest ogłaszany — z pustą stroną polityki', async () => {
+  it('przebieg nieudany też jest ogłaszany - z pustą stroną polityki', async () => {
     // Milczenie przy porażce dawałoby obraz, w którym trenowanie zawsze się udaje.
     const seen = captureEvents()
     await completeRunCommand.execute(
@@ -84,7 +84,7 @@ describe('emisja zdarzeń pętli uczenia', () => {
   })
 
   it('odmowa domknięcia nie emituje niczego', async () => {
-    // Przebieg udany bez wskazanej wersji polityki jest dziurą w pętli —
+    // Przebieg udany bez wskazanej wersji polityki jest dziurą w pętli -
     // komenda odmawia, a nieudana próba nie zmieniła stanu świata.
     const seen = captureEvents()
     await expect(

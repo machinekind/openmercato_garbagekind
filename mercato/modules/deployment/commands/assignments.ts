@@ -13,7 +13,7 @@ import { emitDeploymentEvent } from '../events'
  * Komendy kanału stanu pożądanego.
  *
  * Importujemy `mayRunPolicy` z `fleet` i `mayBeDeployed` z `policy_registry`
- * zamiast powtarzać tu warunki. To są **pliki czystych funkcji**, bez encji —
+ * zamiast powtarzać tu warunki. To są **pliki czystych funkcji**, bez encji -
  * import klasy encji z obcego modułu skończyłby się podwójną rejestracją
  * metadanych MikroORM. Powtórzenie reguły lokalnie było kuszące i odrzucone:
  * dwa moduły z dwiema wersjami tej samej prawdy w końcu się rozjeżdżają,
@@ -63,7 +63,7 @@ export const reportSchema = z.object({
    * Zgłoszenie stanu jest podpisywane tak samo jak żądanie dzierżawy.
    *
    * Bez podpisu wystarczyłaby znajomość identyfikatora sesji, żeby wmówić
-   * centrali, że maszyna stoi — a uzgodnienie stanu jest jedyną rzeczą,
+   * centrali, że maszyna stoi - a uzgodnienie stanu jest jedyną rzeczą,
    * która odróżnia wdrożenie od nadziei. Przedrostek `deployment.report:`
    * wiąże podpis z kontekstem: podpis dzierżawy nie przejdzie tu i odwrotnie.
    */
@@ -141,7 +141,7 @@ const assignCommand: CommandHandler<
 
     if (!input.allowNonOperational && !mayRunPolicy(robot.state as never)) {
       throw new Error(
-        `Robot ${robot.serial_number} jest w stanie ${robot.state} — przypisanie polityki wymaga stanu operational.`,
+        `Robot ${robot.serial_number} jest w stanie ${robot.state} - przypisanie polityki wymaga stanu operational.`,
       )
     }
 
@@ -149,7 +149,7 @@ const assignCommand: CommandHandler<
     if (!version) throw new Error(`Wersja polityki ${input.policyVersionId} nie istnieje.`)
     if (!mayBeDeployed(version.status)) {
       throw new Error(
-        `Wersja ${version.policy_key} v${version.version} ma status ${version.status} — wdrożyć da się wyłącznie wersję wypuszczoną.`,
+        `Wersja ${version.policy_key} v${version.version} ma status ${version.status} - wdrożyć da się wyłącznie wersję wypuszczoną.`,
       )
     }
     if (!version.lease_expiry_behavior) {
@@ -164,12 +164,12 @@ const assignCommand: CommandHandler<
      *
      * To nie jest podwójna praca: tam pytaniem było „czy te wagi pasują do tej
      * rewizji", tutaj „czy ten konkretny robot jest tej rewizji". Robot bywa
-     * modernizowany — wymiana chwytaka podnosi rewizję embodimentu i wersja,
+     * modernizowany - wymiana chwytaka podnosi rewizję embodimentu i wersja,
      * która wczoraj była zgodna, dziś nie jest.
      */
     if (robot.embodiment_revision_id !== version.embodiment_revision_id) {
       throw new Error(
-        `Robot ${robot.serial_number} jest innej rewizji embodimentu niż wersja polityki — wersja była uczona pod inny sprzęt.`,
+        `Robot ${robot.serial_number} jest innej rewizji embodimentu niż wersja polityki - wersja była uczona pod inny sprzęt.`,
       )
     }
 
@@ -178,7 +178,7 @@ const assignCommand: CommandHandler<
       // dzierżawy. Przypisanie z domyślną długością byłoby zgadywaniem, jak
       // długo wolno tej maszynie pracować bez nadzoru.
       throw new Error(
-        `Robot ${robot.serial_number} nie stoi w żadnej celi — nie da się wyznaczyć klasy ryzyka ani długości dzierżawy.`,
+        `Robot ${robot.serial_number} nie stoi w żadnej celi - nie da się wyznaczyć klasy ryzyka ani długości dzierżawy.`,
       )
     }
 
@@ -186,12 +186,12 @@ const assignCommand: CommandHandler<
     const leaseSeconds = leaseSecondsFor(riskClass)
 
     /**
-     * Brama dopuszczenia bezpieczeństwa — dodana przy fazie 5.
+     * Brama dopuszczenia bezpieczeństwa - dodana przy fazie 5.
      *
      * Kierunek zależności jest tu odwrotny do intuicyjnego: to `deployment`
      * woła `safety`, a nie odwrotnie. Wariant z subskrybentem zdarzeń, który
-     * odwołuje przypisanie po fakcie, wygląda czyściej — moduł bezpieczeństwa
-     * nie jest wtedy zależnością kanału stanu pożądanego — i został odrzucony,
+     * odwołuje przypisanie po fakcie, wygląda czyściej - moduł bezpieczeństwa
+     * nie jest wtedy zależnością kanału stanu pożądanego - i został odrzucony,
      * bo zostawia okno, w którym robot pracuje niedopuszczoną polityką,
      * a długość tego okna zależy od opóźnienia kolejki. Dopuszczenie jest
      * warunkiem wstępnym przypisania, nie jego skutkiem ubocznym.
@@ -235,7 +235,7 @@ const assignCommand: CommandHandler<
        * Unikat częściowy `(tenant_id, robot_id) where superseded_at is null`
        * jest sprawdzany przy każdym wierszu, a nie na końcu transakcji.
        * W jednym zrzucie MikroORM potrafi wykonać INSERT przed UPDATE i wtedy
-       * przez moment istnieją dwa czynne przypisania tego samego ramienia —
+       * przez moment istnieją dwa czynne przypisania tego samego ramienia -
        * baza odmawia i ma rację. To jest ten sam rodzaj pułapki, co czytanie
        * `id` przed `flush()`: kod wygląda poprawnie i wywala się na bazie.
        */
@@ -306,7 +306,7 @@ const revokeCommand: CommandHandler<RevokeInput, { assignmentId: string; revoked
      * Odwołanie dzierżaw jest **uzupełnieniem**, a nie mechanizmem zatrzymania.
      *
      * Robot bez łącza nie dowie się o odwołaniu i będzie pracował do końca
-     * mandatu — i to jest projekt, nie luka. Zatrzymanie natychmiastowe należy
+     * mandatu - i to jest projekt, nie luka. Zatrzymanie natychmiastowe należy
      * do deterministycznej warstwy bezpieczeństwa, która nie przechodzi przez
      * tę platformę. Tutaj skracamy wyłącznie ten czas, do którego sięga łącze,
      * a w celi publicznej i tak jest to najwyżej dwie minuty.
@@ -347,11 +347,11 @@ type SessionRow = {
  * Wydanie dzierżawy na żądanie agenta.
  *
  * Uwierzytelnienie jest własnym podpisem z własnym przedrostkiem, ale
- * weryfikowanym kluczem z modułu `edge` — bo tożsamość agenta mieszka tam
+ * weryfikowanym kluczem z modułu `edge` - bo tożsamość agenta mieszka tam
  * i ma tam zostać. Odrzucona alternatywa: dopiąć stan pożądany do odpowiedzi
  * heartbeatu. Odrzucona, bo zrobiłaby z żywotności warunek wdrożenia i
  * odwrotnie: agent, który przestałby bić serce, straciłby mandat natychmiast,
- * niezależnie od klasy ryzyka celi — czyli dokładnie to, czemu dzierżawa
+ * niezależnie od klasy ryzyka celi - czyli dokładnie to, czemu dzierżawa
  * ma zapobiegać w celi ogrodzonej.
  */
 const issueLeaseCommand: CommandHandler<
@@ -384,7 +384,7 @@ const issueLeaseCommand: CommandHandler<
     if (!sessions?.length) throw new Error('Nie rozpoznano sesji agenta.')
     const session = sessions[0]
 
-    if (session.ended_at) throw new Error('Sesja agenta jest zamknięta — połącz się na nowo.')
+    if (session.ended_at) throw new Error('Sesja agenta jest zamknięta - połącz się na nowo.')
     if (session.agent_status !== 'enrolled') throw new Error('Agent jest odwołany.')
 
     const keys = await em.getConnection().execute<Array<{
@@ -413,7 +413,7 @@ const issueLeaseCommand: CommandHandler<
       throw new Error('Podpis żądania dzierżawy nie zgadza się z żadnym ważnym kluczem agenta.')
     }
 
-    // Licznik kolejny per sesja — ta sama zasada, co w kanale brzegowym.
+    // Licznik kolejny per sesja - ta sama zasada, co w kanale brzegowym.
     const last = await em.getConnection().execute<Array<{ max: number | null }>>(
       `select max(sequence) as max from deployment_leases where agent_session_id = ?`,
       [input.agentSessionId],
@@ -421,7 +421,7 @@ const issueLeaseCommand: CommandHandler<
     const lastSequence = Number(last?.[0]?.max ?? 0)
     if (input.sequence <= lastSequence) {
       throw new Error(
-        `Numer kolejny ${input.sequence} nie jest większy od ostatniego (${lastSequence}) — powtórka lub klon.`,
+        `Numer kolejny ${input.sequence} nie jest większy od ostatniego (${lastSequence}) - powtórka lub klon.`,
       )
     }
 
@@ -442,7 +442,7 @@ const issueLeaseCommand: CommandHandler<
 
     if (!assignment) {
       /**
-       * Brak przypisania nie jest błędem — jest odpowiedzią „stój".
+       * Brak przypisania nie jest błędem - jest odpowiedzią „stój".
        *
        * 200 z `desiredState: stopped`, a nie 404: agent ma z tego wyciągnąć
        * jeden wniosek (nie pracuj), a nie wejść w pętlę ponawiania jak przy
@@ -509,7 +509,7 @@ const reportCommand: CommandHandler<ReportInput, { reconciliation: string; reaso
     if (!sessions?.length) throw new Error('Nie rozpoznano sesji agenta.')
     const session = sessions[0]
 
-    if (session.ended_at) throw new Error('Sesja agenta jest zamknięta — połącz się na nowo.')
+    if (session.ended_at) throw new Error('Sesja agenta jest zamknięta - połącz się na nowo.')
     if (session.agent_status !== 'enrolled') throw new Error('Agent jest odwołany.')
 
     const reportKeys = await em.getConnection().execute<Array<{
@@ -557,19 +557,19 @@ const reportCommand: CommandHandler<ReportInput, { reconciliation: string; reaso
           state: input.reportedState === 'stopped' ? ('converged' as const) : ('drift' as const),
           reason:
             input.reportedState === 'stopped'
-              ? 'brak przypisania i robot stoi — zgodnie'
+              ? 'brak przypisania i robot stoi - zgodnie'
               : 'robot pracuje mimo braku przypisania',
         }
 
     /*
-     * Werdykt poprzedniego raportu tej maszyny — odczytany **przed** zapisem
+     * Werdykt poprzedniego raportu tej maszyny - odczytany **przed** zapisem
      * bieżącego, bo po zapisie „poprzedni" byłby już tym właśnie.
      *
      * To jest cały mechanizm wyzwalania zboczem. Raporty przychodzą
      * z częstotliwością maszynową i rozjazd trwa tyle, ile trwa jego przyczyna;
      * ogłaszanie go przy każdym raporcie zamieniłoby zdarzenie w szum, a szum
      * jest dokładnie tym, czego operator nie czyta. `null` znaczy „pierwszy
-     * raport tej maszyny" i jest traktowany jak zmiana — bo nim jest.
+     * raport tej maszyny" i jest traktowany jak zmiana - bo nim jest.
      */
     const poprzedni = (await em.find(
       StateReport,

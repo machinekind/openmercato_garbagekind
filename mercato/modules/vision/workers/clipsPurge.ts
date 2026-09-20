@@ -14,7 +14,7 @@ import { VISION_CLIPS_PURGE_QUEUE } from '../lib/queues'
  * zgodnością a notatką o zgodności to właśnie ten plik.
  *
  * Czego ten worker nie robi i robić nie będzie: nie kasuje plików. Bajty leżą
- * w magazynie obiektów, do którego ERP nie ma dostępu — i dobrze, bo inaczej
+ * w magazynie obiektów, do którego ERP nie ma dostępu - i dobrze, bo inaczej
  * system ewidencyjny potrafiłby nieodwracalnie usunąć materiał dowodowy.
  * Worker oznacza, a zgodność zamyka potwierdzenie usunięcia przez tego, kto
  * bajty trzyma.
@@ -82,7 +82,7 @@ export default async function handle(_job: QueuedJob<Record<string, never>>, _ct
   /**
    * Liczba, która naprawdę mówi o zgodności: materiał **oznaczony i nadal
    * istniejący**, bo nikt nie potwierdził skasowania bajtów. Rośnie, gdy
-   * proces kasowania po drugiej stronie nie działa — i wtedy ma być głośno,
+   * proces kasowania po drugiej stronie nie działa - i wtedy ma być głośno,
    * bo z punktu widzenia przepisu nagranie wciąż tam jest.
    */
   const zalegle = await em.getConnection().execute<Array<{ count: string }>>(

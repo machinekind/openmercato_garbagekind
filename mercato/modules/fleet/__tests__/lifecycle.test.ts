@@ -25,7 +25,7 @@ describe('graf przejść', () => {
     expect(check.reason).toContain('dozwolone')
   })
 
-  it('stan wycofany jest końcowy — robot nie wraca', () => {
+  it('stan wycofany jest końcowy - robot nie wraca', () => {
     expect(isTerminal('decommissioned')).toBe(true)
     expect(checkTransition('decommissioned', 'ready', 'human').allowed).toBe(false)
   })
@@ -55,7 +55,7 @@ describe('asymetria człowiek / system', () => {
 
   it('system NIE może dopuścić robota do pracy', () => {
     // To jest cała asymetria projektu w jednym teście: zatrzymać wolno
-    // automatowi, dopuścić — wyłącznie człowiekowi.
+    // automatowi, dopuścić - wyłącznie człowiekowi.
     const check = checkTransition('quarantined', 'ready', 'system')
     expect(check.allowed).toBe(false)
     expect(check.reason).toContain('wyłącznie kwarantannować')
@@ -66,7 +66,7 @@ describe('asymetria człowiek / system', () => {
     expect(checkTransition('operational', 'decommissioning', 'system').allowed).toBe(false)
   })
 
-  it('zatrzymanie jest tanie — kwarantanna nie wymaga podpisu', () => {
+  it('zatrzymanie jest tanie - kwarantanna nie wymaga podpisu', () => {
     // Gdyby wymagała, ludzie przestaliby jej używać i sięgali po wyłącznik.
     const check = checkTransition('operational', 'quarantined', 'human')
     expect(check.allowed).toBe(true)
@@ -88,7 +88,7 @@ describe('bramki wymagające podpisu', () => {
     })
   })
 
-  it('wyjście z kwarantanny zawsze wymaga podpisu — obiema drogami', () => {
+  it('wyjście z kwarantanny zawsze wymaga podpisu - obiema drogami', () => {
     // Automatyczne wyjście po ustąpieniu objawu maskuje przyczynę, a przyczyna
     // jest tu jedyną rzeczą, która ma znaczenie.
     expect(checkTransition('quarantined', 'ready', 'human').requiresApproval).toBe(true)

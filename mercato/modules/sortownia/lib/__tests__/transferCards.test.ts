@@ -2,7 +2,7 @@ import { applyTransferCards, cardNumberFor } from '../transferCards'
 import type { LegacyOrderRow } from '../legacyFiles'
 
 /**
- * Karta przekazania odpadu dokumentuje rzecz, która wyjechała bramą — tak jak
+ * Karta przekazania odpadu dokumentuje rzecz, która wyjechała bramą - tak jak
  * faktura dokumentuje pieniądze. Trzy rzeczy muszą się na niej zgadzać i każda
  * ma tu swój test: masa co do dekagrama, kod procesu odzysku i numery
  * rejestrowe obu stron.
@@ -66,7 +66,7 @@ describe('applyTransferCards', () => {
     expect(calls[0].input.shipmentNumber).toBe('KPO/5001')
   })
 
-  it('masa idzie z pełną dokładnością — to ona jest treścią karty', async () => {
+  it('masa idzie z pełną dokładnością - to ona jest treścią karty', async () => {
     const { ctx, calls } = makeCtx()
     await applyTransferCards(ctx, [order()])
     expect(calls[0].input).toMatchObject({ weightValue: 3803.73, weightUnit: 'kg' })
@@ -76,7 +76,7 @@ describe('applyTransferCards', () => {
     const { ctx, calls } = makeCtx()
     await applyTransferCards(ctx, [order()])
     const items = calls[0].input.items as Array<Record<string, unknown>>
-    // 3 803,73 zaokrąglone do najbliższej liczby daje 3 804 — o 0,27 kg więcej,
+    // 3 803,73 zaokrąglone do najbliższej liczby daje 3 804 - o 0,27 kg więcej,
     // niż jest na zamówieniu, i komenda odrzuca taką wysyłkę.
     expect(items[0].quantity).toBe(3803)
     expect(items[0].metadata).toEqual({ masaDokladnaKg: 3803.73 })
@@ -88,7 +88,7 @@ describe('applyTransferCards', () => {
     expect(calls[0].input.metadata).toMatchObject({ kodOdpadu: '20 01 01', kodProcesu: 'R3' })
   })
 
-  it('wymienia numery rejestrowe obu stron — przekazującego i przejmującego', async () => {
+  it('wymienia numery rejestrowe obu stron - przekazującego i przejmującego', async () => {
     const { ctx, calls } = makeCtx()
     await applyTransferCards(ctx, [order()])
     expect(calls[0].input.trackingNumbers).toEqual(['000000001', '000118340'])
@@ -113,7 +113,7 @@ describe('applyTransferCards', () => {
     expect(result.outcomes[0].action).toBe('skip')
   })
 
-  it('zamówienie jeszcze niewydane NIE dostaje karty — to byłoby poświadczenie nieprawdy', async () => {
+  it('zamówienie jeszcze niewydane NIE dostaje karty - to byłoby poświadczenie nieprawdy', async () => {
     const { ctx, calls } = makeCtx({ fulfilled: [] })
     const result = await applyTransferCards(ctx, [order()])
     expect(calls).toHaveLength(0)

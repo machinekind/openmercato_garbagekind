@@ -14,11 +14,11 @@ import { createFakeEm, makeCtx, type FakeEm } from './fakeEm'
  *
  * Dwie rzeczy są tu warte sprawdzenia i obie łatwo zepsuć po cichu:
  * podejrzenie klonu ma się pojawić **tylko** wtedy, gdy wyparto żywą sesję,
- * a utrata ma być ogłoszona per agent, z sesją w ładunku — bo bez sesji
+ * a utrata ma być ogłoszona per agent, z sesją w ładunku - bo bez sesji
  * odbiorca nie ma jak odróżnić dwóch kolejnych utrat tej samej maszyny.
  *
  * Sprawdzamy też nieobecność: uderzenie serca **nie może** emitować niczego.
- * To nie jest przeoczenie, tylko decyzja — strumień o częstotliwości
+ * To nie jest przeoczenie, tylko decyzja - strumień o częstotliwości
  * maszynowej zatopiłby szynę.
  */
 
@@ -90,7 +90,7 @@ describe('emisja zdarzeń warstwy brzegowej', () => {
       },
       makeCtx(em),
     )
-    // Sesja z wpisania jest wypierana, więc `connected` musi paść — ale
+    // Sesja z wpisania jest wypierana, więc `connected` musi paść - ale
     // podejrzenie klonu przy pierwszym połączeniu po wpisaniu byłoby fałszywym
     // alarmem u każdego wdrożenia, przy pierwszym uruchomieniu maszyny.
     expect(seen.filter((e) => e.id === 'edge.agent.clone_suspected')).toHaveLength(1)
@@ -99,7 +99,7 @@ describe('emisja zdarzeń warstwy brzegowej', () => {
   it('utrata jest ogłaszana per agent, z sesją i długością ciszy', async () => {
     const em = createFakeEm()
     const { agentId } = await enrolled(em)
-    // Cofamy „ostatnio widziany" poza próg odcięcia — zamiatanie liczy ciszę
+    // Cofamy „ostatnio widziany" poza próg odcięcia - zamiatanie liczy ciszę
     // z danych agenta, nie z zegara wywołania.
     const agent = em.rows({ name: 'Agent' } as never).find((row) => row.id === agentId) as Record<string, unknown>
     agent.lastSeenAt = new Date(Date.now() - 3_600_000)

@@ -1,13 +1,13 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Geometria hali — rzut z góry w metrach.
+ * Geometria hali - rzut z góry w metrach.
  *
  * Wszystkie kolumny są `null`-owalne i tak mają zostać. Cela bez kompletu
  * współrzędnych nie jest rysowana, tylko trafia na listę nierozmieszczonych:
  * zmyślona pozycja na planie hali jest gorsza niż jej brak, bo brak widać.
  *
- * Ograniczenie na dodatnie wymiary jest w bazie, a nie tylko w kodzie —
+ * Ograniczenie na dodatnie wymiary jest w bazie, a nie tylko w kodzie -
  * cela o zerowej szerokości przeszłaby przez walidację jako „podana"
  * i dała dzielenie przez zero przy skalowaniu.
  */

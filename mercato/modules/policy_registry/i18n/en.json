@@ -21,10 +21,10 @@
   "policy_registry.ui.identityIsDigest": "identity is the artifact digest, not the number",
   "policy_registry.ui.onlyTheseDeployable": "only these can be deployed",
   "policy_registry.ui.policies": "Policies",
-  "policy_registry.ui.policyNoVersions": "Policy with no version — embodiment declared, no weights.",
+  "policy_registry.ui.policyNoVersions": "Policy with no version - embodiment declared, no weights.",
   "policy_registry.ui.released": "Released",
   "policy_registry.ui.revisionGone": "revision no longer in the fleet registry",
   "policy_registry.ui.task": "task",
   "policy_registry.ui.versions": "Versions",
-  "policy_registry.ui.zeroInHealthy": "zero in a healthy registry — anything else is a failure"
+  "policy_registry.ui.zeroInHealthy": "zero in a healthy registry - anything else is a failure"
 }

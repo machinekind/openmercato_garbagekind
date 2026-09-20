@@ -12,7 +12,7 @@ import type { LegacyCustomerRow } from '../legacyFiles'
 /**
  * Kontrahent z płaskiej tabeli `debtorsmaster` zostaje firmą w CRM. Sprawdzamy
  * to, co przesądza o poprawności importu: że idzie komendą (a nie zapisem do
- * encji), że drugi przebieg nie dubluje firm i że NIP nie ginie po drodze —
+ * encji), że drugi przebieg nie dubluje firm i że NIP nie ginie po drodze -
  * bez niego faktura jest bezwartościowa.
  */
 
@@ -75,7 +75,7 @@ describe('describeRole', () => {
 })
 
 describe('lifecycleStageForRole', () => {
-  it('odbiorca frakcji jest klientem, dostawca odpadu — dostawcą, reszta bez etapu', () => {
+  it('odbiorca frakcji jest klientem, dostawca odpadu - dostawcą, reszta bez etapu', () => {
     expect(lifecycleStageForRole('ODB')).toBe('customer')
     expect(lifecycleStageForRole('DOS')).toBe(SUPPLIER_STAGE)
     expect(lifecycleStageForRole('XXX')).toBeNull()
@@ -83,7 +83,7 @@ describe('lifecycleStageForRole', () => {
 })
 
 describe('ensureCustomers', () => {
-  it('nadaje etap cyklu życia z roli — odbiorca wchodzi do CRM jako klient', async () => {
+  it('nadaje etap cyklu życia z roli - odbiorca wchodzi do CRM jako klient', async () => {
     const { ctx, calls } = makeCtx()
     await ensureCustomers(ctx, [customer({ typ: 'ODB' }), customer({ debtorno: 'D001', typ: 'DOS' })])
     expect(calls[0].input.lifecycleStage).toBe('customer')
@@ -107,7 +107,7 @@ describe('ensureCustomers', () => {
     expect(result.outcomes[0].action).toBe('skip')
   })
 
-  it('zakłada firmę komendą CRM, a nie zapisem do encji — inaczej reszta platformy jej nie zobaczy', async () => {
+  it('zakłada firmę komendą CRM, a nie zapisem do encji - inaczej reszta platformy jej nie zobaczy', async () => {
     const { ctx, calls } = makeCtx()
     await ensureCustomers(ctx, [customer()])
     expect(calls).toHaveLength(1)
@@ -126,7 +126,7 @@ describe('ensureCustomers', () => {
     expect(String(calls[0].input.description)).toContain('Dostawca odpadu')
   })
 
-  it('znaczy pochodzenie numerem ze starego systemu — to jest klucz idempotencji', async () => {
+  it('znaczy pochodzenie numerem ze starego systemu - to jest klucz idempotencji', async () => {
     const { ctx, calls } = makeCtx()
     await ensureCustomers(ctx, [customer()])
     expect(calls[0].input.source).toBe('sortownia-legacy:D005')
@@ -160,7 +160,7 @@ describe('ensureCustomers', () => {
     )
     const result = await ensureCustomers(ctx, [customer(), customer({ debtorno: 'D006' })])
     expect(result.outcomes[0]).toMatchObject({ action: 'failed', error: 'CRM niedostępny' })
-    // Drugi kontrahent i tak ma wejść — jeden zły rekord nie zatrzymuje reszty.
+    // Drugi kontrahent i tak ma wejść - jeden zły rekord nie zatrzymuje reszty.
     expect(result.outcomes[1].action).toBe('create')
   })
 

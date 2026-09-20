@@ -52,7 +52,7 @@ export class Assignment {
   @Property({ name: 'policy_version_id', type: 'uuid' })
   policyVersionId!: string
 
-  /** Kopia skrótu treści wersji — robot porównuje ją z tym, co faktycznie załadował. */
+  /** Kopia skrótu treści wersji - robot porównuje ją z tym, co faktycznie załadował. */
   @Property({ name: 'policy_content_digest', type: 'text' })
   policyContentDigest!: string
 
@@ -73,7 +73,7 @@ export class Assignment {
   @Property({ name: 'lease_seconds', type: 'int' })
   leaseSeconds!: number
 
-  /** Kopia kontraktu polityki — agent dostaje ją z każdym odnowieniem mandatu. */
+  /** Kopia kontraktu polityki - agent dostaje ją z każdym odnowieniem mandatu. */
   @Property({ name: 'lease_expiry_behavior', type: 'text' })
   leaseExpiryBehavior!: LeaseExpiryBehavior
 
@@ -160,7 +160,7 @@ export class Lease {
   @Property({ name: 'lease_seconds', type: 'int' })
   leaseSeconds!: number
 
-  /** Odwołanie z centrali — działa tylko dotąd, dokąd sięga łącze. Patrz komentarz w `commands`. */
+  /** Odwołanie z centrali - działa tylko dotąd, dokąd sięga łącze. Patrz komentarz w `commands`. */
   @Property({ name: 'revoked_at', type: Date, nullable: true })
   revokedAt?: Date | null
 

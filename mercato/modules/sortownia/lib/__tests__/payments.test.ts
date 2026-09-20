@@ -75,7 +75,7 @@ describe('applyPayments', () => {
     ])
   })
 
-  it('niesie numer wpłaty ze starego systemu — po nim poznajemy duplikat', async () => {
+  it('niesie numer wpłaty ze starego systemu - po nim poznajemy duplikat', async () => {
     const { ctx, calls } = makeCtx()
     await applyPayments(ctx, [payment()])
     expect(calls[0].input.paymentReference).toBe('ZAPL/9001')
@@ -99,7 +99,7 @@ describe('applyPayments', () => {
     expect(result.outcomes[0].error).toContain('2500.00')
   })
 
-  it('różnica groszowa nie jest rozjazdem — kwoty jadą przez numeric i float', async () => {
+  it('różnica groszowa nie jest rozjazdem - kwoty jadą przez numeric i float', async () => {
     const { ctx } = makeCtx({ payments: [{ paymentReference: 'ZAPL/9001', amount: '1979.7000' }] })
     const result = await applyPayments(ctx, [payment({ kwotaBrutto: 1979.705 })])
     expect(result.outcomes[0].action).toBe('skip')
@@ -113,7 +113,7 @@ describe('applyPayments', () => {
     expect(result.outcomes[0].error).toContain('9999')
   })
 
-  it('kwota wpłaty jest brutto — należność też jest brutto', async () => {
+  it('kwota wpłaty jest brutto - należność też jest brutto', async () => {
     const { ctx, calls } = makeCtx()
     await applyPayments(ctx, [payment({ kwotaBrutto: 10398.19 })])
     expect(calls[0].input.amount).toBe(10398.19)

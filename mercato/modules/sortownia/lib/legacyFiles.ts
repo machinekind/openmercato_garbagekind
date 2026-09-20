@@ -8,7 +8,7 @@ import path from 'node:path'
  * Kanał plikowy systemu legacy.
  *
  * Powód istnienia: webERP nie wystawia przez XML-RPC ani katalogu frakcji, ani
- * księgi ruchów. W sortowni te dane przychodzą zrzutem — excelem z księgowości
+ * księgi ruchów. W sortowni te dane przychodzą zrzutem - excelem z księgowości
  * albo nocnym eksportem. Moduł czyta je stąd, zamiast udawać, że API je oddaje.
  */
 
@@ -34,7 +34,7 @@ export type LegacyCustomerRow = {
   waluta: string
   klientOd: string
   nip: string
-  /** Numer rejestrowy BDO — na karcie przekazania musi być po obu stronach. */
+  /** Numer rejestrowy BDO - na karcie przekazania musi być po obu stronach. */
   bdo: string
 }
 
@@ -63,11 +63,11 @@ export type LegacyFractionRow = {
   kategoria: string
   jednostka: string
   koszt: number
-  /** Kod procesu odzysku (R1, R3, R4, R5) — czym ta frakcja się staje. */
+  /** Kod procesu odzysku (R1, R3, R4, R5) - czym ta frakcja się staje. */
   kodProcesu: string
 }
 
-/** Rozdziela wiersz CSV z obsługą cudzysłowów — tyle, ile wymaga eksport legacy. */
+/** Rozdziela wiersz CSV z obsługą cudzysłowów - tyle, ile wymaga eksport legacy. */
 function splitCsvLine(line: string): string[] {
   const out: string[] = []
   let field = ''
@@ -189,7 +189,7 @@ export async function* readMovements(filePath: string): AsyncGenerator<LegacyMov
       debtorno: row.debtorno ?? '',
       iloscKg: toNumber(row.ilosc_kg),
       iloscMg: toNumber(row.ilosc_mg),
-      // Kolumna bywa pusta (PZ, SORT) — `toNumber` daje wtedy 0, czyli „brak".
+      // Kolumna bywa pusta (PZ, SORT) - `toNumber` daje wtedy 0, czyli „brak".
       orderno: toNumber(row.orderno),
     }
   }
@@ -241,7 +241,7 @@ export async function readPayments(filePath: string): Promise<LegacyPaymentRow[]
     const orderno = Number.parseInt(row.orderno ?? '', 10)
     if (!Number.isFinite(transno) || !Number.isFinite(orderno)) continue
     const kwotaBrutto = toNumber(row.kwota_brutto)
-    // Wpłata zerowa albo ujemna to nie wpłata — zwrot ma własny dokument.
+    // Wpłata zerowa albo ujemna to nie wpłata - zwrot ma własny dokument.
     if (kwotaBrutto <= 0) continue
     out.push({
       transno,
@@ -278,7 +278,7 @@ export async function readFractions(filePath: string): Promise<LegacyFractionRow
  *
  * WMS wymaga `referenceId` w formacie UUID, a system legacy numeruje ruchy
  * liczbą (`stkmoveno`). Ten sam numer musi dawać ten sam UUID przy każdym
- * przebiegu — inaczej idempotencja WMS-u nie miałaby na czym się oprzeć
+ * przebiegu - inaczej idempotencja WMS-u nie miałaby na czym się oprzeć
  * i ponowny import zdublowałby ruchy.
  */
 export function legacyUuid(namespace: string, key: string | number): string {

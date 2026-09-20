@@ -1,7 +1,7 @@
 import { Migration } from '@mikro-orm/migrations'
 
 /**
- * Węzły obliczeniowe — schemat początkowy.
+ * Węzły obliczeniowe - schemat początkowy.
  *
  * Dwa ograniczenia w bazie warte uwagi: zamknięty słownik ról (bez
  * `safety_function`) i obowiązkowa precyzja przy mocy obliczeniowej.

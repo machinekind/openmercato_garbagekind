@@ -5,13 +5,13 @@
  * **wagę** (masa w pojemniku). Dwóch świadków wystarcza, żeby stwierdzić, że
  * coś się nie zgadza. Nie wystarcza, żeby powiedzieć **co**.
  *
- * Kamera nad pojemnikiem jest trzecim, niezależnym pomiarem — i dopiero
+ * Kamera nad pojemnikiem jest trzecim, niezależnym pomiarem - i dopiero
  * trzy pomiary zaczynają lokalizować usterkę zamiast ją sygnalizować:
  *
  * | wizja | robot | masa | wniosek |
  * | --- | --- | --- | --- |
  * | 1000 | 1000 | 1000 | zgodne |
- * | 1000 | 1000 |  800 | obiekty lżejsze niż nominał — nie wina robota |
+ * | 1000 | 1000 |  800 | obiekty lżejsze niż nominał - nie wina robota |
  * |  800 | 1000 |  800 | robot melduje chwyty, które nie doleciały do pojemnika |
  * | 1000 | 1000 |  ... | (wizja zgodna) |
  * |  800 | 1000 | 1000 | **wizja** nie widzi części materiału, a nie robot go gubi |
@@ -50,7 +50,7 @@ export type Triangulation = {
   massImpliedCount: number | null
   agreements: { claimedVsDeposited: boolean | null; depositedVsMass: boolean | null; claimedVsMass: boolean | null }
   reason: string
-  /** Czego ta trójka **nie** rozstrzyga — wypisane wprost, nie przemilczane. */
+  /** Czego ta trójka **nie** rozstrzyga - wypisane wprost, nie przemilczane. */
   cannotDistinguish: string[]
 }
 
@@ -76,7 +76,7 @@ export function triangulate(input: Witnesses): Triangulation {
         depositedVsMass: null,
         claimedVsMass: null,
       },
-      reason: 'Brak masy nominalnej sztuki — masy nie da się przeliczyć na liczbę obiektów.',
+      reason: 'Brak masy nominalnej sztuki - masy nie da się przeliczyć na liczbę obiektów.',
       cannotDistinguish: ['wszystko, co wymaga trzeciego pomiaru'],
     }
   }
@@ -85,8 +85,8 @@ export function triangulate(input: Witnesses): Triangulation {
 
   if (deposited === null) {
     /*
-     * Dwóch świadków zamiast trzech. To nie jest błąd — kamera nad pojemnikiem
-     * bywa niepotrzebna albo zepsuta — ale wynik trzeba nazwać uczciwie:
+     * Dwóch świadków zamiast trzech. To nie jest błąd - kamera nad pojemnikiem
+     * bywa niepotrzebna albo zepsuta - ale wynik trzeba nazwać uczciwie:
      * wiadomo, że coś się nie zgadza, nie wiadomo co.
      */
     const zgodne = agree(input.claimedCount, massImpliedCount, tolerance)
@@ -128,7 +128,7 @@ export function triangulate(input: Witnesses): Triangulation {
       agreements,
       reason:
         `Wizja (${deposited}) i robot (${input.claimedCount}) zgodni, masa wskazuje ${massImpliedCount} szt. ` +
-        'Obiekty ważą co innego niż nominał — zgniecione, mokre albo masa nominalna jest zła. To nie jest usterka robota.',
+        'Obiekty ważą co innego niż nominał - zgniecione, mokre albo masa nominalna jest zła. To nie jest usterka robota.',
       cannotDistinguish: ['złą masę nominalną od materiału o innej gęstości niż zwykle'],
     }
   }
@@ -149,7 +149,7 @@ export function triangulate(input: Witnesses): Triangulation {
          * trzech liczb. Rozróżnia je dopiero kamera na nadgarstku.
          */
         cannotDistinguish: [
-          'chwyt powietrza zaliczony przez czujnik od sztuki upuszczonej w drodze — potrzebna kamera na nadgarstku',
+          'chwyt powietrza zaliczony przez czujnik od sztuki upuszczonej w drodze - potrzebna kamera na nadgarstku',
         ],
       }
     }
@@ -159,7 +159,7 @@ export function triangulate(input: Witnesses): Triangulation {
       agreements,
       reason:
         `Do pojemnika dotarło ${deposited} (masa potwierdza: ${massImpliedCount}), a robot zgłosił tylko ` +
-        `${input.claimedCount}. Materiał jest — brakuje zgłoszeń.`,
+        `${input.claimedCount}. Materiał jest - brakuje zgłoszeń.`,
       cannotDistinguish: ['zaniżanie przez czujnik od pracy wykonanej poza zgłoszonymi epizodami'],
     }
   }
@@ -173,7 +173,7 @@ export function triangulate(input: Witnesses): Triangulation {
         agreements,
         reason:
           `Robot (${input.claimedCount}) i masa (${massImpliedCount}) zgodni, wizja naliczyła ${deposited}. ` +
-          'Materiał jest w pojemniku — to kamera go nie widzi: przesłonięcie, kadr albo próg ufności.',
+          'Materiał jest w pojemniku - to kamera go nie widzi: przesłonięcie, kadr albo próg ufności.',
         cannotDistinguish: ['przesłonięcie w kadrze od zbyt wysokiego progu ufności detektora'],
       }
     }
@@ -183,7 +183,7 @@ export function triangulate(input: Witnesses): Triangulation {
       agreements,
       reason:
         `Wizja naliczyła ${deposited} przy zgodnych robocie (${input.claimedCount}) i masie (${massImpliedCount}). ` +
-        'Kamera widzi w pojemniku więcej obiektów, niż tam trafiło z pracy robota — materiał z innego źródła ' +
+        'Kamera widzi w pojemniku więcej obiektów, niż tam trafiło z pracy robota - materiał z innego źródła ' +
         'albo detektor liczy tę samą sztukę wielokrotnie.',
       cannotDistinguish: ['materiał z innego źródła od podwójnego liczenia przez detektor'],
     }
@@ -195,13 +195,13 @@ export function triangulate(input: Witnesses): Triangulation {
     agreements,
     reason:
       `Trzy pomiary rozjechane parami: wizja ${deposited}, robot ${input.claimedCount}, masa ${massImpliedCount}. ` +
-      'Żadna para się nie zgadza, więc nie ma punktu odniesienia — usterek jest co najmniej dwie.',
-    cannotDistinguish: ['cokolwiek — przy dwóch niezależnych usterkach trójka świadków nie wystarcza'],
+      'Żadna para się nie zgadza, więc nie ma punktu odniesienia - usterek jest co najmniej dwie.',
+    cannotDistinguish: ['cokolwiek - przy dwóch niezależnych usterkach trójka świadków nie wystarcza'],
   }
 }
 
 /**
- * Udział obcych klas w pojemniku — zanieczyszczenie frakcji.
+ * Udział obcych klas w pojemniku - zanieczyszczenie frakcji.
  *
  * To jest ta liczba, dla której w sortowni w ogóle stawia się kamerę nad
  * pojemnikiem. Nie „ile sztuk", tylko „ile procent tego, co odbiorca dostanie,

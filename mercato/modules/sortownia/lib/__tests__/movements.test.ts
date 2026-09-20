@@ -23,7 +23,7 @@ function row(overrides: Partial<LegacyMovementRow> & { stkmoveno: number }): Leg
   }
 }
 
-/** Partia leżąca w lokalizacji źródłowej — tyle, ile potrzebuje FIFO. */
+/** Partia leżąca w lokalizacji źródłowej - tyle, ile potrzebuje FIFO. */
 type Partia = { id: string; lotNumber: string; manufacturedAt: Date; dostepne: number }
 
 const PARTIA_BEZ_LIMITU: Partia[] = [
@@ -36,7 +36,7 @@ function buildContext(
     failOn?: string
     /** Co leży w lokalizacji źródłowej. Kolejność podania celowo bywa inna niż FIFO. */
     partie?: Partia[]
-    /** Ile masy z tego wiersza legacy siedzi już w księdze — wznowienie po przerwaniu. */
+    /** Ile masy z tego wiersza legacy siedzi już w księdze - wznowienie po przerwaniu. */
     juzWKsiedze?: number
   } = {},
 ) {
@@ -121,7 +121,7 @@ describe('pairSortRows', () => {
   })
 })
 
-describe('applyMovementBatch — mapowanie na komendy WMS', () => {
+describe('applyMovementBatch - mapowanie na komendy WMS', () => {
   it('PZ staje się przyjęciem z referencją zamówienia zakupu', async () => {
     const { context, commands } = buildContext()
     const { outcomes } = await applyMovementBatch(context, [row({ stkmoveno: 100001, iloscKg: 6412.8 })], {
@@ -189,7 +189,7 @@ describe('applyMovementBatch — mapowanie na komendy WMS', () => {
     expect(String(commands[0].input.reason)).toContain('D005')
   })
 
-  it('masy jadą w kilogramach — megagramy są jednostką raportową, nie magazynową', async () => {
+  it('masy jadą w kilogramach - megagramy są jednostką raportową, nie magazynową', async () => {
     const { context, commands } = buildContext()
     await applyMovementBatch(context, [row({ stkmoveno: 100001, iloscKg: 6412.8, iloscMg: 6.413 })], {
       final: true,
@@ -198,7 +198,7 @@ describe('applyMovementBatch — mapowanie na komendy WMS', () => {
   })
 })
 
-describe('applyMovementBatch — idempotencja i błędy', () => {
+describe('applyMovementBatch - idempotencja i błędy', () => {
   it('nie wysyła komendy dla ruchu, który już jest w księdze', async () => {
     const { context, commands } = buildContext({ existingMovement: true })
     const { outcomes } = await applyMovementBatch(context, [row({ stkmoveno: 100001 })], { final: true })
@@ -238,7 +238,7 @@ describe('applyMovementBatch — idempotencja i błędy', () => {
   })
 })
 
-describe('applyMovementBatch — para rozcięta granicą partii', () => {
+describe('applyMovementBatch - para rozcięta granicą partii', () => {
   const first = row({ stkmoveno: 100010, typ: 'SORT', loccode: 'PRZYJ', iloscKg: -4685.98, debtorno: '' })
   const second = row({ stkmoveno: 100011, typ: 'SORT', loccode: 'BOKS1', iloscKg: 4685.98, debtorno: '' })
 
@@ -264,11 +264,11 @@ describe('applyMovementBatch — para rozcięta granicą partii', () => {
   })
 })
 
-describe('applyMovementBatch — masa rozłożona na partie (FIFO)', () => {
+describe('applyMovementBatch - masa rozłożona na partie (FIFO)', () => {
   /**
    * Odkąd przyjęcie zakłada partię, WMS prowadzi saldo osobno dla każdej z nich
-   * i rozwiązuje je DOKŁADNIE. Ruch bez `lotId` trafia w saldo bezpartyjne —
-   * zerowe — i wraca z `insufficient_stock`, choć odpad leży na placu. Dlatego
+   * i rozwiązuje je DOKŁADNIE. Ruch bez `lotId` trafia w saldo bezpartyjne -
+   * zerowe - i wraca z `insufficient_stock`, choć odpad leży na placu. Dlatego
    * jeden kwit legacy bywa kilkoma ruchami magazynowymi.
    *
    * Partie podajemy w kolejności innej niż chronologiczna, żeby test sprawdzał
@@ -299,7 +299,7 @@ describe('applyMovementBatch — masa rozłożona na partie (FIFO)', () => {
     expect(outcomes[0]).toMatchObject({ action: 'create', externalId: '100010+100011' })
   })
 
-  it('podzielony ruch niesie licznik części — inaczej wygląda jak trzy wysortowania', async () => {
+  it('podzielony ruch niesie licznik części - inaczej wygląda jak trzy wysortowania', async () => {
     const { context, commands } = buildContext({ partie })
     await applyMovementBatch(context, paraSort(900), { final: true })
 
@@ -308,7 +308,7 @@ describe('applyMovementBatch — masa rozłożona na partie (FIFO)', () => {
       { nr: 2, z: 3 },
       { nr: 3, z: 3 },
     ])
-    // Numery z legacy zostają na każdej części — po nich wraca się do kwitu.
+    // Numery z legacy zostają na każdej części - po nich wraca się do kwitu.
     for (const command of commands) {
       expect((command.input.metadata as { legacy: { stkmoveno: number[] } }).legacy.stkmoveno).toEqual([100010, 100011])
     }
@@ -336,7 +336,7 @@ describe('applyMovementBatch — masa rozłożona na partie (FIFO)', () => {
     ])
   })
 
-  it('brak pokrycia w partiach mówi, ile brakuje — zamiast gołego insufficient_stock', async () => {
+  it('brak pokrycia w partiach mówi, ile brakuje - zamiast gołego insufficient_stock', async () => {
     const { context, commands } = buildContext({ partie })
     const { outcomes } = await applyMovementBatch(context, paraSort(5000), { final: true })
 
@@ -352,7 +352,7 @@ describe('applyMovementBatch — masa rozłożona na partie (FIFO)', () => {
     const { context, commands } = buildContext({ partie, juzWKsiedze: 500 })
     await applyMovementBatch(context, paraSort(900), { final: true })
 
-    // 500 kg już weszło, więc zostaje 400 — a nie 900 po raz drugi.
+    // 500 kg już weszło, więc zostaje 400 - a nie 900 po raz drugi.
     expect(commands.map((command) => command.input.quantity)).toEqual([400])
   })
 

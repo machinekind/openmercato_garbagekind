@@ -32,7 +32,7 @@
   "deployment.ui.nRobotsSilent": "{n} robotów nic nie zgłosiło",
   "deployment.ui.noAssignments": "Żaden robot nie ma przypisanej polityki. Uruchom",
   "deployment.ui.notReported": "nie zgłosił",
-  "deployment.ui.nothingRecorded": "centrala nic nie zapisała — mandat po prostu upłynął",
+  "deployment.ui.nothingRecorded": "centrala nic nie zapisała - mandat po prostu upłynął",
   "deployment.ui.stateDrift": "Rozjazd stanu",
   "deployment.ui.stoppedByLease": "Zatrzymane dzierżawą",
   "deployment.ui.untilExpiry": "do wygaśnięcia",

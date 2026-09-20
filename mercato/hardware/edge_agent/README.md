@@ -29,7 +29,7 @@ jest jednorazowy i ma własny termin ważności.
 
 | Plik | Odpowiedzialność |
 | --- | --- |
-| `protocol.py` | kanoniczny JSON i przedrostki podpisów — musi zgadzać się co do bajtu z `edge/lib/crypto.ts` |
+| `protocol.py` | kanoniczny JSON i przedrostki podpisów - musi zgadzać się co do bajtu z `edge/lib/crypto.ts` |
 | `identity.py` | klucz Ed25519, odcisk z DER/SPKI, liczniki sekwencji, zapis 0600 |
 | `client.py` | sześć endpointów: enroll, connect, heartbeat, telemetry, lease, report |
 | `journal.py` | przekład dziennika ruchu SO-101 na epizody i interwencje |
@@ -56,7 +56,7 @@ jest jednorazowy i ma własny termin ważności.
   po konwersji na `Date`, więc czas bez milisekund zostałby podpisany inaczej,
   niż zostanie odczytany.
 - **`externalRef` jest kluczem idempotencji.** Ten sam epizod wysłany dwa razy
-  daje jeden rekord — ponowne `push` po zerwaniu łączności jest bezpieczne.
+  daje jeden rekord - ponowne `push` po zerwaniu łączności jest bezpieczne.
 
 ## Przekład dziennika SO-101
 
@@ -73,8 +73,8 @@ Wpisy `enable` i `release` nie są przejazdami i nie stają się epizodami.
 ## Stan weryfikacji
 
 Zweryfikowane: podpisy i kanoniczne postacie komunikatów zgadzają się z
-**prawdziwymi modułami centrali** — `mercato/modules/edge/lib/crypto.ts` oraz
-`mercato/modules/deployment/lib/protocol.ts` — ładowanymi pod Node 22 przez
+**prawdziwymi modułami centrali** - `mercato/modules/edge/lib/crypto.ts` oraz
+`mercato/modules/deployment/lib/protocol.ts` - ładowanymi pod Node 22 przez
 `conformance.mts`. Test `tests/test_edge_agent_conformance.py` sprawdza
 wszystkie siedem komunikatów, odcisk klucza, kanoniczny JSON z liczbami
 granicznymi oraz to, że podpis uderzenia serca **nie** przechodzi jako
@@ -92,16 +92,16 @@ Przebieg ujawnił usterkę po stronie centrali, której nie miał czym złapać
 żaden test jednostkowy: endpointy `/api/deployment/lease` i `/api/deployment/report`
 budowały wejście komendy z `organizationId: ''`, więc **każde** żądanie agenta
 kończyło się odmową 401 z błędu walidacji UUID. Wszystkie istniejące testy
-wołały komendę wprost, z poprawnym zakresem, i sprawdzały komendę — nigdy
+wołały komendę wprost, z poprawnym zakresem, i sprawdzały komendę - nigdy
 sklejenia route ↔ komenda. Poprawione wraz z testem regresji
 (`deployment/__tests__/route.test.ts`).
 
 Po drodze zadziałało też zamiatanie sesji: po pięciu minutach ciszy centrala
 zamknęła sesję i odrzuciła kolejne uderzenie komunikatem „Sesja zamknięta
-(timeout) — wymagane ponowne połączenie". Agent musiał wykonać `connect`,
+(timeout) - wymagane ponowne połączenie". Agent musiał wykonać `connect`,
 a licznik wystartował od nowa. To jest zachowanie zamierzone, nie usterka:
 licznik sekwencji jest per sesja, nie globalny.
 
 Niezamknięte: **Z7** (telemetria epizodów) wymaga prawdziwego dziennika ruchu
-z podłączonego ramienia. Syntetycznego nie wysyłamy — księga epizodów jest
+z podłączonego ramienia. Syntetycznego nie wysyłamy - księga epizodów jest
 podstawą bramy wdrożenia i nie wolno jej zasiać zmyślonymi liczbami.

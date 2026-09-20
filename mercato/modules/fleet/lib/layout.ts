@@ -1,9 +1,9 @@
 /**
- * Geometria hali — rzut z góry, w metrach.
+ * Geometria hali - rzut z góry, w metrach.
  *
  * Jedna zasada rozstrzyga o kształcie całej reszty: **cela bez współrzędnych
  * nie jest rysowana**. Automatyczne rozstawienie „gdzieś sensownie" dałoby
- * obrazek, który wygląda jak plan hali i nim nie jest — a plan hali czyta się
+ * obrazek, który wygląda jak plan hali i nim nie jest - a plan hali czyta się
  * po to, żeby wiedzieć, gdzie iść. Zmyślona pozycja jest gorsza niż jej brak,
  * bo brak widać.
  *
@@ -13,7 +13,7 @@
  *
  * Układ współrzędnych: metry, początek w lewym górnym rogu obiektu, oś X
  * w prawo, oś Y w dół. Wybór osi Y w dół jest podyktowany tym, że rysujemy
- * w SVG — przeliczanie znaku przy każdej transformacji dałoby jeden błąd
+ * w SVG - przeliczanie znaku przy każdej transformacji dałoby jeden błąd
  * znaku na miesiąc.
  */
 
@@ -85,7 +85,7 @@ export type Transform = { scale: number; offsetX: number; offsetY: number }
  * Przeliczenie metrów na piksele tak, żeby wszystko się zmieściło.
  *
  * Skala jest **jedna dla obu osi**. Osobne skale wypełniłyby kadr lepiej
- * i zniekształciły proporcje — a na planie hali prostokątna cela ma wyglądać
+ * i zniekształciły proporcje - a na planie hali prostokątna cela ma wyglądać
  * jak prostokątna cela, bo po tym się ją rozpoznaje na miejscu.
  */
 export function fitTransform(bounds: Bounds | null, viewport: Viewport): Transform {
@@ -99,7 +99,7 @@ export function fitTransform(bounds: Bounds | null, viewport: Viewport): Transfo
 
   const scale = Math.min(usableWidth / planWidth, usableHeight / planHeight)
 
-  // Wyśrodkowanie resztą miejsca — inaczej plan przykleja się do lewego
+  // Wyśrodkowanie resztą miejsca - inaczej plan przykleja się do lewego
   // górnego rogu i przy wąskiej hali zostaje pół ekranu pustki po prawej.
   const offsetX = padding + (usableWidth - planWidth * scale) / 2 - bounds.minX * scale
   const offsetY = padding + (usableHeight - planHeight * scale) / 2 - bounds.minY * scale

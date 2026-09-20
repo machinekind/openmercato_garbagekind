@@ -5,7 +5,7 @@ import { detectExpiredCommand } from '../commands/calibrationExpiry'
 /**
  * Testy emisji zdarzeń.
  *
- * Deklaracja w `events.ts` nie jest dowodem na nic — dowodem jest to, że
+ * Deklaracja w `events.ts` nie jest dowodem na nic - dowodem jest to, że
  * komenda naprawdę woła emisję w chwili, w której zmienia stan świata.
  * Zdarzenie zadeklarowane i nieemitowane trafia na listę wyzwalaczy workflow
  * i ktoś zbuduje na nim automatyzację, która nigdy nie zadziała.
@@ -97,7 +97,7 @@ describe('emisja zdarzeń floty', () => {
 
   it('kwarantanna ogłasza i przejście ogólne, i zdarzenie wyróżnione', async () => {
     // Subskrybent wstrzymujący przydział pracy nie powinien dopasowywać
-    // stringa w polu `toState` — dlatego są dwa zdarzenia, nie jedno.
+    // stringa w polu `toState` - dlatego są dwa zdarzenia, nie jedno.
     const seen = captureEvents()
     await transitionRobotCommand.execute(
       { ...scope, robotId: ROBOT_ID, toState: 'quarantined', reason: 'utrata łączności', actor: 'system' },
@@ -165,7 +165,7 @@ describe('detektor wygasłych kalibracji', () => {
     expect(seen[0].payload).toMatchObject({ required: false })
   })
 
-  it('pomiar już odhaczony nie wraca — inaczej zdarzenie byłoby szumem', async () => {
+  it('pomiar już odhaczony nie wraca - inaczej zdarzenie byłoby szumem', async () => {
     const seen = captureEvents()
     const result = await detectExpiredCommand.execute(
       { ...scope, now: NOW },
@@ -194,7 +194,7 @@ describe('detektor wygasłych kalibracji', () => {
   })
 
   it('kalibracja po usuniętym robocie jest odhaczana, ale nie ogłaszana', async () => {
-    // Nie ma komu zareagować i nie ma czego zatrzymać — ogłoszenie byłoby
+    // Nie ma komu zareagować i nie ma czego zatrzymać - ogłoszenie byłoby
     // alarmem bez adresata, a brak odhaczenia dałby go co godzinę.
     const seen = captureEvents()
     const kal = kalibracja()

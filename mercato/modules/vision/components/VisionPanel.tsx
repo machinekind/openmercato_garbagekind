@@ -10,7 +10,7 @@ import { useLocale, useT } from '@open-mercato/shared/lib/i18n/context'
  *
  * Ekran pokazuje **podejrzanego**, nie rozjazd. Rozjazd widać już w panelu
  * przedsiębiorstwa; nowa informacja zaczyna się tam, gdzie da się powiedzieć,
- * po której stronie leży błąd — i gdzie kamera bywa tą stroną.
+ * po której stronie leży błąd - i gdzie kamera bywa tą stroną.
  */
 
 type Suspect =
@@ -66,7 +66,7 @@ const SUSPECT_LABEL: Record<Suspect, [string, string]> = {
   no_reference: ['vision.label.suspect.no_reference', "brak odniesienia"],
 }
 
-/** Kolor niesie, kto jest podejrzany — nie samo „coś nie gra". */
+/** Kolor niesie, kto jest podejrzany - nie samo „coś nie gra". */
 const SUSPECT_TONE: Record<Suspect, string> = {
   none: 'text-emerald-600',
   nominal_mass: 'text-amber-600',
@@ -137,7 +137,7 @@ export default function VisionPanel() {
           loading={loading}
           footer={
             <span className="text-xs text-muted-foreground">
-              {totals ? `z ${totals.batches} zamkniętych — reszta ma tylko robota i wagę` : t('vision.ui.restOnlyRobotScale', "reszta ma tylko robota i wagę")}
+              {totals ? `z ${totals.batches} zamkniętych - reszta ma tylko robota i wagę` : t('vision.ui.restOnlyRobotScale', "reszta ma tylko robota i wagę")}
             </span>
           }
         />
@@ -181,7 +181,7 @@ export default function VisionPanel() {
                     {batch.countingMode === 'mixed' ? (
                       <span
                         className="rounded border px-1 text-[10px] uppercase tracking-wide text-amber-600"
-                        title={t('vision.ui.mixedCountingModes', "Okna mieszają zliczanie ścieżek i detekcji — sumy nie da się złożyć")}
+                        title={t('vision.ui.mixedCountingModes', "Okna mieszają zliczanie ścieżek i detekcji - sumy nie da się złożyć")}
                       >
                         tryby mieszane
                       </span>
@@ -193,11 +193,11 @@ export default function VisionPanel() {
                 </div>
 
                 <div className="w-48 text-xs">
-                  {/* Trzy liczby obok siebie — bo dopiero ich układ niesie diagnozę. */}
+                  {/* Trzy liczby obok siebie - bo dopiero ich układ niesie diagnozę. */}
                   <div>
-                    wizja <span className="font-medium">{batch.visionCount ?? '—'}</span>
+                    wizja <span className="font-medium">{batch.visionCount ?? '-'}</span>
                     {' · '}robot <span className="font-medium">{batch.claimedCount}</span>
-                    {' · '}masa <span className="font-medium">{batch.massImpliedCount ?? '—'}</span>
+                    {' · '}masa <span className="font-medium">{batch.massImpliedCount ?? '-'}</span>
                   </div>
                   <div className="text-muted-foreground">
                     {batch.weighedKg.toFixed(1)} kg
@@ -227,7 +227,7 @@ export default function VisionPanel() {
               <span className="w-40 font-mono">{camera.code}</span>
               <span className="w-32 text-muted-foreground">{camera.viewRole}</span>
               <span className="w-40 text-muted-foreground">
-                {/* Cel z zamkniętego katalogu art. 22² § 1 KP — nie opis własny. */}
+                {/* Cel z zamkniętego katalogu art. 22² § 1 KP - nie opis własny. */}
                 {camera.purpose} · {camera.retentionDays} dni
               </span>
               <span className={camera.formalGaps.length ? 'text-red-600' : 'text-muted-foreground'}>

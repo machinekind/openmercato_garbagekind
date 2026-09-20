@@ -3,7 +3,7 @@ import { LegacyRpcClient, LegacyRpcError, RPC_OK } from '../legacyRpc'
 /**
  * Klient XML-RPC rozmawia z systemem, którego nie da się poprawić.
  * Każde odstępstwo od tego, co naprawdę wysyła i przyjmuje webERP, kończy się
- * awarią dopiero na produkcji — dlatego ramka i ścieżki błędów są tu opisane
+ * awarią dopiero na produkcji - dlatego ramka i ścieżki błędów są tu opisane
  * wprost, a nie sprawdzane „przy okazji".
  */
 
@@ -31,7 +31,7 @@ function methodResponse(inner: string): string {
 
 const ENDPOINT = 'http://legacy.test/api/api_xml-rpc.php'
 
-describe('LegacyRpcClient — ramka żądania', () => {
+describe('LegacyRpcClient - ramka żądania', () => {
   let calls: Array<{ url: string; init: RequestInit }>
 
   beforeEach(() => {
@@ -82,7 +82,7 @@ describe('LegacyRpcClient — ramka żądania', () => {
   })
 })
 
-describe('LegacyRpcClient — logowanie', () => {
+describe('LegacyRpcClient - logowanie', () => {
   it('zwraca kod 0 i zapamiętuje sesję', async () => {
     globalThis.fetch = jest.fn(async () =>
       xmlResponse(methodResponse('<value><int>0</int></value>'), { setCookie: 'PHPSESSID=s1; Path=/' }),
@@ -92,7 +92,7 @@ describe('LegacyRpcClient — logowanie', () => {
     await expect(client.login('demo', 'demo', 'weberpdemo')).resolves.toBe(RPC_OK)
   })
 
-  it('oddaje kod odmowy bez rzucania — kody 3 i 4 to odpowiedź, nie awaria', async () => {
+  it('oddaje kod odmowy bez rzucania - kody 3 i 4 to odpowiedź, nie awaria', async () => {
     globalThis.fetch = jest.fn(async () =>
       xmlResponse(methodResponse('<value><int>4</int></value>')),
     ) as unknown as typeof fetch
@@ -101,7 +101,7 @@ describe('LegacyRpcClient — logowanie', () => {
     await expect(client.login('demo', 'demo', 'zla-firma')).resolves.toBe(4)
   })
 
-  it('traktuje sukces bez ciasteczka jako błąd — inaczej kolejne wywołania dostałyby -1', async () => {
+  it('traktuje sukces bez ciasteczka jako błąd - inaczej kolejne wywołania dostałyby -1', async () => {
     globalThis.fetch = jest.fn(async () =>
       xmlResponse(methodResponse('<value><int>0</int></value>')),
     ) as unknown as typeof fetch
@@ -111,7 +111,7 @@ describe('LegacyRpcClient — logowanie', () => {
   })
 })
 
-describe('LegacyRpcClient — parsowanie odpowiedzi', () => {
+describe('LegacyRpcClient - parsowanie odpowiedzi', () => {
   async function respondWith(inner: string) {
     globalThis.fetch = jest
       .fn()
@@ -160,7 +160,7 @@ describe('LegacyRpcClient — parsowanie odpowiedzi', () => {
     await expect(client.getCustomer('D999')).resolves.toBeNull()
   })
 
-  it('zgłasza brak sesji (-1) jako błąd z kodem — to pierwsza ścieżka, która wywraca klienta', async () => {
+  it('zgłasza brak sesji (-1) jako błąd z kodem - to pierwsza ścieżka, która wywraca klienta', async () => {
     const client = await respondWith('<value><int>-1</int></value>')
     await expect(client.getLocationList()).rejects.toMatchObject({
       name: 'LegacyRpcError',

@@ -4,8 +4,8 @@
  * Testy pythona sprawdzają wyłącznie, czy agent zgadza się sam ze sobą. To za
  * mało: rozjazd kanonicznego JSON-u albo przedrostka objawia się dopiero jako
  * „podpis nieprawidłowy" na produkcji, bez wskazania przyczyny. Dlatego ten
- * plik ładuje `edge/lib/crypto.ts` i `deployment/lib/protocol.ts` — te same
- * moduły, których używa serwer — i weryfikuje podpisy złożone przez agenta.
+ * plik ładuje `edge/lib/crypto.ts` i `deployment/lib/protocol.ts` - te same
+ * moduły, których używa serwer - i weryfikuje podpisy złożone przez agenta.
  *
  * Uruchomienie (Node 22+, bez budowania):
  *

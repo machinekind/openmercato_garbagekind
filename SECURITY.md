@@ -30,20 +30,20 @@ pozwala podszyć się pod maszynę.
 
 Z tego wynikają mechanizmy, których naruszenie jest podatnością:
 
-- **Ed25519** — komunikat jest dowodem posiadania klucza, nie deklaracją.
+- **Ed25519** - komunikat jest dowodem posiadania klucza, nie deklaracją.
   Endpoint przyjmujący samą deklarację („jestem agentem X") chroniłby przed
   niczym.
-- **Przedrostki wiążące kontekst** — `edge.enroll:`, `edge.connect:`,
+- **Przedrostki wiążące kontekst** - `edge.enroll:`, `edge.connect:`,
   `edge.heartbeat:`, `edge.telemetry:`, `edge.rotate:`, `deployment.lease:`,
   `deployment.report:`. Podpis zebrany pod jednym przedrostkiem **nie może**
   przejść pod innym. Bez tego przechwycone uderzenie serca przedłużałoby
   mandat do pracy.
-- **Rosnący licznik sekwencji per sesja** — powtórzony numer jest odtworzeniem
+- **Rosnący licznik sekwencji per sesja** - powtórzony numer jest odtworzeniem
   i musi być odrzucony.
-- **Odcisk klucza liczony z postaci DER/SPKI**, nie z tekstu PEM — ten sam klucz
+- **Odcisk klucza liczony z postaci DER/SPKI**, nie z tekstu PEM - ten sam klucz
   z innymi końcami wierszy dałby inny odcisk tekstowy, a operator porównujący
   odcisk z ekranu robota zobaczyłby rozbieżność tam, gdzie jej nie ma.
-- **Rotacja klucza podpisywana nowym kluczem** — dowodem jest posiadanie
+- **Rotacja klucza podpisywana nowym kluczem** - dowodem jest posiadanie
   następcy, nie poprzednika.
 
 Zgodność implementacji agenta z centralą sprawdza zestaw
@@ -64,14 +64,14 @@ Podane wprost, żeby nikt nie oparł na niej założenia, którego nie unosi:
 
 ## Dane demonstracyjne
 
-Wszystkie dane generowane przez `legacy/generate.py` są fikcyjne — patrz
+Wszystkie dane generowane przez `legacy/generate.py` są fikcyjne - patrz
 [`NOTICE`](NOTICE). Instancje demonstracyjne nie zawierają danych osobowych ani
 rzeczywistych danych handlowych.
 
 ## Zależności obce
 
 Składniki obce i ich licencje wylicza [`NOTICE`](NOTICE). Materiał archiwalny
-w `physical-ai/evidence/` **nie jest zależnością** — żaden moduł go nie importuje
+w `physical-ai/evidence/` **nie jest zależnością** - żaden moduł go nie importuje
 ani nie uruchamia. Skrypty diagnostyczne z tego katalogu nie powinny być
 uruchamiane bez ponownego przeglądu bezpieczeństwa; źródłowy raport wprost
 oznacza jeden z nich jako taki, którego nie należy uruchamiać w obecnej postaci.

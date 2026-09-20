@@ -123,7 +123,7 @@ export default function LineageBoard() {
             {data.orphanPolicies.length} wersji polityki bez wskazanego zbioru
           </div>
           <div className="mt-1 text-xs">
-            {data.orphanPolicies.join(', ')} — po regresie jakości nie będzie wiadomo, na czym się uczyły,
+            {data.orphanPolicies.join(', ')} - po regresie jakości nie będzie wiadomo, na czym się uczyły,
             a hipotezy „zmiana w danych" i „zmiana w treningu" pozostaną nierozdzielone.
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function LineageBoard() {
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b px-4 py-3">
             <div>
               <div className="font-medium">
-                {version.datasetName} — wersja {version.version}
+                {version.datasetName} - wersja {version.version}
               </div>
               <div className="text-xs text-muted-foreground">
                 {version.datasetKey} · zadanie {version.taskKey} · embodiment {version.embodimentKey} ·
@@ -227,8 +227,8 @@ export default function LineageBoard() {
                   <tr key={run.id} className="border-t">
                     <td className="px-4 py-2 font-mono text-xs">{run.runRef}</td>
                     <td className={`px-4 py-2 ${RUN_STATUS_TONE[run.status] ?? ''}`}>{run.status}</td>
-                    <td className="px-4 py-2">{run.policy ?? '—'}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{run.framework ?? '—'}</td>
+                    <td className="px-4 py-2">{run.policy ?? '-'}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{run.framework ?? '-'}</td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">{formatMoment(locale, run.startedAt)}</td>
                   </tr>
                 ))}
@@ -244,7 +244,7 @@ export default function LineageBoard() {
         <div className="rounded-md border">
           <div className="border-b px-4 py-3">
             <div className="font-medium">{t('datasets.ui.reverseSide', "Strona odwrotna: z czego wzięła się polityka")}</div>
-            <div className="text-xs text-muted-foreground">{t("datasets.prose.1", "liczba epizodów rozróżnialnych — jedna polityka bywa dostrajana kolejno na dwóch zbiorach, które częściowo się pokrywają")}</div>
+            <div className="text-xs text-muted-foreground">{t("datasets.prose.1", "liczba epizodów rozróżnialnych - jedna polityka bywa dostrajana kolejno na dwóch zbiorach, które częściowo się pokrywają")}</div>
           </div>
           <table className="w-full text-sm">
             <thead>

@@ -77,13 +77,13 @@ describe('readMovements', () => {
         debtorno: 'D001',
         iloscKg: 6412.8,
         iloscMg: 6.413,
-        // PZ nie realizuje zamówienia — pusta kolumna daje 0, czyli „brak".
+        // PZ nie realizuje zamówienia - pusta kolumna daje 0, czyli „brak".
         orderno: 0,
       },
     ])
   })
 
-  it('zachowuje znak ujemny przy wydaniach — bez tego magazyn by rósł zamiast maleć', async () => {
+  it('zachowuje znak ujemny przy wydaniach - bez tego magazyn by rósł zamiast maleć', async () => {
     const file = await tempFile(
       'ruchy.csv',
       header + '100002,15 01 02,WZ,BOKS2,2026-09-18T10:00:00,D006,-9004.10,-9.004\n',
@@ -130,7 +130,7 @@ describe('readFractions', () => {
 })
 
 describe('legacyUuid', () => {
-  it('jest deterministyczny — na tym stoi idempotencja importu', () => {
+  it('jest deterministyczny - na tym stoi idempotencja importu', () => {
     expect(legacyUuid('movement', 100001)).toBe(legacyUuid('movement', 100001))
   })
 
@@ -139,7 +139,7 @@ describe('legacyUuid', () => {
     expect(legacyUuid('movement', 100001)).not.toBe(legacyUuid('order', 100001))
   })
 
-  it('ma kształt UUID w wersji 5 z wariantem RFC 4122 — WMS wymaga poprawnego uuid', () => {
+  it('ma kształt UUID w wersji 5 z wariantem RFC 4122 - WMS wymaga poprawnego uuid', () => {
     const value = legacyUuid('movement', 100001)
     expect(value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   })
@@ -160,7 +160,7 @@ describe('ścieżki zrzutu', () => {
   it('bierze katalog z konfiguracji środowiska', () => {
     process.env.SORTOWNIA_LEGACY_OUT = '/dane/legacy/out'
     expect(legacyOutDir()).toBe('/dane/legacy/out')
-    // `path.join` składa ścieżkę separatorem platformy — test ma przejść i na Windows.
+    // `path.join` składa ścieżkę separatorem platformy - test ma przejść i na Windows.
     expect(movementsFile()).toBe(path.join('/dane/legacy/out', 'ruchy.csv'))
     expect(fractionsFile()).toBe(path.join('/dane/legacy/out', 'frakcje.csv'))
   })

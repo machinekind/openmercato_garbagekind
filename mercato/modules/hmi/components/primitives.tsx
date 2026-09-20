@@ -7,7 +7,7 @@ import { isNotable, statusVocabulary, type Glyph, type StatusDescriptor } from '
 /**
  * Elementy ekranów operatorskich.
  *
- * Wszystkie rysują się na **żetonach**, nie na własnych wartościach — dzięki
+ * Wszystkie rysują się na **żetonach**, nie na własnych wartościach - dzięki
  * temu zmiana palety jest zmianą w jednym pliku, a nie polowaniem po
  * komponentach. Kształt niesie znaczenie równolegle do koloru; komponent,
  * który rysowałby sam kolor, nie przeszedłby testu słownika.
@@ -16,7 +16,7 @@ import { isNotable, statusVocabulary, type Glyph, type StatusDescriptor } from '
 /**
  * Skracanie tekstu do szerokości kafelka.
  *
- * SVG nie zawija ani nie przycina tekstu sam — napis po prostu wychodzi poza
+ * SVG nie zawija ani nie przycina tekstu sam - napis po prostu wychodzi poza
  * kształt i nachodzi na sąsiada. Szerokość znaku szacowana, nie mierzona:
  * pomiar wymagałby `getComputedTextLength` po renderze, czyli drugiego
  * przebiegu układu dla każdego kafelka. Przy kroju o stałej szerokości cyfr
@@ -38,7 +38,7 @@ export function HmiTokens(): React.ReactElement {
 /**
  * Kształt stanu.
  *
- * Rysowany ścieżkami w układzie 0..1, skalowanymi do żądanego rozmiaru —
+ * Rysowany ścieżkami w układzie 0..1, skalowanymi do żądanego rozmiaru -
  * dzięki temu ten sam glif działa jako znaczek przy kafelku maszyny
  * (8 px) i w legendzie (10 px) bez osobnych definicji.
  */
@@ -46,11 +46,11 @@ export function glyphPath(glyph: Glyph, cx: number, cy: number, size: number): R
   const r = size / 2
   switch (glyph) {
     case 'triangle':
-      // Ostrzeżenie: trójkąt wierzchołkiem do góry — ten sam kształt,
+      // Ostrzeżenie: trójkąt wierzchołkiem do góry - ten sam kształt,
       // co na znakach drogowych, więc nie wymaga nauki.
       return <path d={`M ${cx} ${cy - r} L ${cx + r} ${cy + r * 0.8} L ${cx - r} ${cy + r * 0.8} Z`} />
     case 'cross':
-      // Alarm: krzyż, nie wykrzyknik — wykrzyknik w kółku gubi się przy 8 px.
+      // Alarm: krzyż, nie wykrzyknik - wykrzyknik w kółku gubi się przy 8 px.
       return (
         <path
           d={`M ${cx - r} ${cy - r} L ${cx + r} ${cy + r} M ${cx + r} ${cy - r} L ${cx - r} ${cy + r}`}
@@ -62,7 +62,7 @@ export function glyphPath(glyph: Glyph, cx: number, cy: number, size: number): R
     case 'square':
       return <rect x={cx - r} y={cy - r} width={size} height={size} rx={1} />
     case 'diamond':
-      // Niewiedza: romb — kształt, który nie występuje w żadnym innym stanie.
+      // Niewiedza: romb - kształt, który nie występuje w żadnym innym stanie.
       return <path d={`M ${cx} ${cy - r} L ${cx + r} ${cy} L ${cx} ${cy + r} L ${cx - r} ${cy} Z`} />
     case 'bars':
       return (
@@ -74,7 +74,7 @@ export function glyphPath(glyph: Glyph, cx: number, cy: number, size: number): R
         />
       )
     case 'ring':
-      // Milczenie: pierścień przerywany — wizualnie „coś powinno tu pulsować".
+      // Milczenie: pierścień przerywany - wizualnie „coś powinno tu pulsować".
       return <circle cx={cx} cy={cy} r={r} fill="none" strokeWidth={STROKE.emphasis} strokeDasharray="2 2" />
     default:
       return null
@@ -105,7 +105,7 @@ export function StatusGlyph({
  * Zastępuje kropkę z poprzedniej wersji ekranu. Kropka niosła jeden bit
  * (kolor), a maszyna ma cztery wymiary: tożsamość, stan cyklu życia,
  * kalibrację i łączność. Kafelek niesie **identyfikator czytelny wprost**,
- * opis stanu słowami i jeden glif stanu dominującego — reszta trafia
+ * opis stanu słowami i jeden glif stanu dominującego - reszta trafia
  * do podpowiedzi i do panelu szczegółów.
  *
  * Maszyna w normie rysuje się w barwach neutralnych. Ramka z kolorem
@@ -169,7 +169,7 @@ export function MachineTile({
         {fitText(label, w - 8 - (notable ? 22 : 8), TYPE.identifier.size)}
       </text>
       <text x={x + 8} y={y + 24} fontSize={TYPE.status.size} fill="currentColor" fillOpacity={0.62}>
-        {/* Miejsce na glif po prawej odjęte z góry — inaczej napis na niego wchodzi. */}
+        {/* Miejsce na glif po prawej odjęte z góry - inaczej napis na niego wchodzi. */}
         {fitText(sublabel ?? status.short, w - 8 - (notable ? 24 : 10), TYPE.status.size)}
       </text>
 
@@ -190,7 +190,7 @@ export function MachineTile({
  * Powstał, bo pierwsza wersja rzutu **po cichu gubiła maszyny**, które nie
  * mieściły się w obrysie celi: pięć maszyn, trzy na rysunku, żadnej
  * informacji o dwóch pozostałych. Plan hali, z którego znikają maszyny,
- * jest gorszy niż brak planu — bo wygląda na kompletny.
+ * jest gorszy niż brak planu - bo wygląda na kompletny.
  */
 export function OverflowTile({
   x,
@@ -220,7 +220,7 @@ export function OverflowTile({
         strokeDasharray="3 3"
       />
       <text x={x + 8} y={y + 13} fontSize={TYPE.status.size} fill="currentColor" fillOpacity={0.7}>
-        {`+${hidden} — otwórz celę`}
+        {`+${hidden} - otwórz celę`}
       </text>
     </g>
   )
@@ -270,7 +270,7 @@ export function DeviationBar({
 /**
  * Legenda składana ze słownika stanów.
  *
- * Ręczna rozjechała się w tym projekcie dwa razy — raz nie nadążyła za nowym
+ * Ręczna rozjechała się w tym projekcie dwa razy - raz nie nadążyła za nowym
  * stanem, raz opisywała kształt, którego na rysunku nie było widać. Ta nie
  * może się rozjechać, bo czyta to samo źródło, co rysunek.
  */
@@ -288,7 +288,7 @@ export function StatusLegend({ codes }: { codes?: string[] }): React.ReactElemen
         </span>
       ))}
       <span className="flex items-center gap-1.5 text-muted-foreground">
-        {/* Norma bez glifu i bez koloru — i to też trzeba powiedzieć wprost. */}
+        {/* Norma bez glifu i bez koloru - i to też trzeba powiedzieć wprost. */}
         <span className="inline-block h-2.5 w-4 rounded-sm border" style={{ borderColor: 'var(--hmi-outline)' }} />
         praca w normie
       </span>
