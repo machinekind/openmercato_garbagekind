@@ -36,6 +36,8 @@ type LegacyRow = {
   loccode: string
   iloscKg: number
   iloscMg: number
+  /** Znacznik czasu z legacy — potrzebny, by liczyć w tym samym oknie co pulpit. */
+  data: string
   /** Numer zamówienia, które realizuje to wydanie; 0 dla PZ i SORT. */
   orderno: number
 }
@@ -139,6 +141,7 @@ async function readLegacyLedger(): Promise<LegacyRow[]> {
       loccode: (record.loccode ?? '').toUpperCase(),
       iloscKg: Number.parseFloat((record.ilosc_kg ?? '0').replace(',', '.')),
       iloscMg: Number.parseFloat((record.ilosc_mg ?? '0').replace(',', '.')),
+      data: record.data ?? '',
       orderno: Number.parseInt(record.orderno ?? '', 10) || 0,
     })
   }
@@ -194,10 +197,21 @@ function ledgerBalances(rows: LegacyRow[]) {
  * partii, a komenda magazynowa rusza jedną partię naraz, więc jeden kwit bywa
  * kilkoma ruchami. Niezmiennikiem jest kwit — jego zgubienie albo zdublowanie
  * rozjeżdża salda, a podział na partie nie.
+ *
+ * Liczymy w tym samym oknie co pulpit — ostatnie 30 dni. Bez tego test
+ * przechodziłby wyłącznie w dobie, w której zrobiono import: nazajutrz
+ * najstarszy kwit wypada z okna pulpitu, a z płaskiej księgi nie, i porównanie
+ * rozjeżdża się o rekord, którego nikt nie zgubił. Oba wiersze pary `SORT`
+ * niosą ten sam znacznik czasu, więc para nigdy nie rozpada się na granicy
+ * okna i dzielenie przez dwa zostaje całkowite.
  */
+const OKNO_PULPITU_DNI = 30
+
 function expectedMovementCount(rows: LegacyRow[]): number {
-  const sortRows = rows.filter((row) => row.typ === 'SORT').length
-  const rest = rows.length - sortRows
+  const prog = Date.now() - OKNO_PULPITU_DNI * 24 * 60 * 60 * 1000
+  const wOknie = rows.filter((row) => new Date(row.data).getTime() >= prog)
+  const sortRows = wOknie.filter((row) => row.typ === 'SORT').length
+  const rest = wOknie.length - sortRows
   return rest + sortRows / 2
 }
 
