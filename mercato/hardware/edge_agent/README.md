@@ -82,7 +82,7 @@ dzierżawa.
 
 **Przebieg na żywo wykonany 20.09.2026** przeciwko uruchomionej instancji
 (Open Mercato 0.8.0, robot `FR3-0001`). Zamknięte: `init` → `enroll` →
-`connect` → 12 uderzeń serca z rosnącą sekwencją → dzierżawa
+`connect` → **100 uderzeń serca, sekwencja 1→100 bez luki** → dzierżawa
 (`desiredState: running`, `leaseExpiryBehavior: hold_position`) → podpisane
 zgłoszenie stanu z werdyktem `converged`. Ślad jest w `edge_agent_sessions`,
 `deployment_leases` i `deployment_state_reports`. To domyka **Z3** i **Z6**.
@@ -94,6 +94,12 @@ kończyło się odmową 401 z błędu walidacji UUID. Wszystkie istniejące test
 wołały komendę wprost, z poprawnym zakresem, i sprawdzały komendę — nigdy
 sklejenia route ↔ komenda. Poprawione wraz z testem regresji
 (`deployment/__tests__/route.test.ts`).
+
+Po drodze zadziałało też zamiatanie sesji: po pięciu minutach ciszy centrala
+zamknęła sesję i odrzuciła kolejne uderzenie komunikatem „Sesja zamknięta
+(timeout) — wymagane ponowne połączenie". Agent musiał wykonać `connect`,
+a licznik wystartował od nowa. To jest zachowanie zamierzone, nie usterka:
+licznik sekwencji jest per sesja, nie globalny.
 
 Niezamknięte: **Z7** (telemetria epizodów) wymaga prawdziwego dziennika ruchu
 z podłączonego ramienia. Syntetycznego nie wysyłamy — księga epizodów jest
