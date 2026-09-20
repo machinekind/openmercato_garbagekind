@@ -65,6 +65,8 @@ a co tylko napisane. Aktualizujemy ją przy każdym przebiegu.
 | **Dzierżawa i uzgodnienie stanu** | ten sam agent: pobranie stanu pożądanego, podpisane zgłoszenie stanu | werdykt `converged` w `deployment_state_reports` |
 | **Zgodność kontraktu** | podpisy agenta weryfikowane **modułami, których używa serwer** | siedem komunikatów, odcisk klucza, odrzucenie podpisu z obcego kontekstu |
 | **Zamiatanie sesji** | pięć minut ciszy podczas przebiegu | centrala zamknęła sesję i wymusiła ponowne połączenie |
+| **Epizod z prawdziwej maszyny w księdze** | dziennik ruchu SO-101 wypchnięty podpisanym kanałem `/api/edge/telemetry` | `so101-random-pose`, wynik `success`, przypisany do `SO101-5AAF220303` |
+| **Idempotencja telemetrii** | ten sam dziennik wypchnięty dwa razy | jeden rekord w księdze, nie dwa |
 
 Przebieg sprzętowy: [`docs/handoff/so101-run-2026-09-20/`](docs/handoff/so101-run-2026-09-20/README.md)
 z surowym `evidence.json` i dziennikiem ruchu.
@@ -87,6 +89,12 @@ Cztery rzeczy, bez których nie wolno mówić o odbiorze fizycznym:
    magistralą i tym samym procesem, który może zawisnąć - **nie jest E-stopem**.
 4. **Nie ma zaliczonego autonomicznego chwytu.** Model nie wyemitował akcji
    chwytaka w żadnej obserwowanej próbie.
+
+Do tego jedna rzecz, o której łatwo zapomnieć przy patrzeniu na pulpit:
+**księga epizodów zawiera dziś jeden rekord z prawdziwej maszyny.** Pozostałe
+2445 pochodzi z komend `prove` i służy wyłącznie pokazaniu, jak brama wdrożenia
+liczy. Progi bramy (50 epizodów na etap) nie są więc spełnione prawdziwymi
+danymi i żaden wyświetlany wskaźnik autonomii nie opisuje zachowania sprzętu.
 
 Dlatego `seal` odmawia:
 

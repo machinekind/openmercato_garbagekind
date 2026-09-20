@@ -598,8 +598,79 @@ const installWidgetsCommand: ModuleCli = {
   },
 }
 
+/**
+ * Rejestracja pojedynczego, prawdziwego egzemplarza.
+ *
+ * `seed` zakłada flotę demonstracyjną i do niczego innego się nie nadaje.
+ * Kiedy na stanowisku staje jedna maszyna, trzeba ją wpisać z jej własnym
+ * numerem i rewizją sprzętu - bez tego nie ma do czego przypiąć agenta,
+ * kalibracji ani epizodów, a telemetria z niej wpisana przez cudzego agenta
+ * fałszowałaby pochodzenie w księdze.
+ *
+ * Robot ląduje w stanie `registered` i nie da się go dopuścić do pracy bez
+ * ważnej kalibracji wymaganej przez rewizję. To jest zamierzone: rejestracja
+ * stwierdza istnienie maszyny, nie jej gotowość.
+ */
+const registerCommand: ModuleCli = {
+  command: 'register',
+  async run(rest) {
+    const args = parseArgs(rest)
+    const serial = typeof args.serial === 'string' ? args.serial.trim() : ''
+    const name = typeof args.name === 'string' ? args.name.trim() : ''
+    const embodiment = typeof args.embodiment === 'string' ? args.embodiment.trim() : ''
+    if (!serial || !name || !embodiment) {
+      throw new Error('Użycie: fleet register --serial <numer> --name <nazwa> --embodiment <klucz> [--revision <nr>] [--cell <kod>]')
+    }
+
+    const container = await createRequestContainer()
+    const em = container.resolve('em') as EntityManager
+    const scope = await resolveScope(em, args)
+
+    const rewizje = await em.getConnection().execute<Array<{ id: string; revision: number }>>(
+      `select id, revision from fleet_embodiment_revisions
+        where tenant_id = ? and embodiment_key = ? and deleted_at is null
+          and (? = 0 or revision = ?)
+        order by revision desc limit 1`,
+      [scope.tenantId, embodiment, Number(args.revision ?? 0), Number(args.revision ?? 0)],
+    )
+    if (!rewizje?.length) throw new Error(`Brak rewizji embodimentu ${embodiment} w tym tenancie.`)
+
+    let cellId: string | undefined
+    if (typeof args.cell === 'string' && args.cell) {
+      const cele = await em.getConnection().execute<Array<{ id: string }>>(
+        'select id from fleet_cells where tenant_id = ? and code = ? and deleted_at is null limit 1',
+        [scope.tenantId, args.cell],
+      )
+      if (!cele?.length) throw new Error(`Brak celi o kodzie ${args.cell}.`)
+      cellId = cele[0].id
+    }
+
+    const bus = container.resolve('commandBus') as CommandBus
+    const envelope = await bus.execute('fleet.robots.register', {
+      input: {
+        ...scope,
+        serialNumber: serial,
+        name,
+        embodimentRevisionId: rewizje[0].id,
+        ownerOrganizationId: scope.organizationId,
+        operatorOrganizationId: scope.organizationId,
+        cellId,
+        metadata: typeof args.metadata === 'string' ? JSON.parse(args.metadata) : undefined,
+      },
+      ctx: buildCommandContext(container, scope),
+    })
+
+    const { robotId } = envelope.result as { robotId: string }
+    console.log(`Robot     : ${serial} (${name})`)
+    console.log(`Embodiment: ${embodiment}@r${rewizje[0].revision}`)
+    console.log(`Id        : ${robotId}`)
+    console.log('Stan      : registered - dopuszczenie wymaga ważnej kalibracji.')
+  },
+}
+
 export default [
   seedCommand,
+  registerCommand,
   statusCommand,
   embodimentCommand,
   layoutCommand,
