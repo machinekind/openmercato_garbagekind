@@ -8,7 +8,7 @@ zwalidowana fizycznie*.
 Nic tutaj nie jest oceną dotychczasowej pracy. Materiał z hackathonu
 (`mercatoXD`) powstał w większości przed naszą specyfikacją i dotyczył A1X -
 inwentaryzacja jest w
-[`physical-ai/MATERIAL-MERCATOXD.md`](physical-ai/MATERIAL-MERCATOXD.md).
+[`physical-ai/MATERIAL-MERCATOXD.md`](../../physical-ai/MATERIAL-MERCATOXD.md).
 Ten dokument dotyczy **SO-101**, do którego mamy teraz dostęp.
 
 ---
@@ -53,8 +53,9 @@ ludzi) nie wchodzi w grę na tym sprzęcie.
 
 ## 1. Co już działa po naszej stronie
 
-Endpointy gotowe i otestowane (154 zestawy, 1376 testów zielonych,
-`typecheck` czysty):
+Endpointy gotowe, z testami po stronie TypeScript. Liczby przebiegu nie
+podajemy tutaj: zestawu nie da się uruchomić z tego repozytorium, bo nie
+zawiera ono platformy. Procedura uruchomienia jest w `CONTRIBUTING.md`.
 
 | Ścieżka | Kto woła | Uwierzytelnienie |
 | --- | --- | --- |

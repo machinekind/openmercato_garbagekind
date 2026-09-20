@@ -1189,14 +1189,19 @@ zaliczenia: [`docs/handoff/so101-odbior-fizyczny.md`](docs/handoff/so101-odbior-
 | Tabele w migracjach | 40 |
 | Własne komendy | 49 |
 | Zdarzenia z typowanym ładunkiem | 59 |
-| Pliki testowe TypeScript | 58 |
-| Testy TypeScript (cały stack) | 1385 w 154 zestawach |
-| Testy Python | 37 |
-| Klucze tłumaczeń (pl/en) | 425 |
+| Pliki testowe TypeScript | 61 |
+| Testy Python | 107 |
+| Klucze tłumaczeń (pl/en) | 541 na język |
 | Zweryfikowane na żywej instancji | 8 kontrahentów, 46 zamówień, 46 faktur, 40 kart przekazania, 11 wpłat, 109 partii, 299 wierszy legacy → 217 kwitów → 309 ruchów WMS bez błędów; powtórny import: 0 zapisanych, 217 duplikatów; bilans masy domknięty co do kilograma |
 
-Liczby policzone z `migrations/`, `commands/`, `events.ts` i `__tests__/`
-każdego modułu na gałęzi `main`.
+Liczby policzone z `migrations/`, `commands/`, `events.ts`, `i18n/` i
+`__tests__/` każdego modułu na gałęzi `main`. Testy Python sprawdza
+`python3 -m unittest discover -s tests -t .` w tym repozytorium.
+
+Liczby przebiegu testów TypeScript nie ma w tej tabeli celowo: to repozytorium
+nie zawiera platformy ani konfiguracji uruchamiającej, więc nikt nie mógłby jej
+tu sprawdzić. Uruchamia się je w klonie Open Mercato po `mercato/install.sh` -
+procedura w [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Spis dokumentów
 

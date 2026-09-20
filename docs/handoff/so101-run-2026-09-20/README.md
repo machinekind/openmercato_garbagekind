@@ -50,7 +50,7 @@ Surowy dziennik: [`motion-journal.ndjson`](motion-journal.ndjson).
 W chwili startu dwa stawy leżały poza oknem miękkich limitów liczonym przez
 `arm_control.py`: `shoulder_lift` 1238 przy oknie 1320-3495 oraz `elbow_flex`
 2878 przy oknie 781-2764. `so101_enable` utrzymuje pozę zastaną, więc
-załączenie było bezpieczne, ale „dom" zapamiętany przy załączeniu leżał poza
+załączenie było bezpieczne, ale "dom" zapamiętany przy załączeniu leżał poza
 oknem. Powrót i zwolnienie mimo to przeszły.
 
 ## Czego brakuje do Z1

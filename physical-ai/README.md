@@ -864,7 +864,7 @@ bez zbioru i zbiór bez epizodów to dwa różne problemy.
 
 ## Stan po fazach 0-6
 
-Osiem modułów, 31 tabel, 329 testów jednostkowych. Łańcuch, który przechodzi
+Osiem modułów, 31 tabel. Łańcuch, który przechodzi
 przez wszystkie fazy, wygląda tak:
 
 ```

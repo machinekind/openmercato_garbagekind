@@ -1,6 +1,6 @@
 # Stan weryfikacji integracji Physical AI
 
-Stan na **2026-09-19**, gałąź `ERP-Physical-management`.
+Stan na **2026-09-20**, gałąź `main`.
 
 Ten dokument oddziela weryfikację programu od odbioru fizycznego. Zielony
 wynik testów nie jest dowodem, że robot lub warstwa bezpieczeństwa zostały
@@ -11,10 +11,12 @@ sprawdzone na stanowisku.
 | Zakres | Wynik | Punkt odniesienia |
 | --- | --- | --- |
 | Pełne sprawdzenie typów ERP | zaliczone | `4f631d4`, potwierdzone po `c0f5c29` |
-| Pełny zestaw testów ERP | 153/153 zestawy, 1354/1354 testy | `c0f5c29` |
+| Pełny zestaw testów ERP | zaliczony w klonie platformy; liczby przebiegu nie są tu podawane, bo tego zestawu nie da się uruchomić z tego repozytorium | `c0f5c29` |
 | Testy podpisanej telemetrii edge i retencji wideo | 45/45 testów | `c6386a8` |
-| Testy narzędzia odbioru SO-101 | 10/10 testów | `3749e5b` |
-| Testy integralności paczki dowodowej | 8/8 testów | `d3e0fdc` |
+| Testy narzędzia odbioru SO-101 | 24/24 testy (`tests/test_so101_validation.py`) | `main` |
+| Testy integralności paczki dowodowej | 8/8 testów (`tests/test_evidence_bundle.py`) | `d3e0fdc` |
+| Testy sterownika ruchu SO-101 | 24/24 testy (`tests/test_so101_arm_control.py`) | `main` |
+| Cały zestaw pythonowy tego repozytorium | 107/107 testów, `python3 -m unittest discover -s tests -t .` | `main` |
 | Kompilacja składni narzędzi sprzętowych | zaliczona | `d3e0fdc` |
 | Źródłowy bridge A1X z `mercatoXD` | 56/56 testów, 84% pokrycia, bez sprzętu | commit źródła `fd5fe08` |
 
@@ -44,19 +46,31 @@ zestaw zakończył się kodem `0`.
 - zachowanie polityki po wygaśnięciu dzierżawy i słowniki przyczyn alarmów są
   kontraktami zamkniętymi, a nie swobodnym tekstem.
 
-## Niewykonany odbiór fizyczny
+## Odbiór fizyczny - stan częściowy
 
-Na hoście wykonującym tę weryfikację system Windows nie wykrył portu COM ani
-adaptera Feetech. Widoczna była kamera USB, ale nie magistrala napędów.
-Dlatego nie wykonano i nie zaliczono:
+Pierwszy host weryfikujący (Windows) nie wykrył portu COM ani adaptera
+Feetech. Na hoście linuksowym 2026-09-20 ramię odpowiedziało na
+`/dev/ttyACM0` i część procedury została wykonana.
 
-- odczytu sześciu serw SO-101 i oficjalnej kalibracji LeRobot;
-- pomiaru napięcia pod obciążeniem, zasięgu i udźwigu;
-- próby torque-off, fizycznego E-stopu ani lokalnych limitów;
-- prób z człowiekiem w strefie, polityki cieniowej ani autonomicznego chwytu.
+Wykonane i zaliczone na podłączonym ramieniu:
 
-Brak urządzenia pozostaje stanem `blocked` w raporcie roboczym poza Git. Nie
-został zastąpiony mockiem ani wartością katalogową.
+- odczyt sześciu serw STS3215, ID 1-6, firmware 3.10 (`inspect`, `passed`);
+- próba torque-off: `Torque_Enable` = 0 na sześciu serwach (`passed`).
+
+Nadal niewykonane i niezaliczone:
+
+- oficjalna kalibracja LeRobot (procedura interaktywna, wymaga operatora);
+- pomiar napięcia pod obciążeniem, zasięgu i udźwigu (brak przyrządów);
+- fizyczny E-stop i limity lokalne (zestaw nie ma deterministycznej warstwy
+  zatrzymania, więc nie ma czego zmierzyć);
+- próby z człowiekiem w strefie, polityka cieniowa, autonomiczny chwyt.
+
+`seal` i `finalize` odmówiły działania na brakujących dowodach, więc rewizja
+`r2` nie powstała i nic nie jest oznaczone jako `verifiedAgainstHardware`.
+Kroki bez przyrządów mają w raporcie status `placeholder` i
+`provenance: synthetic` - nie zostały zastąpione mockiem ani wartością
+katalogową. Pełny zapis przebiegu:
+`docs/handoff/so101-run-2026-09-20/README.md`.
 
 Inwentaryzacja materiału `mercatoXD` względem naszych bram znajduje się w
 `physical-ai/MATERIAL-MERCATOXD.md`. Kod bridge'a przeszedł testy, ale

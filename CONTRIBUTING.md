@@ -13,7 +13,7 @@ Repozytorium zawiera moduły rozszerzające Open Mercato, ale **nie zawiera same
 platformy**. Żeby cokolwiek uruchomić, potrzebny jest osobny klon Open Mercato:
 
 ```bash
-git clone <open-mercato> ~/open-mercato
+git clone https://github.com/open-mercato/open-mercato.git ~/open-mercato
 export MERCATO_ROOT=~/open-mercato
 ./mercato/install.sh                      # kopiuje moduły do apps/mercato
 (cd "$MERCATO_ROOT/apps/mercato" && yarn generate && yarn mercato db migrate)
