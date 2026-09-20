@@ -359,11 +359,8 @@ const importCommand: ModuleCli = {
       for (const outcome of failedRes.slice(0, 5)) console.log(`    ! zamówienie ${outcome.orderno}: ${outcome.error}`)
     }
 
-<<<<<<< Updated upstream
-=======
     // 10. CRM — etapy firm i szanse sprzedaży mają się zgadzać.
     await runCrmSync({ em, commandBus, commandContext, scope })
->>>>>>> Stashed changes
 
     const balances = await em.find(InventoryBalance, {
       organizationId: scope.organizationId,
