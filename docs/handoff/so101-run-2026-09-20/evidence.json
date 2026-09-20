@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 1,
+  "toolVersion": "1.5.0",
+  "embodimentKey": "so101_follower",
+  "embodimentRevision": 1,
+  "runRef": "52d963fd-bc08-476a-b9d6-a234270f94c4",
+  "createdAt": "2026-09-20T07:44:04.989463Z",
+  "generatedAt": "2026-09-20T07:45:02.964135Z",
+  "host": {
+    "node": "fedora",
+    "platform": "Linux-6.17.10-100.fc41.x86_64-x86_64-with-glibc2.40",
+    "python": "3.13.9"
+  },
+  "port": "/dev/ttyACM0",
+  "checks": {
+    "discovery": {
+      "status": "passed",
+      "observedAt": "2026-09-20T07:44:05.011009Z",
+      "ports": [
+        {
+          "device": "/dev/ttyS31",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS30",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS29",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS28",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS27",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS26",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS25",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS24",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS23",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS22",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS21",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS20",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS19",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS18",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS17",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS16",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS15",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS14",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS13",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS12",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS11",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS10",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS9",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS8",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS7",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS6",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS5",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS4",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS3",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS2",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS1",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyS0",
+          "description": "n/a",
+          "hwid": "n/a",
+          "vid": null,
+          "pid": null,
+          "serialNumber": null
+        },
+        {
+          "device": "/dev/ttyACM0",
+          "description": "USB Single Serial",
+          "hwid": "USB VID:PID=1A86:55D3 SER=5AAF220303 LOCATION=3-1:1.0",
+          "vid": "1A86",
+          "pid": "55D3",
+          "serialNumber": "5AAF220303"
+        }
+      ],
+      "reason": null
+    },
+    "busContract": {
+      "status": "passed",
+      "adapter": {
+        "device": "/dev/ttyACM0",
+        "serialNumber": "5AAF220303",
+        "vid": "1A86",
+        "pid": "55D3"
+      },
+      "observedAt": "2026-09-20T07:44:15.984804Z",
+      "readOnly": true,
+      "joints": [
+        {
+          "name": "shoulder_pan",
+          "id": 1,
+          "expectedModel": "STS3215",
+          "modelNumber": 777,
+          "firmwareVersion": "3.10",
+          "torqueEnabled": 0,
+          "operatingMode": 0,
+          "presentPositionRaw": 2016,
+          "voltageDecivolt": 117,
+          "temperatureC": 29
+        },
+        {
+          "name": "shoulder_lift",
+          "id": 2,
+          "expectedModel": "STS3215",
+          "modelNumber": 777,
+          "firmwareVersion": "3.10",
+          "torqueEnabled": 0,
+          "operatingMode": 0,
+          "presentPositionRaw": 1238,
+          "voltageDecivolt": 119,
+          "temperatureC": 28
+        },
+        {
+          "name": "elbow_flex",
+          "id": 3,
+          "expectedModel": "STS3215",
+          "modelNumber": 777,
+          "firmwareVersion": "3.10",
+          "torqueEnabled": 0,
+          "operatingMode": 0,
+          "presentPositionRaw": 2878,
+          "voltageDecivolt": 118,
+          "temperatureC": 29
+        },
+        {
+          "name": "wrist_flex",
+          "id": 4,
+          "expectedModel": "STS3215",
+          "modelNumber": 777,
+          "firmwareVersion": "3.10",
+          "torqueEnabled": 0,
+          "operatingMode": 0,
+          "presentPositionRaw": 1208,
+          "voltageDecivolt": 118,
+          "temperatureC": 28
+        },
+        {
+          "name": "wrist_roll",
+          "id": 5,
+          "expectedModel": "STS3215",
+          "modelNumber": 777,
+          "firmwareVersion": "3.10",
+          "torqueEnabled": 0,
+          "operatingMode": 0,
+          "presentPositionRaw": 1908,
+          "voltageDecivolt": 118,
+          "temperatureC": 30
+        },
+        {
+          "name": "gripper",
+          "id": 6,
+          "expectedModel": "STS3215",
+          "modelNumber": 777,
+          "firmwareVersion": "3.10",
+          "torqueEnabled": 0,
+          "operatingMode": 0,
+          "presentPositionRaw": 2135,
+          "voltageDecivolt": 119,
+          "temperatureC": 31
+        }
+      ],
+      "problems": []
+    },
+    "jointOffsetsObserved": {
+      "status": "observed",
+      "observedAt": "2026-09-20T07:44:15.984832Z",
+      "calibration": {
+        "shoulder_pan": {
+          "id": 1,
+          "drive_mode": 0,
+          "homing_offset": -1889,
+          "range_min": 724,
+          "range_max": 3396
+        },
+        "shoulder_lift": {
+          "id": 2,
+          "drive_mode": 0,
+          "homing_offset": -1254,
+          "range_min": 1200,
+          "range_max": 3615
+        },
+        "elbow_flex": {
+          "id": 3,
+          "drive_mode": 0,
+          "homing_offset": 1449,
+          "range_min": 661,
+          "range_max": 2884
+        },
+        "wrist_flex": {
+          "id": 4,
+          "drive_mode": 0,
+          "homing_offset": 1923,
+          "range_min": 100,
+          "range_max": 2468
+        },
+        "wrist_roll": {
+          "id": 5,
+          "drive_mode": 0,
+          "homing_offset": 1175,
+          "range_min": 0,
+          "range_max": 4095
+        },
+        "gripper": {
+          "id": 6,
+          "drive_mode": 0,
+          "homing_offset": -2020,
+          "range_min": 1986,
+          "range_max": 3502
+        }
+      },
+      "sha256": "c0123b791105dcb8922287f5a2274725e10a4be2a0b2e336206d1b1aac52c9b4",
+      "note": "Registers alone do not prove that the full LeRobot calibration procedure was completed."
+    },
+    "reach": {
+      "status": "placeholder",
+      "observedAt": "2026-09-20T07:44:40.008347Z",
+      "provenance": "synthetic",
+      "instrument": "placeholder",
+      "operator": "placeholder",
+      "method": "placeholder",
+      "notes": "",
+      "valueMm": 450.0,
+      "uncertaintyMm": 50.0,
+      "note": "Wartosc zastepcza dla kroku reach: nie pochodzi z pomiaru i nie zalicza bramy. Zastapic wynikiem pomiaru przed seal/finalize."
+    },
+    "payload": {
+      "status": "placeholder",
+      "observedAt": "2026-09-20T07:44:40.008347Z",
+      "provenance": "synthetic",
+      "instrument": "placeholder",
+      "operator": "placeholder",
+      "method": "placeholder",
+      "notes": "",
+      "valueKg": 0.25,
+      "uncertaintyKg": 0.1,
+      "holdSeconds": 30,
+      "note": "Wartosc zastepcza dla kroku payload: nie pochodzi z pomiaru i nie zalicza bramy. Zastapic wynikiem pomiaru przed seal/finalize."
+    },
+    "power": {
+      "status": "placeholder",
+      "observedAt": "2026-09-20T07:44:40.134979Z",
+      "provenance": "synthetic",
+      "expectedMinV": 11.0,
+      "expectedMaxV": 12.6,
+      "measuredIdleV": 12.0,
+      "measuredLoadedV": 11.5,
+      "instrument": "placeholder",
+      "operator": "placeholder",
+      "method": "placeholder",
+      "evidenceUri": null,
+      "note": "Wartosc zastepcza dla kroku power: nie pochodzi z pomiaru i nie zalicza bramy. Zastapic wynikiem pomiaru przed seal/finalize."
+    },
+    "torqueOff": {
+      "status": "passed",
+      "observedAt": "2026-09-20T07:44:50.799281Z",
+      "command": "FeetechMotorsBus.disable_torque",
+      "before": {
+        "shoulder_pan": 0,
+        "shoulder_lift": 0,
+        "elbow_flex": 0,
+        "wrist_flex": 0,
+        "wrist_roll": 0,
+        "gripper": 0
+      },
+      "after": {
+        "shoulder_pan": 0,
+        "shoulder_lift": 0,
+        "elbow_flex": 0,
+        "wrist_flex": 0,
+        "wrist_roll": 0,
+        "gripper": 0
+      },
+      "armLeftTorqueDisabled": true
+    },
+    "seal": {
+      "status": "blocked",
+      "observedAt": "2026-09-20T07:44:57.940694Z",
+      "reason": "ValueError: Physical evidence is incomplete: jointOffsets, power, reach, payload, emergencyStop, deterministicLimits"
+    },
+    "finalize": {
+      "status": "blocked",
+      "observedAt": "2026-09-20T07:45:02.964099Z",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '.runtime/so101-validation/evidence.sealed.json'"
+    }
+  },
+  "artifacts": [],
+  "overallStatus": "partial",
+  "adapter": {
+    "device": "/dev/ttyACM0",
+    "serialNumber": "5AAF220303",
+    "vid": "1A86",
+    "pid": "55D3"
+  }
+}
